@@ -94,7 +94,12 @@ Los issues y pull requests son bienvenidos. Dos reglas propias de este repo.
 
 ## Licencia
 
-MIT. Ver [LICENSE](LICENSE).
+Apache-2.0. Ver [LICENSE](LICENSE).
+
+Puedes usar esto en tu propio trabajo, incluso comercialmente. Lo que no puedes
+es cogerlo y hacerlo pasar por tuyo. Conserva el archivo [NOTICE](NOTICE) y
+acredita a Miniout, que es lo que pide la seccion 4(d) de la licencia. Con un
+enlace al repositorio basta.
 
 Los iconos de la interfaz salen de
-[@gravity-ui/icons](https://github.com/gravity-ui/icons), tambien MIT.
+[@gravity-ui/icons](https://github.com/gravity-ui/icons), bajo MIT.
