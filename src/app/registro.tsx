@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Button, FieldError, Input, Label, TextField } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Animated, {
   Easing,
   FadeInDown,
@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
 import { PasswordField } from '@/components/password-field';
+import { TextLink } from '@/components/text-link';
 import { emailError, nameError, passwordError, passwordStrength } from '@/lib/credentials';
 
 const ENTER = 240;
@@ -169,15 +170,10 @@ export default function Registro() {
               <Button.Label>{busy ? 'Creando' : 'Crear cuenta'}</Button.Label>
             </Button>
 
-            <Pressable
+            <TextLink
+              label="Ya tengo cuenta, quiero entrar"
               onPress={() => router.replace('/acceder')}
-              className="items-center py-2"
-              accessibilityRole="button"
-            >
-              <Text className="font-medium text-muted" style={{ fontSize: 14 }}>
-                Ya tengo cuenta, quiero entrar
-              </Text>
-            </Pressable>
+            />
           </Animated.View>
         </ScrollView>
       </View>

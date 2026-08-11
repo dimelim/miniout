@@ -1,6 +1,6 @@
-import { Checkbox } from 'heroui-native';
+import { Checkbox, PressableFeedback } from 'heroui-native';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -74,9 +74,12 @@ export default function Dia() {
                       onSelectedChange={() => toggleDone(note.id)}
                     />
                   </View>
-                  <Pressable
+                  <PressableFeedback
                     onPress={() => toggleDone(note.id)}
-                    className="min-w-0 flex-1"
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: Boolean(note.done) }}
+                    accessibilityLabel={note.body}
+                    style={{ minWidth: 0, flex: 1, borderRadius: 10 }}
                   >
                     <Text
                       className="font-sans text-foreground"
@@ -99,7 +102,7 @@ export default function Dia() {
                         </Text>
                       </Text>
                     )}
-                  </Pressable>
+                  </PressableFeedback>
                 </View>
               </Animated.View>
             );

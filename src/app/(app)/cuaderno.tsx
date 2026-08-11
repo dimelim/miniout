@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
-import { Chip } from 'heroui-native';
+import { Chip, PressableFeedback } from 'heroui-native';
+import { useThemeColor } from 'heroui-native/hooks';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -36,6 +37,7 @@ export default function Cuaderno() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { notes } = useNotes();
+  const surface = useThemeColor('surface');
 
   const groups = useMemo(() => groupBySubject(notes), [notes]);
 
@@ -72,10 +74,18 @@ export default function Cuaderno() {
 
               {items.map((note) => (
                 <Animated.View key={note.id} entering={FadeIn.duration(180)}>
-                  <Pressable
+                  <PressableFeedback
                     onPress={() => router.push('/captura')}
-                    className="rounded-[14px] bg-surface px-4 py-3"
+                    accessibilityRole="button"
+                    accessibilityLabel={note.body}
+                    style={{
+                      borderRadius: 14,
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      backgroundColor: surface,
+                    }}
                   >
+                    <PressableFeedback.Highlight />
                     <Text
                       numberOfLines={2}
                       className="font-sans text-foreground"
@@ -86,7 +96,7 @@ export default function Cuaderno() {
                     <Text className="mt-1 font-sans text-muted" style={{ fontSize: 11 }}>
                       {formatRelative(new Date(note.createdAt))}
                     </Text>
-                  </Pressable>
+                  </PressableFeedback>
                 </Animated.View>
               ))}
             </View>

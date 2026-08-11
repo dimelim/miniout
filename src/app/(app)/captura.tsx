@@ -1,6 +1,6 @@
-import { Chip, Input } from 'heroui-native';
+import { Chip, Input, PressableFeedback } from 'heroui-native';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -92,16 +92,25 @@ export default function Captura() {
           returnKeyType="done"
         />
 
-        <Pressable
+        <PressableFeedback
           onPress={commit}
-          disabled={draft.trim().length === 0}
-          className="mt-2 self-end rounded-full px-4 py-2"
-          style={{ opacity: draft.trim().length === 0 ? 0.4 : 1 }}
+          isDisabled={draft.trim().length === 0}
+          accessibilityRole="button"
+          accessibilityLabel="Guardar la nota"
+          style={{
+            marginTop: 8,
+            alignSelf: 'flex-end',
+            borderRadius: 999,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            opacity: draft.trim().length === 0 ? 0.4 : 1,
+          }}
         >
+          <PressableFeedback.Highlight />
           <Text className="font-semibold text-accent-deep" style={{ fontSize: 14 }}>
             Guardar
           </Text>
-        </Pressable>
+        </PressableFeedback>
       </View>
     </View>
   );
