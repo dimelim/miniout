@@ -1,0 +1,22 @@
+Miniout
+Copyright 2026 dimelim
+
+This product includes software developed by dimelim
+(https://github.com/dimelim/miniout).
+
+If you use this code, or any part of it, in your own work, you must keep this
+notice and credit Miniout. Section 4(d) of the Apache License requires it, and
+a link back to the repository is the easiest way to comply.
+
+Third-party components bundled or referenced by this project:
+
+  heroui-native (https://github.com/heroui-inc/heroui-native)
+  Copyright NextUI Inc.
+  Licensed under the Apache License, Version 2.0
+
+  @gravity-ui/icons (https://github.com/gravity-ui/icons)
+  Copyright YANDEX LLC
+  Licensed under the MIT License
+
+  uniwind (https://github.com/uni-stack/uniwind)
+  Licensed under the MIT License
