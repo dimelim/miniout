@@ -15,7 +15,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton } from '@/components/back-button';
 import { PasswordField } from '@/components/password-field';
 import { TextLink } from '@/components/text-link';
-import { emailError, nameError, passwordError, passwordStrength } from '@/lib/credentials';
+import { ApiError, api } from '@/lib/api';
+import { useAuth } from '@/lib/auth-store';
+import {
+  emailError,
+  nameError,
+  normalizeEmail,
+  passwordError,
+  passwordStrength,
+} from '@/lib/credentials';
 
 const ENTER = 240;
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
@@ -81,19 +89,43 @@ export default function Registro() {
     password: string | null;
   }>({ name: null, email: null, password: null });
   const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
 
-  const submit = () => {
+  const { signIn, isConfigured } = useAuth();
+  const danger = useThemeColor('danger');
+
+  const submit = async () => {
     const next = {
       name: nameError(name),
       email: emailError(email),
       password: passwordError(password),
     };
     setErrors(next);
+    setProblem(null);
 
     if (next.name || next.email || next.password) return;
 
+    if (!isConfigured) {
+      setProblem('La app todavía no tiene servidor. Tus notas se quedan en este teléfono.');
+      return;
+    }
+
     setBusy(true);
-    router.replace('/captura');
+
+    try {
+      await signIn(
+        await api.register({
+          email: normalizeEmail(email),
+          password,
+          displayName: name.trim(),
+        })
+      );
+      router.replace('/captura');
+    } catch (error) {
+      setProblem(error instanceof ApiError ? error.message : 'No se pudo crear la cuenta');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -166,6 +198,10 @@ export default function Registro() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.duration(ENTER).delay(140)} className="mt-8 gap-3">
+            {problem && (
+              <Text style={{ fontSize: 13, lineHeight: 19, color: danger }}>{problem}</Text>
+            )}
+
             <Button size="lg" onPress={submit} isDisabled={busy}>
               <Button.Label>{busy ? 'Creando' : 'Crear cuenta'}</Button.Label>
             </Button>

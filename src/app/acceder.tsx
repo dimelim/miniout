@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Button, FieldError, Input, Label, TextField } from 'heroui-native';
+import { useThemeColor } from 'heroui-native/hooks';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -8,7 +9,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton } from '@/components/back-button';
 import { PasswordField } from '@/components/password-field';
 import { TextLink } from '@/components/text-link';
-import { emailError, passwordError } from '@/lib/credentials';
+import { ApiError, api } from '@/lib/api';
+import { useAuth } from '@/lib/auth-store';
+import { emailError, normalizeEmail, passwordError } from '@/lib/credentials';
 
 const ENTER = 240;
 
@@ -23,15 +26,33 @@ export default function Acceder() {
     password: null,
   });
   const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
 
-  const submit = () => {
+  const { signIn, isConfigured } = useAuth();
+  const danger = useThemeColor('danger');
+
+  const submit = async () => {
     const next = { email: emailError(email), password: passwordError(password) };
     setErrors(next);
+    setProblem(null);
 
     if (next.email || next.password) return;
 
+    if (!isConfigured) {
+      setProblem('La app todavía no tiene servidor. Tus notas se quedan en este teléfono.');
+      return;
+    }
+
     setBusy(true);
-    router.replace('/captura');
+
+    try {
+      await signIn(await api.login({ email: normalizeEmail(email), password }));
+      router.replace('/captura');
+    } catch (error) {
+      setProblem(error instanceof ApiError ? error.message : 'No se pudo entrar');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -88,6 +109,10 @@ export default function Acceder() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.duration(ENTER).delay(140)} className="mt-8 gap-3">
+            {problem && (
+              <Text style={{ fontSize: 13, lineHeight: 19, color: danger }}>{problem}</Text>
+            )}
+
             <Button size="lg" onPress={submit} isDisabled={busy}>
               <Button.Label>{busy ? 'Entrando' : 'Entrar'}</Button.Label>
             </Button>

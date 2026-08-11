@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AuthProvider } from '@/lib/auth-store';
 import { NotesProvider } from '@/lib/notes-store';
 
 import '../global.css';
@@ -45,16 +46,18 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
-        <NotesProvider>
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="entrar" />
-            <Stack.Screen name="acceder" />
-            <Stack.Screen name="registro" />
-            <Stack.Screen name="(app)" />
-          </Stack>
-        </NotesProvider>
+        <AuthProvider>
+          <NotesProvider>
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="entrar" />
+              <Stack.Screen name="acceder" />
+              <Stack.Screen name="registro" />
+              <Stack.Screen name="(app)" />
+            </Stack>
+          </NotesProvider>
+        </AuthProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>
   );
