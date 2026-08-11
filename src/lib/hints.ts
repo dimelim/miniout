@@ -53,7 +53,7 @@ export function detectHints(text: string, now = new Date()): Hint[] {
   const source = normalize(text);
   const hints: Hint[] = [];
 
-  const subject = SUBJECTS.find((name) => source.includes(name));
+  const subject = SUBJECTS.find((name) => new RegExp(`\\b${name}\\b`).test(source));
   if (subject) {
     hints.push({ kind: 'subject', label: subject });
   }

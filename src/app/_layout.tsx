@@ -4,9 +4,9 @@ import {
   Figtree_600SemiBold,
 } from '@expo-google-fonts/figtree';
 import {
-  Fraunces_500Medium,
-  Fraunces_600SemiBold,
-} from '@expo-google-fonts/fraunces';
+  Newsreader_500Medium,
+  Newsreader_600SemiBold,
+} from '@expo-google-fonts/newsreader';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -28,8 +28,8 @@ export default function RootLayout() {
     Figtree_400Regular,
     Figtree_500Medium,
     Figtree_600SemiBold,
-    Fraunces_500Medium,
-    Fraunces_600SemiBold,
+    Newsreader_500Medium,
+    Newsreader_600SemiBold,
   });
 
   useEffect(() => {
@@ -49,8 +49,8 @@ export default function RootLayout() {
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
+            <Stack.Screen name="entrar" />
             <Stack.Screen name="(app)" />
-            <Stack.Screen name="que-hace" options={{ presentation: 'modal' }} />
           </Stack>
         </NotesProvider>
       </HeroUINativeProvider>

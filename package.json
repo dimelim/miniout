@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo-google-fonts/figtree": "^0.4.1",
-    "@expo-google-fonts/fraunces": "^0.4.1",
+    "@expo-google-fonts/newsreader": "^0.4.1",
     "@expo/ui": "~57.0.10",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -39,17 +39,25 @@
     "uniwind": "^1.10.1"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
+    "jest": "^29.7.0",
+    "jest-expo": "^57.0.4",
     "sharp": "^0.35.3",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "icons": "node ./scripts/generate-icons.js"
+  },
+  "jest": {
+    "preset": "jest-expo"
   },
   "private": true
 }

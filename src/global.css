@@ -6,14 +6,13 @@
   --radius: 0.625rem;
   --field-radius: 0.875rem;
 
-  --font-display: Fraunces_500Medium;
-  --font-display-strong: Fraunces_600SemiBold;
+  --font-display: Newsreader_500Medium;
+  --font-display-strong: Newsreader_600SemiBold;
   --font-sans: Figtree_400Regular;
   --font-medium: Figtree_500Medium;
   --font-semibold: Figtree_600SemiBold;
 
   --color-marker: oklch(0.87 0.135 92);
-  --color-accent-soft: oklch(0.845 0.098 72);
   --color-accent-deep: oklch(0.552 0.118 58);
 }
 

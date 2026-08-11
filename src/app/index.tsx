@@ -1,59 +1,107 @@
 import { useRouter } from 'expo-router';
 import { Button } from 'heroui-native';
-import { Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { useThemeColor } from 'heroui-native/hooks';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ScrollView,
+  View,
+  useWindowDimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Mark } from '@/components/mark';
+import { CapturaSlide, DiaSlide, MarcaSlide } from '@/components/onboarding-slides';
 import { RuledPaper } from '@/components/ruled-paper';
+import { SlideDots } from '@/components/slide-dots';
 
-const ENTER = 240;
+const SLIDES = [MarcaSlide, CapturaSlide, DiaSlide];
+const AUTOPLAY_MS = 5200;
 
-export default function Welcome() {
+export default function Onboarding() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const scroller = useRef<ScrollView>(null);
+  const [index, setIndex] = useState(0);
+  const [autoplay, setAutoplay] = useState(true);
+
+  const [accent, border] = useThemeColor(['accent', 'border']);
+  const isLast = index === SLIDES.length - 1;
+
+  const goTo = useCallback(
+    (next: number) => {
+      scroller.current?.scrollTo({ x: width * next, animated: true });
+      setIndex(next);
+    },
+    [width]
+  );
+
+  useEffect(() => {
+    if (!autoplay) return;
+
+    const timer = setTimeout(() => {
+      goTo((index + 1) % SLIDES.length);
+    }, AUTOPLAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [autoplay, index, goTo]);
+
+  const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const next = Math.round(event.nativeEvent.contentOffset.x / width);
+    if (next !== index) setIndex(next);
+  };
+
+  const advance = () => {
+    setAutoplay(false);
+    if (isLast) {
+      router.push('/entrar');
+      return;
+    }
+    goTo(index + 1);
+  };
 
   return (
     <View className="flex-1 bg-background">
-      <RuledPaper opacity={0.5} />
+      <RuledPaper opacity={0.45} />
 
-      <View
-        className="flex-1 justify-between px-7"
-        style={{ paddingTop: insets.top + 64, paddingBottom: insets.bottom + 28 }}
-      >
-        <View>
-          <Animated.View entering={FadeIn.duration(ENTER)}>
-            <Mark size={44} />
-          </Animated.View>
+      <View className="flex-1" style={{ paddingTop: insets.top }}>
+        <ScrollView
+          ref={scroller}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScrollBeginDrag={() => setAutoplay(false)}
+          onMomentumScrollEnd={onScrollEnd}
+          className="flex-1"
+        >
+          {SLIDES.map((Slide, position) => (
+            <View key={position} style={{ width }} className="px-7 pb-2 pt-6">
+              <Slide isActive={position === index} />
+            </View>
+          ))}
+        </ScrollView>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(80)}>
-            <Text
-              className="mt-9 font-display text-foreground"
-              style={{ fontSize: 40, lineHeight: 44, letterSpacing: -0.8 }}
-            >
-              Saca lo que tienes en la cabeza
-            </Text>
-          </Animated.View>
+        <View className="px-7" style={{ paddingBottom: insets.bottom + 24 }}>
+          <View className="mb-6">
+            <SlideDots
+              count={SLIDES.length}
+              index={index}
+              isPlaying={autoplay}
+              autoplayMs={AUTOPLAY_MS}
+              restColor={border}
+              activeColor={accent}
+              onSelect={(position) => {
+                setAutoplay(false);
+                goTo(position);
+              }}
+            />
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(160)}>
-            <Text
-              className="mt-5 max-w-[300px] font-sans text-muted"
-              style={{ fontSize: 17, lineHeight: 27 }}
-            >
-              Abres Miniout y ya estas escribiendo. La materia y la fecha las propone
-              solo, y decides tu si se quedan.
-            </Text>
-          </Animated.View>
+          <Button size="lg" onPress={advance}>
+            <Button.Label>{isLast ? 'Empezar' : 'Siguiente'}</Button.Label>
+          </Button>
         </View>
-
-        <Animated.View entering={FadeInDown.duration(ENTER).delay(240)} className="gap-2">
-          <Button size="lg" onPress={() => router.replace('/captura')}>
-            <Button.Label>Escribir algo</Button.Label>
-          </Button>
-          <Button size="lg" variant="ghost" onPress={() => router.push('/que-hace')}>
-            <Button.Label>Ver que hace</Button.Label>
-          </Button>
-        </Animated.View>
       </View>
     </View>
   );
