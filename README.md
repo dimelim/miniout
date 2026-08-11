@@ -1,56 +1,77 @@
-# Welcome to your Expo app 👋
+# Miniout
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A notes app for university students where capture is never more than zero taps
+away. You open it and the field is already waiting.
 
-## Get started
+[Español](README.es.md)
 
-1. Install dependencies
+## Why
 
-   ```bash
-   npm install
-   ```
+Every note app asks you to decide something before you can write. Which
+notebook, which folder, which tag, which type of note. That decision happens at
+the exact moment you are least able to make it: in the middle of a class, with
+the thought about to leave.
 
-2. Start the app
+Miniout inverts it. Writing comes first, and filing is optional and afterwards.
 
-   ```bash
-   npx expo start
-   ```
+## What it does
 
-In the output, you'll find options to open the app in a
+- **Capture is always open.** There is no button to create a note. The field is
+  the home screen.
+- **Filing is a suggestion, never an action.** Type "parcial de calculo el
+  viernes" and Miniout offers the subject and the day as chips. Accept them or
+  ignore them: the note is saved either way.
+- **Saving has no dialog.** Notes are written to the device first, so there is
+  nothing to confirm and nothing to lose offline.
+- **Three screens, and there will not be a fourth.** Capture, notebook, day.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Stack
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Expo SDK 57 with expo-router, React Native 0.86 and React 19.
+[heroui-native](https://github.com/heroui-inc/heroui-native) (Apache-2.0) for
+components, themed to Miniout's own tokens, and
+[uniwind](https://uniwind.dev) for Tailwind v4 class names in React Native.
+Notes persist locally through AsyncStorage.
 
-## Get a fresh project
-
-When you're ready, run:
+## Getting started
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Open it with Expo Go on a device, or press `a` for an Android emulator. No
+Android SDK is required to develop: builds go through EAS.
 
-### Other setup steps
+## Project layout
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```
+src/
+  app/            expo-router routes: index (welcome), captura, que-hace
+  components/     the M mark and the ruled paper backdrop
+  lib/            date formatting, hint detection, the notes store
+  global.css      the design tokens, overriding heroui-native's
+```
 
-## Learn more
+## Design
 
-To learn more about developing your project with Expo, look at the following resources:
+The full design system lives at `shielus.lat/design-system-miniout`. The short
+version: warm neutral scale, a single amber accent that acts as a highlighter,
+Fraunces for headings and Figtree for everything else. Colors are edited in
+`src/global.css` and nowhere else.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Note that the base amber sits at 2.59:1 against the light canvas, so it never
+carries text in light mode. Links and small text use `--color-accent-deep`
+instead (4.79:1).
 
-## Join the community
+## Contributing
 
-Join our community of developers creating universal apps.
+Issues and pull requests are welcome. Two rules specific to this repo:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- No comments in the code. If a line needs an explanation, the fix is a better
+  name.
+- No em dashes and no emojis, anywhere: code, UI, docs or commit messages.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

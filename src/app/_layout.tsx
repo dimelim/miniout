@@ -1,18 +1,59 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import {
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+} from '@expo-google-fonts/figtree';
+import {
+  Fraunces_500Medium,
+  Fraunces_600SemiBold,
+} from '@expo-google-fonts/fraunces';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { HeroUINativeProvider } from 'heroui-native/provider';
+import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { NotesProvider } from '@/lib/notes-store';
+
+import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
+export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [fontsLoaded] = useFonts({
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Fraunces_500Medium,
+    Fraunces_600SemiBold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <HeroUINativeProvider>
+        <NotesProvider>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(app)" />
+            <Stack.Screen name="que-hace" options={{ presentation: 'modal' }} />
+          </Stack>
+        </NotesProvider>
+      </HeroUINativeProvider>
+    </GestureHandlerRootView>
   );
 }

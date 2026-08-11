@@ -1,9 +1,120 @@
-:root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
+@import 'tailwindcss';
+@import 'uniwind';
+@import 'heroui-native/styles';
+
+@theme {
+  --radius: 0.625rem;
+  --field-radius: 0.875rem;
+
+  --font-display: Fraunces_500Medium;
+  --font-display-strong: Fraunces_600SemiBold;
+  --font-sans: Figtree_400Regular;
+  --font-medium: Figtree_500Medium;
+  --font-semibold: Figtree_600SemiBold;
+
+  --color-marker: oklch(0.87 0.135 92);
+  --color-accent-soft: oklch(0.845 0.098 72);
+  --color-accent-deep: oklch(0.552 0.118 58);
+}
+
+@layer theme {
+  :root {
+    @variant light {
+      --background: oklch(0.985 0.004 85);
+      --foreground: oklch(0.215 0.013 75);
+
+      --surface: oklch(1 0 0);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(0.975 0.004 85);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(0.952 0.005 85);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(1 0 0);
+      --overlay-foreground: var(--foreground);
+      --backdrop: oklch(0.215 0.013 75 / 28%);
+
+      --muted: oklch(0.512 0.016 75);
+
+      --default: oklch(0.944 0.006 85);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(0.706 0.152 64);
+      --accent-foreground: oklch(0.215 0.013 75);
+
+      --field-background: oklch(0.968 0.005 85);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: transparent;
+
+      --success: oklch(0.62 0.13 152);
+      --success-foreground: oklch(0.99 0.01 152);
+      --warning: oklch(0.7 0.14 78);
+      --warning-foreground: oklch(0.215 0.013 75);
+      --danger: oklch(0.578 0.185 27);
+      --danger-foreground: oklch(0.99 0.01 27);
+
+      --segment: oklch(1 0 0);
+      --segment-foreground: var(--foreground);
+
+      --border: oklch(0.868 0.008 80);
+      --separator: oklch(0.928 0.006 82);
+      --focus: var(--accent);
+      --link: var(--color-accent-deep);
+
+      --surface-shadow:
+        0 1px 2px 0 rgba(45, 36, 24, 0.05), 0 4px 14px -3px rgba(45, 36, 24, 0.08);
+      --overlay-shadow:
+        0 10px 30px -6px rgba(45, 36, 24, 0.14), 0 24px 56px -16px rgba(45, 36, 24, 0.18);
+      --field-shadow: 0 0 0 0 transparent inset;
+    }
+
+    @variant dark {
+      --background: oklch(0.196 0.008 75);
+      --foreground: oklch(0.962 0.006 85);
+
+      --surface: oklch(0.238 0.009 75);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(0.272 0.01 75);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(0.306 0.01 75);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(0.272 0.01 75);
+      --overlay-foreground: var(--foreground);
+      --backdrop: oklch(0.12 0.008 75 / 45%);
+
+      --muted: oklch(0.712 0.014 82);
+
+      --default: oklch(0.258 0.009 75);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(0.706 0.152 64);
+      --accent-foreground: oklch(0.196 0.008 75);
+
+      --field-background: oklch(0.238 0.009 75);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: transparent;
+
+      --success: oklch(0.68 0.13 152);
+      --success-foreground: oklch(0.196 0.008 75);
+      --warning: oklch(0.78 0.13 78);
+      --warning-foreground: oklch(0.196 0.008 75);
+      --danger: oklch(0.62 0.19 27);
+      --danger-foreground: oklch(0.99 0.01 27);
+
+      --segment: oklch(0.306 0.01 75);
+      --segment-foreground: var(--foreground);
+
+      --border: oklch(0.318 0.009 75);
+      --separator: oklch(0.282 0.008 75);
+      --focus: var(--accent);
+      --link: var(--accent);
+
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 250, 240, 0.14) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
+    }
+  }
 }
