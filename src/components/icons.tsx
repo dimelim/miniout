@@ -1,5 +1,46 @@
 import type { ColorValue } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
+
+type IconProps = {
+  color: ColorValue;
+  size?: number;
+};
+
+const PENCIL =
+  'M11.423 1A3.577 3.577 0 0 1 15 4.577c0 .27-.108.53-.3.722l-.528.529-1.971 1.971-5.059 5.059a3 3 0 0 1-1.533.82l-2.638.528a1 1 0 0 1-1.177-1.177l.528-2.638a3 3 0 0 1 .82-1.533l5.059-5.059 2.5-2.5c.191-.191.451-.299.722-.299m-2.31 4.009-4.91 4.91a1.5 1.5 0 0 0-.41.766l-.38 1.903 1.902-.38a1.5 1.5 0 0 0 .767-.41l4.91-4.91a2.08 2.08 0 0 0-1.88-1.88m3.098.658a3.6 3.6 0 0 0-1.878-1.879l1.28-1.28c.995.09 1.788.884 1.878 1.88z';
+
+const BOOK =
+  'M3.5 11.937V13a.5.5 0 0 0 .5.5h7a1.5 1.5 0 0 0 1.5-1.5v-.401A3 3 0 0 1 11 12H4q-.26 0-.5-.063M2 10V3q0-.103.01-.204a2 2 0 0 1 .676-1.304A2 2 0 0 1 4 1h7a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H4a2 2 0 0 1-2-2zm1.5 0a.5.5 0 0 0 .5.5h7A1.5 1.5 0 0 0 12.5 9V4q0-.156-.03-.302A1.5 1.5 0 0 0 11 2.5H4a.5.5 0 0 0-.5.5zm2-4.75a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75';
+
+const CALENDAR =
+  'M5.25 5.497a.75.75 0 0 1-.75-.75V4A1.5 1.5 0 0 0 3 5.5v1h10v-1A1.5 1.5 0 0 0 11.5 4v.75a.75.75 0 0 1-1.5 0V4H6v.747a.75.75 0 0 1-.75.75M10 2.5H6v-.752a.75.75 0 1 0-1.5 0V2.5a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3v-.75a.75.75 0 0 0-1.5 0zM3 8v3.5A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5V8z';
+
+const ENVELOPE =
+  'M3.5 4h9c.25 0 .485.06.692.169L8.75 7.5a1.25 1.25 0 0 1-1.5 0L2.808 4.169C3.015 4.06 3.251 4 3.5 4M2.001 5.438 2 5.5v5A1.5 1.5 0 0 0 3.5 12h9a1.5 1.5 0 0 0 1.5-1.5v-5l-.001-.062L9.65 8.7a2.75 2.75 0 0 1-3.3 0zM.5 5.5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3z';
+
+function GravityIcon({ d, color, size }: IconProps & { d: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <Path d={d} fill={color} fillRule="evenodd" clipRule="evenodd" />
+    </Svg>
+  );
+}
+
+export function CapturaIcon({ color, size = 21 }: IconProps) {
+  return <GravityIcon d={PENCIL} color={color} size={size} />;
+}
+
+export function CuadernoIcon({ color, size = 21 }: IconProps) {
+  return <GravityIcon d={BOOK} color={color} size={size} />;
+}
+
+export function DiaIcon({ color, size = 21 }: IconProps) {
+  return <GravityIcon d={CALENDAR} color={color} size={size} />;
+}
+
+export function MailIcon({ color, size = 18 }: IconProps) {
+  return <GravityIcon d={ENVELOPE} color={color} size={size} />;
+}
 
 export function GoogleIcon({ size = 18 }: { size?: number }) {
   return (
@@ -24,107 +65,18 @@ export function GoogleIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-export function DiscordIcon({ size = 18, color = '#5865F2' }: { size?: number; color?: ColorValue }) {
+export function DiscordIcon({
+  size = 18,
+  color = '#5865F2',
+}: {
+  size?: number;
+  color?: ColorValue;
+}) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
         fill={color}
-        d="M19.27 5.33A16.5 16.5 0 0 0 15.2 4.1a.06.06 0 0 0-.07.03c-.17.31-.37.72-.51 1.04a15.3 15.3 0 0 0-4.24 0 9.6 9.6 0 0 0-.52-1.04.06.06 0 0 0-.07-.03c-1.4.24-2.76.66-4.06 1.23a.06.06 0 0 0-.03.02C2.98 9.2 2.25 12.95 2.61 16.66c0 .02.02.04.04.05a16.6 16.6 0 0 0 4.99 2.5.07.07 0 0 0 .07-.02c.38-.52.72-1.07 1.02-1.65a.06.06 0 0 0-.04-.09c-.54-.2-1.06-.45-1.55-.73a.06.06 0 0 1 0-.11l.31-.24a.06.06 0 0 1 .06 0 11.9 11.9 0 0 0 10.02 0 .06.06 0 0 1 .07 0l.3.24a.06.06 0 0 1 0 .11c-.5.29-1.01.53-1.55.73a.06.06 0 0 0-.04.09c.3.58.65 1.13 1.02 1.65a.06.06 0 0 0 .07.02 16.5 16.5 0 0 0 5-2.5.06.06 0 0 0 .03-.04c.43-4.29-.72-8.01-3.05-11.32a.05.05 0 0 0-.03-.02zM8.68 14.4c-1 0-1.82-.9-1.82-2.02s.8-2.03 1.82-2.03c1.03 0 1.85.92 1.83 2.03 0 1.11-.8 2.02-1.83 2.02zm6.65 0c-1 0-1.82-.9-1.82-2.02s.8-2.03 1.82-2.03c1.03 0 1.85.92 1.83 2.03 0 1.11-.8 2.02-1.83 2.02z"
-      />
-    </Svg>
-  );
-}
-
-export function MailIcon({ color, size = 18 }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M3.5 6.5h17a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-17a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="m3 7 9 6 9-6"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-export function DotIcon({ color, size = 8 }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 8 8">
-      <Circle cx={4} cy={4} r={4} fill={color} />
-    </Svg>
-  );
-}
-
-type IconProps = {
-  color: ColorValue;
-  size?: number;
-};
-
-export function CapturaIcon({ color, size = 22 }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M4 18.5 6.2 18l9.4-9.4a1.8 1.8 0 0 0 0-2.5l-.7-.7a1.8 1.8 0 0 0-2.5 0L3 14.8l-.5 2.2"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        transform="translate(2.5 1.5)"
-      />
-      <Path
-        d="M14 20h6"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
-export function CuadernoIcon({ color, size = 22 }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M7 3.5h11.5a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H7"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M7 3.5v17M4.5 6.5h2.5M4.5 12h2.5M4.5 17.5h2.5"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
-export function DiaIcon({ color, size = 22 }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M4.5 6.5h15a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1ZM8 3.5v4M16 3.5v4M3.5 11h17"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="m8.5 15 2 2 4-4"
-        stroke={color}
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M19.27 5.33A16.5 16.5 0 0 0 15.2 4.1a.06.06 0 0 0-.07.03c-.17.31-.37.72-.51 1.04a15.3 15.3 0 0 0-4.24 0 9.6 9.6 0 0 0-.52-1.04.06.06 0 0 0-.07-.03c-1.4.24-2.76.66-4.06 1.23a.06.06 0 0 0-.03.02C2.98 9.2 2.25 12.95 2.61 16.66c0 .02.02.04.04.05a16.6 16.6 0 0 0 4.99 2.5.07.07 0 0 0 .07-.02c.38-.52.72-1.07 1.02-1.65a.06.06 0 0 0-.04-.09c-.54-.2-1.06-.45-1.55-.73a.06.06 0 0 1 0-.11l.31-.24a.06.06 0 0 1 .06 0 11.9 11.9 0 0 0 10.02 0 .06.06 0 0 1 .07 0l.3.24a.06.06 0 0 1 0 .11c-.5.29-1.01.53-1.55.73a.06.06 0 0 0-.04.09c.3.58.65 1.13 1.02 1.65a.06.06 0 0 0 .07.02 16.5 16.5 0 0 0 5-2.5.06.06 0 0 0 .03-.04c.43-4.29-.72-8.01-3.05-11.32a.05.05 0 0 0-.03-.02zM8.68 14.4c-1 0-1.82-.9-1.82-2.02s.8-2.03 1.82-2.03c1.03 0 1.85.92 1.83 2.03 0 1.11-.8 2.02-1.83 2.02m6.65 0c-1 0-1.82-.9-1.82-2.02s.8-2.03 1.82-2.03c1.03 0 1.85.92 1.83 2.03 0 1.11-.8 2.02-1.83 2.02"
       />
     </Svg>
   );

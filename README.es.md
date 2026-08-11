@@ -95,3 +95,6 @@ Los issues y pull requests son bienvenidos. Dos reglas propias de este repo.
 ## Licencia
 
 MIT. Ver [LICENSE](LICENSE).
+
+Los iconos de la interfaz salen de
+[@gravity-ui/icons](https://github.com/gravity-ui/icons), tambien MIT.

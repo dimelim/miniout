@@ -44,6 +44,9 @@ Resumen operativo:
 - Tipografia: Fraunces para titulos, Figtree para todo lo demas. Fraunces nunca
   en cuerpo, listas ni botones.
 - Radios: chip 10, control 14, card 20, sheet 28.
+- Iconos: `@gravity-ui/icons`, que son rellenos con `fill-rule` evenodd sobre
+  rejilla de 16. Nada de contornos finos dibujados a mano, que desentonan al
+  lado de los suyos. Sin Iconify ni Lucide.
 - Motion: techo de 240ms, curva `cubic-bezier(0.32, 0.72, 0, 1)`, y se respeta
   reduced motion.
 
