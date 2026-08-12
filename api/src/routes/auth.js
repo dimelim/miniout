@@ -53,16 +53,25 @@ function normalizeEmail(email) {
 
 async function findAccount(userId) {
   const user = await queryOne(
-    'SELECT id, email, display_name, created_at FROM users WHERE id = :id',
+    `SELECT id, email, display_name, password_hash, intro_seen_at, created_at
+     FROM users WHERE id = :id`,
     { id: userId }
   );
 
   if (!user) return null;
 
+  const identities = await query(
+    'SELECT provider FROM identities WHERE user_id = :id ORDER BY created_at ASC',
+    { id: userId }
+  );
+
   return {
     id: user.id,
     email: user.email,
     displayName: user.display_name,
+    hasPassword: Boolean(user.password_hash),
+    providers: identities.map((identity) => identity.provider),
+    introSeen: Boolean(user.intro_seen_at),
     createdAt: user.created_at,
   };
 }
@@ -294,23 +303,35 @@ export async function authRoutes(app) {
       schema: {
         body: {
           type: 'object',
-          required: ['displayName'],
+          minProperties: 1,
           additionalProperties: false,
-          properties: { displayName: { type: 'string', maxLength: 80 } },
+          properties: {
+            displayName: { type: 'string', maxLength: 80 },
+            introSeen: { type: 'boolean' },
+          },
         },
       },
     },
     async (request, reply) => {
-      const displayName = request.body.displayName.trim();
+      if (request.body.displayName !== undefined) {
+        const displayName = request.body.displayName.trim();
 
-      if (!displayName) {
-        return reply.code(400).send({ error: 'escribe un nombre' });
+        if (!displayName) {
+          return reply.code(400).send({ error: 'escribe un nombre' });
+        }
+
+        await query('UPDATE users SET display_name = :displayName WHERE id = :id', {
+          displayName,
+          id: request.userId,
+        });
       }
 
-      await query('UPDATE users SET display_name = :displayName WHERE id = :id', {
-        displayName,
-        id: request.userId,
-      });
+      if (request.body.introSeen !== undefined) {
+        await query(
+          'UPDATE users SET intro_seen_at = :seen WHERE id = :id',
+          { seen: request.body.introSeen ? new Date() : null, id: request.userId }
+        );
+      }
 
       const account = await findAccount(request.userId);
 
@@ -321,4 +342,69 @@ export async function authRoutes(app) {
       return account;
     }
   );
+
+  app.post(
+    '/auth/password',
+    {
+      preHandler: app.authenticate,
+      config: ESTRICTO,
+      schema: {
+        body: {
+          type: 'object',
+          required: ['newPassword'],
+          additionalProperties: false,
+          properties: {
+            currentPassword: { type: 'string', maxLength: 200 },
+            newPassword: { type: 'string', maxLength: 200 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { currentPassword, newPassword } = request.body;
+
+      if (newPassword.length < MIN_PASSWORD_LENGTH) {
+        return reply
+          .code(400)
+          .send({ error: `la contrasena necesita al menos ${MIN_PASSWORD_LENGTH} caracteres` });
+      }
+
+      const user = await queryOne('SELECT password_hash FROM users WHERE id = :id', {
+        id: request.userId,
+      });
+
+      if (!user) {
+        return reply.code(404).send({ error: 'esa cuenta ya no existe' });
+      }
+
+      if (user.password_hash) {
+        if (!currentPassword) {
+          return reply.code(400).send({ error: 'escribe tu contrasena actual' });
+        }
+
+        const matches = await argon2
+          .verify(user.password_hash, currentPassword)
+          .catch(() => false);
+
+        if (!matches) {
+          return reply.code(401).send({ error: 'la contrasena actual no es correcta' });
+        }
+      }
+
+      await query('UPDATE users SET password_hash = :hash WHERE id = :id', {
+        hash: await argon2.hash(newPassword, HASH_OPTIONS),
+        id: request.userId,
+      });
+
+      await revokeAllRefreshTokens(request.userId);
+
+      return session(request.userId);
+    }
+  );
+
+  app.post('/auth/logout-others', { preHandler: app.authenticate }, async (request) => {
+    await revokeAllRefreshTokens(request.userId);
+
+    return session(request.userId);
+  });
 }

@@ -22,6 +22,7 @@ type AuthValue = {
   signIn: (session: Session) => Promise<void>;
   signOut: () => Promise<void>;
   saveName: (displayName: string) => Promise<void>;
+  markIntroSeen: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -115,6 +116,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [session]
   );
 
+  const markIntroSeen = useCallback(async () => {
+    if (!session) return;
+
+    try {
+      setAccount(await api.markIntroSeen(session.accessToken));
+    } catch {
+      setAccount((current) => (current ? { ...current, introSeen: true } : current));
+    }
+  }, [session]);
+
   const signOut = useCallback(async () => {
     if (session) {
       await api.logout(session.accessToken).catch(() => {});
@@ -133,8 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
       saveName,
+      markIntroSeen,
     }),
-    [session, account, isReady, signIn, signOut, saveName]
+    [session, account, isReady, signIn, signOut, saveName, markIntroSeen]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

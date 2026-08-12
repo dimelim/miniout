@@ -6,6 +6,8 @@ import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Appear } from '@/components/appear';
+import { AvatarButton } from '@/components/avatar-button';
 import { GithubBadge } from '@/components/github-card';
 import { ChevronRightIcon, PlusIcon, SemesterIcon } from '@/components/icons';
 import { InkDrop } from '@/components/ink-drop';
@@ -42,7 +44,7 @@ function firstName(displayName: string | null | undefined) {
 export default function Inicio() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { account, session } = useAuth();
+  const { account, session, markIntroSeen } = useAuth();
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -166,6 +168,7 @@ export default function Inicio() {
               {formatLongDate(ahora)}
             </Text>
             <GithubBadge />
+            <AvatarButton />
           </View>
 
           <View className="mt-3 flex-row items-center justify-between gap-4">
@@ -178,6 +181,36 @@ export default function Inicio() {
             <InkDrop size={44} mood={pendientes === 0 && deHoy.length > 0 ? 'happy' : 'idle'} />
           </View>
         </Animated.View>
+
+        {account && !account.introSeen && (
+          <Appear delay={120} className="mt-6">
+            <Card className="flex-row items-start gap-4">
+              <InkDrop size={40} mood="happy" />
+
+              <View className="flex-1">
+                <Text
+                  className="font-display text-foreground"
+                  style={{ fontSize: 19, lineHeight: 26, letterSpacing: -0.3 }}
+                >
+                  Esto es Miniout
+                </Text>
+                <Text
+                  className="mt-1.5 font-sans text-muted"
+                  style={{ fontSize: 14, lineHeight: 21 }}
+                >
+                  Escribe abajo lo que sea, como en una libreta. Si nombras una materia o un
+                  día, te lo propongo en un chip y lo dejo donde toca. Yo vivo aquí arriba.
+                </Text>
+
+                <View className="mt-3 flex-row">
+                  <Button size="sm" variant="tertiary" onPress={markIntroSeen}>
+                    <Button.Label>Entendido</Button.Label>
+                  </Button>
+                </View>
+              </View>
+            </Card>
+          </Appear>
+        )}
 
         <Animated.View entering={FadeInDown.duration(240).delay(60)} className="mt-7">
           <Card className="gap-3">

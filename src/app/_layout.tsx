@@ -94,6 +94,7 @@ function Navegacion() {
       <Stack.Screen name="nuevo-periodo" options={HOJA} />
       <Stack.Screen name="frases" options={HOJA} />
       <Stack.Screen name="github" options={{ ...HOJA, sheetAllowedDetents: [0.58] }} />
+      <Stack.Screen name="contrasena" options={{ ...HOJA, sheetAllowedDetents: [0.7] }} />
     </Stack>
   );
 }

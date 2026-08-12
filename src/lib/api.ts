@@ -18,10 +18,15 @@ export type Session = {
   isNew?: boolean;
 };
 
+export type Provider = 'google' | 'discord';
+
 export type Account = {
   id: string;
   email: string;
   displayName: string | null;
+  hasPassword: boolean;
+  providers: Provider[];
+  introSeen: boolean;
   createdAt: string;
 };
 
@@ -120,6 +125,25 @@ export const api = {
       body: { displayName },
       accessToken,
     });
+  },
+
+  markIntroSeen(accessToken: string) {
+    return request<Account>('/me', {
+      method: 'PATCH',
+      body: { introSeen: true },
+      accessToken,
+    });
+  },
+
+  changePassword(
+    accessToken: string,
+    input: { currentPassword?: string; newPassword: string }
+  ) {
+    return request<Session>('/auth/password', { method: 'POST', body: input, accessToken });
+  },
+
+  logoutOthers(accessToken: string) {
+    return request<Session>('/auth/logout-others', { method: 'POST', accessToken });
   },
 
   notes(accessToken: string) {

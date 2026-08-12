@@ -13,6 +13,23 @@ function splitStatements(sql) {
     .filter(Boolean);
 }
 
+const COLUMNS = [{ table: 'users', column: 'intro_seen_at', definition: 'DATETIME NULL' }];
+
+async function ensureColumns() {
+  for (const { table, column, definition } of COLUMNS) {
+    const [rows] = await pool.query(
+      `SELECT 1 FROM information_schema.columns
+       WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?`,
+      [table, column]
+    );
+
+    if (rows.length > 0) continue;
+
+    await pool.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    console.log(`ok ${table}.${column}`);
+  }
+}
+
 async function main() {
   const sql = await readFile(join(here, 'schema.sql'), 'utf8');
   const statements = splitStatements(sql);
@@ -22,6 +39,8 @@ async function main() {
     await pool.query(statement);
     console.log(`ok ${name}`);
   }
+
+  await ensureColumns();
 
   await pool.end();
   console.log(`${statements.length} sentencias aplicadas`);

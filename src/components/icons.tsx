@@ -33,6 +33,9 @@ const CHEVRON_RIGHT =
 const PLUS =
   'M8 1.75a.75.75 0 0 1 .75.75v4.75h4.75a.75.75 0 0 1 0 1.5H8.75v4.75a.75.75 0 0 1-1.5 0V8.75H2.5a.75.75 0 0 1 0-1.5h4.75V2.5A.75.75 0 0 1 8 1.75';
 
+const PERSON =
+  'M8 8.5c3.85 0 7 2.5 7 4.5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2c0-2 3.15-4.5 7-4.5M8 10c-1.61 0-3.064.526-4.092 1.234C2.798 12.001 2.5 12.733 2.5 13a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5c0-.267-.297-1-1.408-1.766C11.064 10.526 9.609 10 8 10m0-9a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7m0 1.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4';
+
 const MINUS =
   'M1.75 8a.75.75 0 0 1 .75-.75h11a.75.75 0 0 1 0 1.5h-11A.75.75 0 0 1 1.75 8';
 
@@ -81,6 +84,10 @@ export function ChevronRightIcon({ color, size = 16 }: IconProps) {
 
 export function PlusIcon({ color, size = 16 }: IconProps) {
   return <GravityIcon d={PLUS} color={color} size={size} />;
+}
+
+export function PersonIcon({ color, size = 21 }: IconProps) {
+  return <GravityIcon d={PERSON} color={color} size={size} />;
 }
 
 export function MinusIcon({ color, size = 16 }: IconProps) {

@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(320) NOT NULL,
   password_hash VARCHAR(255) NULL,
   display_name VARCHAR(80) NULL,
+  intro_seen_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY users_email_unique (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

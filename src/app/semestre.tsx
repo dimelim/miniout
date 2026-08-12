@@ -34,11 +34,13 @@ export default function SemestreScreen() {
   const [materia, setMateria] = useState('');
   const [problema, setProblema] = useState<string | null>(null);
 
-  const [muted, danger, accent, background] = useThemeColor([
+  const [muted, danger, accent, background, borde, surfaceSecondary] = useThemeColor([
     'muted',
     'danger',
     'accent',
     'background',
+    'border',
+    'surface-secondary',
   ]);
 
   const semester = useMemo(() => findSemester(semesters, id), [semesters, id]);
@@ -172,33 +174,58 @@ export default function SemestreScreen() {
               ))}
             </Animated.View>
 
-            <Card className="mt-4 gap-3">
-              <TextInput
-                value={materia}
-                onChangeText={setMateria}
-                placeholder="Cálculo diferencial"
-                placeholderTextColor={muted}
-                selectionColor={accent}
-                cursorColor={accent}
-                maxLength={MAX_SUBJECT_NAME}
-                returnKeyType="done"
-                onSubmitEditing={agregar}
-                accessibilityLabel="Nombre de la materia"
-                className="font-sans text-foreground"
-                style={{ fontSize: 16, padding: 0 }}
-              />
+            <View className="mt-5">
+              <View
+                className="flex-row items-center gap-3 rounded-[18px] px-4 py-2"
+                style={{ borderWidth: 1.5, borderColor: problema ? danger : borde }}
+              >
+                <TextInput
+                  value={materia}
+                  onChangeText={(value) => {
+                    setMateria(value);
+                    if (problema) setProblema(null);
+                  }}
+                  placeholder="Añade una materia"
+                  placeholderTextColor={muted}
+                  selectionColor={accent}
+                  cursorColor={accent}
+                  maxLength={MAX_SUBJECT_NAME}
+                  returnKeyType="done"
+                  onSubmitEditing={agregar}
+                  accessibilityLabel="Nombre de la materia"
+                  className="flex-1 font-sans text-foreground"
+                  style={{ fontSize: 16, paddingVertical: 10, paddingHorizontal: 0 }}
+                />
+
+                <PressableFeedback
+                  onPress={agregar}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Añadir materia"
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 999,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: materia.trim() ? semester.color : surfaceSecondary,
+                  }}
+                >
+                  <PressableFeedback.Highlight />
+                  <PlusIcon color={materia.trim() ? background : muted} size={16} />
+                </PressableFeedback>
+              </View>
 
               {problema && (
-                <Text accessibilityLiveRegion="polite" style={{ fontSize: 13, color: danger }}>
+                <Text
+                  accessibilityLiveRegion="polite"
+                  className="mt-2 px-1"
+                  style={{ fontSize: 13, color: danger }}
+                >
                   {problema}
                 </Text>
               )}
-
-              <Button size="sm" onPress={agregar}>
-                <PlusIcon color={muted} size={14} />
-                <Button.Label>Añadir materia</Button.Label>
-              </Button>
-            </Card>
+            </View>
           </>
         )}
       </ScrollView>

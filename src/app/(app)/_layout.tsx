@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
-import { InicioIcon } from '@/components/icons';
+import { InicioIcon, PersonIcon } from '@/components/icons';
 
 export default function AppLayout() {
   return (
@@ -14,6 +14,13 @@ export default function AppLayout() {
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color }) => <InicioIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="cuenta"
+        options={{
+          title: 'Cuenta',
+          tabBarIcon: ({ color }) => <PersonIcon color={color} />,
         }}
       />
     </Tabs>
