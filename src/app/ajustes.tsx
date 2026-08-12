@@ -155,7 +155,8 @@ export default function Ajustes() {
             Dónde estudias
           </Text>
 
-          <View className="flex-row gap-2">
+          <Card className="gap-3">
+            <View className="flex-row gap-2">
             {(['universidad', 'colegio'] as Stage[]).map((etapa) => (
               <Opcion
                 key={etapa}
@@ -166,11 +167,12 @@ export default function Ajustes() {
                 onPress={() => cambiarEtapa(etapa)}
               />
             ))}
-          </View>
+            </View>
 
-          <Text className="mt-2 font-sans text-muted" style={{ fontSize: 13, lineHeight: 20 }}>
-            Ahora mismo les llamo {palabras.plural.toLowerCase()}.
-          </Text>
+            <Text className="font-sans text-muted" style={{ fontSize: 13, lineHeight: 20 }}>
+              Ahora mismo les llamo {palabras.plural.toLowerCase()}.
+            </Text>
+          </Card>
         </Appear>
 
         <Appear delay={190} className="mt-8">
@@ -178,7 +180,8 @@ export default function Ajustes() {
             Tus notas
           </Text>
 
-          <View className="flex-row flex-wrap gap-2">
+          <Card className="gap-3">
+            <View className="flex-row flex-wrap gap-2">
             {SCALES.map((opcion) => (
               <Opcion
                 key={opcion.id}
@@ -191,13 +194,14 @@ export default function Ajustes() {
             ))}
           </View>
 
-          {escala && perfil.passMark !== null && (
-            <View className="mt-3 flex-row items-center gap-2">
-              <Chip size="sm" variant="secondary">
-                <Chip.Label>{`Pasas con ${formatGrade(perfil.passMark, escala.decimals)}`}</Chip.Label>
-              </Chip>
-            </View>
-          )}
+            {escala && perfil.passMark !== null && (
+              <View className="flex-row items-center gap-2">
+                <Chip size="sm" variant="secondary">
+                  <Chip.Label>{`Pasas con ${formatGrade(perfil.passMark, escala.decimals)}`}</Chip.Label>
+                </Chip>
+              </View>
+            )}
+          </Card>
         </Appear>
 
         <Appear delay={250} className="mt-8">

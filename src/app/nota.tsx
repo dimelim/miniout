@@ -175,14 +175,6 @@ export default function Nota() {
               }}
             >
               <PressableFeedback.Highlight />
-              <View
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 999,
-                  backgroundColor: entrega ? colorEntrega : muted,
-                }}
-              />
               <Text
                 className="font-medium"
                 style={{ fontSize: 13, color: entrega ? colorEntrega : muted }}
@@ -232,6 +224,9 @@ export default function Nota() {
           </Text>
         </Appear>
 
+        <View
+          className="mt-3 rounded-[24px] bg-surface px-5 py-4 shadow-surface"
+        >
         <TextInput
           value={cuerpo}
           onChangeText={(texto) => {
@@ -254,7 +249,6 @@ export default function Nota() {
           accessibilityLabel="Cuerpo de la nota"
           className="font-sans text-foreground"
           style={{
-            marginTop: 14,
             fontSize: 17,
             lineHeight: 28,
             padding: 0,
@@ -265,19 +259,17 @@ export default function Nota() {
         />
 
         {pistas.length > 0 && (
-          <View className="mt-7">
-            <Text className="mb-2 font-medium text-muted" style={{ fontSize: 12 }}>
-              Lo que leo aquí
-            </Text>
-            <View className="flex-row flex-wrap gap-1.5">
-              {pistas.map((pista) => (
-                <Chip key={`${pista.kind}-${pista.label}`} size="sm" variant="secondary">
-                  <Chip.Label>{pista.label}</Chip.Label>
-                </Chip>
-              ))}
-            </View>
+          <View
+            className="mt-4 flex-row flex-wrap gap-1.5 border-t border-border pt-3"
+          >
+            {pistas.map((pista) => (
+              <Chip key={`${pista.kind}-${pista.label}`} size="sm" variant="secondary">
+                <Chip.Label>{pista.label}</Chip.Label>
+              </Chip>
+            ))}
           </View>
         )}
+        </View>
 
         {problema && <Aviso mensaje={problema} className="mt-5" />}
 

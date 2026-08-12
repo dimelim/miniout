@@ -101,7 +101,7 @@ export function NoteRow({ note, onToggle, onOpen, lineas = 4 }: NoteRowProps) {
             <View className="mt-2 flex-row flex-wrap items-center gap-1.5">
               {entrega && !note.done && (
                 <View
-                  className="flex-row items-center gap-1.5"
+                  
                   style={{
                     borderRadius: 999,
                     borderWidth: 1,
@@ -110,14 +110,6 @@ export function NoteRow({ note, onToggle, onOpen, lineas = 4 }: NoteRowProps) {
                     paddingVertical: 1,
                   }}
                 >
-                  <View
-                    style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: 999,
-                      backgroundColor: colorEntrega,
-                    }}
-                  />
                   <Text className="font-medium" style={{ fontSize: 11, color: colorEntrega }}>
                     {entrega.etiqueta}
                   </Text>

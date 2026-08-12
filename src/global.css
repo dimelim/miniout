@@ -69,45 +69,45 @@
     }
 
     @variant dark {
-      --background: oklch(0.196 0.008 75);
+      --background: oklch(0.223 0.009 75);
       --foreground: oklch(0.962 0.006 85);
 
-      --surface: oklch(0.238 0.009 75);
+      --surface: oklch(0.268 0.01 75);
       --surface-foreground: var(--foreground);
-      --surface-secondary: oklch(0.272 0.01 75);
+      --surface-secondary: oklch(0.298 0.011 75);
       --surface-secondary-foreground: var(--foreground);
-      --surface-tertiary: oklch(0.306 0.01 75);
+      --surface-tertiary: oklch(0.33 0.011 75);
       --surface-tertiary-foreground: var(--foreground);
 
-      --overlay: oklch(0.272 0.01 75);
+      --overlay: oklch(0.298 0.011 75);
       --overlay-foreground: var(--foreground);
       --backdrop: oklch(0.12 0.008 75 / 45%);
 
       --muted: oklch(0.712 0.014 82);
 
-      --default: oklch(0.258 0.009 75);
+      --default: oklch(0.29 0.01 75);
       --default-foreground: var(--foreground);
 
       --accent: oklch(0.706 0.152 64);
-      --accent-foreground: oklch(0.196 0.008 75);
+      --accent-foreground: oklch(0.19 0.008 75);
 
-      --field-background: oklch(0.238 0.009 75);
+      --field-background: oklch(0.268 0.01 75);
       --field-foreground: var(--foreground);
       --field-placeholder: var(--muted);
       --field-border: transparent;
 
       --success: oklch(0.68 0.13 152);
-      --success-foreground: oklch(0.196 0.008 75);
+      --success-foreground: oklch(0.19 0.008 75);
       --warning: oklch(0.78 0.13 78);
-      --warning-foreground: oklch(0.196 0.008 75);
+      --warning-foreground: oklch(0.19 0.008 75);
       --danger: oklch(0.62 0.19 27);
       --danger-foreground: oklch(0.99 0.01 27);
 
-      --segment: oklch(0.306 0.01 75);
+      --segment: oklch(0.33 0.011 75);
       --segment-foreground: var(--foreground);
 
-      --border: oklch(0.318 0.009 75);
-      --separator: oklch(0.282 0.008 75);
+      --border: oklch(0.35 0.01 75);
+      --separator: oklch(0.315 0.009 75);
       --focus: var(--accent);
       --link: var(--accent);
 

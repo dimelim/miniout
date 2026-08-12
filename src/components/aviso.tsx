@@ -15,19 +15,18 @@ export function Aviso({ mensaje, tono = 'error', className }: AvisoProps) {
 
   return (
     <Appear rise={6} className={className}>
-      <View accessibilityLiveRegion="polite" className="flex-row items-start gap-2">
-        <View
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: 999,
-            marginTop: 7,
-            backgroundColor: color,
-          }}
-        />
-        <Text className="flex-1" style={{ fontSize: 13, lineHeight: 20, color }}>
-          {mensaje}
-        </Text>
+      <View
+        accessibilityLiveRegion="polite"
+        style={{
+          borderRadius: 14,
+          borderLeftWidth: 3,
+          borderLeftColor: color,
+          backgroundColor: color + '18',
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+        }}
+      >
+        <Text style={{ fontSize: 13, lineHeight: 20, color }}>{mensaje}</Text>
       </View>
     </Appear>
   );

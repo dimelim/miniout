@@ -1,8 +1,7 @@
-import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, type ComponentProps } from 'react';
-import { Platform, Pressable, Text, useColorScheme, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Animated, {
   Easing,
   interpolateColor,
@@ -61,11 +60,6 @@ function Item({ label, isFocused, restColor, activeColor, onPress, renderIcon }:
     transform: [{ translateY: -progress.value * 1 }],
   }));
 
-  const punto = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [{ scale: 0.4 + progress.value * 0.6 }],
-  }));
-
   return (
     <Pressable
       onPressIn={() => {
@@ -90,19 +84,6 @@ function Item({ label, isFocused, restColor, activeColor, onPress, renderIcon }:
           {label}
         </Animated.Text>
 
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              bottom: -8,
-              width: 4,
-              height: 4,
-              borderRadius: 999,
-              backgroundColor: activeColor,
-            },
-            punto,
-          ]}
-        />
       </Animated.View>
     </Pressable>
   );
@@ -112,25 +93,23 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>
 
 export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
-  const scheme = useColorScheme();
 
-  const [separator, muted, accent] = useThemeColor(['separator', 'muted', 'accent']);
-
-  const velo =
-    scheme === 'dark' ? 'rgba(23,21,17,0.72)' : 'rgba(251,250,247,0.72)';
+  const [surface, separator, muted, accent] = useThemeColor([
+    'surface',
+    'separator',
+    'muted',
+    'accent',
+  ]);
 
   return (
-    <BlurView
-      intensity={scheme === 'dark' ? 40 : 55}
-      tint={scheme === 'dark' ? 'dark' : 'light'}
-      experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
+    <View
       style={{
         position: 'absolute',
         left: 0,
         right: 0,
         bottom: 0,
         paddingBottom: insets.bottom,
-        backgroundColor: velo,
+        backgroundColor: surface,
         borderTopWidth: 1,
         borderTopColor: separator,
       }}
@@ -168,6 +147,6 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
           );
         })}
       </View>
-    </BlurView>
+    </View>
   );
 }
