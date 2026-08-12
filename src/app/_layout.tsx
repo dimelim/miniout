@@ -18,6 +18,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { Updater } from '@/components/updater';
 import { AuthProvider } from '@/lib/auth-store';
 
 import '../global.css';
@@ -59,6 +60,7 @@ export default function RootLayout() {
         <AuthProvider>
           <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           <Navegacion />
+          <Updater />
         </AuthProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>

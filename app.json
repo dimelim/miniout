@@ -7,6 +7,14 @@
     "icon": "./assets/images/icon.png",
     "scheme": "miniout",
     "userInterfaceStyle": "automatic",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/701dc55b-84dc-4150-8930-e6d205fcb4e8",
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD"
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
