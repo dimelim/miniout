@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router';
 import { View } from 'react-native';
 
-import { Mark } from '@/components/mark';
+import { BrandLoader } from '@/components/brand-loader';
 import { useAuth } from '@/lib/auth-store';
 
 export default function Arranque() {
@@ -10,7 +10,7 @@ export default function Arranque() {
   if (!isReady) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <Mark size={120} />
+        <BrandLoader size={120} />
       </View>
     );
   }
