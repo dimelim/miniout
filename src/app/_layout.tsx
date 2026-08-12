@@ -26,10 +26,6 @@ import '../global.css';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-try {
-  SplashScreen.setOptions({ fade: true, duration: 320 });
-} catch {}
-
 const HOJA: NativeStackNavigationOptions = {
   presentation: 'formSheet',
   sheetAllowedDetents: [0.82],
@@ -88,6 +84,12 @@ export default function RootLayout() {
     Newsreader_500Medium,
     Newsreader_600SemiBold,
   });
+
+  useEffect(() => {
+    if (!fontsLoaded) return;
+
+    SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;

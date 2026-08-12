@@ -1,32 +1,18 @@
 import { Redirect } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
 import { View } from 'react-native';
 
+import { Mark } from '@/components/mark';
 import { useAuth } from '@/lib/auth-store';
-
-const TOPE_MS = 2500;
 
 export default function Arranque() {
   const { isReady, session } = useAuth();
 
-  useEffect(() => {
-    const rendirse = setTimeout(() => {
-      SplashScreen.hideAsync().catch(() => {});
-    }, TOPE_MS);
-
-    return () => clearTimeout(rendirse);
-  }, []);
-
-  useEffect(() => {
-    if (!isReady) return;
-
-    const timer = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 60);
-    return () => clearTimeout(timer);
-  }, [isReady]);
-
   if (!isReady) {
-    return <View className="flex-1 bg-background" />;
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <Mark size={120} />
+      </View>
+    );
   }
 
   return <Redirect href={session ? '/inicio' : '/onboarding'} />;
