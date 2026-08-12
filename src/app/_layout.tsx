@@ -82,7 +82,8 @@ function Navegacion() {
         contentStyle: { backgroundColor: background },
       }}
     >
-      <Stack.Screen name="index" />
+      <Stack.Screen name="index" options={{ animation: 'fade', gestureEnabled: false }} />
+      <Stack.Screen name="onboarding" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="entrar" />
       <Stack.Screen name="acceder" />
       <Stack.Screen name="registro" />

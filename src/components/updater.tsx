@@ -1,7 +1,7 @@
 import * as Updates from 'expo-updates';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, Text, View } from 'react-native';
+import { AppState, Appearance, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -15,6 +15,14 @@ import { InkDrop } from './ink-drop';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 const CHECK_EVERY_MS = 15 * 60 * 1000;
+const MINIMO_MS = 2200;
+const LISTA_MS = 900;
+
+const PAPEL = { claro: '#fbfaf7', oscuro: '#171511' };
+
+function esperar(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 type Estado = 'quieto' | 'bajando' | 'lista';
 
@@ -32,10 +40,26 @@ export function Updater() {
       const { isAvailable } = await Updates.checkForUpdateAsync();
       if (!isAvailable) return;
 
+      const arranque = Date.now();
       setEstado('bajando');
+
       await Updates.fetchUpdateAsync();
+      await esperar(Math.max(0, MINIMO_MS - (Date.now() - arranque)));
+
       setEstado('lista');
-      await Updates.reloadAsync();
+      await esperar(LISTA_MS);
+
+      const oscuro = Appearance.getColorScheme() === 'dark';
+
+      await Updates.reloadAsync({
+        reloadScreenOptions: {
+          backgroundColor: oscuro ? PAPEL.oscuro : PAPEL.claro,
+          image: require('../../assets/images/splash-icon.png'),
+          imageResizeMode: 'contain',
+          fade: true,
+          spinner: { enabled: true, color: '#e0891c' },
+        },
+      });
     } catch {
       setEstado('quieto');
     }

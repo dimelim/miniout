@@ -2,9 +2,9 @@ import { useThemeColor } from 'heroui-native/hooks';
 import type { ColorValue } from 'react-native';
 import Svg, { Path, Rect, G } from 'react-native-svg';
 
-const LETTER = 'M7 20V8L16 16.5L25 8V20';
-const UNDERLINE = 'M7 25.5H25';
-const STROKE = 3.4;
+export const LETTER = 'M7 20V8L16 16.5L25 8V20';
+export const UNDERLINE = 'M7 25.5H25';
+export const STROKE = 3.4;
 
 type MarkProps = {
   size?: number;

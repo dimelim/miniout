@@ -14,7 +14,7 @@ export function BackButton({ label = 'Atrás' }: { label?: string }) {
       router.back();
       return;
     }
-    router.replace('/');
+    router.replace('/onboarding');
   };
 
   return (
