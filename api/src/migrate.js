@@ -18,6 +18,7 @@ const COLUMNS = [
   { table: 'users', column: 'intro_seen_at', definition: 'DATETIME NULL' },
   { table: 'users', column: 'avatar_url', definition: 'VARCHAR(500) NULL' },
   { table: 'identities', column: 'avatar_url', definition: 'VARCHAR(500) NULL' },
+  { table: 'notes', column: 'due_at', definition: 'DATETIME NULL' },
 ];
 
 const TYPES = [

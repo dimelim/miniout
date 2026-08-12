@@ -13,6 +13,7 @@ import { CheckIcon } from './icons';
 import { RichText } from './rich-text';
 
 import type { Note } from '@/lib/api';
+import { estadoDeEntrega } from '@/lib/schedule';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 const DURATION = 220;
@@ -25,12 +26,18 @@ type NoteRowProps = {
 };
 
 export function NoteRow({ note, onToggle, onOpen, lineas = 4 }: NoteRowProps) {
-  const [accent, accentForeground, border, muted] = useThemeColor([
+  const [accent, accentForeground, border, muted, danger, warning] = useThemeColor([
     'accent',
     'accent-foreground',
     'border',
     'muted',
+    'danger',
+    'warning',
   ]);
+
+  const entrega = estadoDeEntrega(note.dueAt);
+  const colorEntrega =
+    entrega?.tono === 'vencido' ? danger : entrega?.tono === 'hoy' ? warning : muted;
 
   const done = useSharedValue(note.done ? 1 : 0);
 
@@ -90,8 +97,33 @@ export function NoteRow({ note, onToggle, onOpen, lineas = 4 }: NoteRowProps) {
         <Animated.View style={cuerpo}>
           <RichText value={note.body} size={15} lineas={lineas} />
 
-          {note.hints.length > 0 && (
-            <View className="mt-2 flex-row flex-wrap gap-1.5">
+          {(note.hints.length > 0 || entrega) && (
+            <View className="mt-2 flex-row flex-wrap items-center gap-1.5">
+              {entrega && !note.done && (
+                <View
+                  className="flex-row items-center gap-1.5"
+                  style={{
+                    borderRadius: 999,
+                    borderWidth: 1,
+                    borderColor: colorEntrega,
+                    paddingHorizontal: 8,
+                    paddingVertical: 1,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: 999,
+                      backgroundColor: colorEntrega,
+                    }}
+                  />
+                  <Text className="font-medium" style={{ fontSize: 11, color: colorEntrega }}>
+                    {entrega.etiqueta}
+                  </Text>
+                </View>
+              )}
+
               {note.hints.map((hint) => (
                 <View
                   key={`${hint.kind}-${hint.label}`}

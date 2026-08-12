@@ -84,10 +84,17 @@ export default function Inicio() {
     }, [cargar])
   );
 
-  const deHoy = useMemo(
-    () => notes.filter((note) => isSameDay(new Date(note.createdAt), new Date())),
-    [notes]
-  );
+  const deHoy = useMemo(() => {
+    const ahora = new Date();
+
+    return notes.filter((note) => {
+      if (note.dueAt) {
+        return new Date(note.dueAt).getTime() <= ahora.getTime() || isSameDay(new Date(note.dueAt), ahora);
+      }
+
+      return isSameDay(new Date(note.createdAt), ahora);
+    });
+  }, [notes]);
   const pendientes = deHoy.filter((note) => !note.done).length;
 
   const guardar = async () => {

@@ -25,6 +25,7 @@ import { NotesProvider } from '@/lib/notes-store';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({ fade: true, duration: 320 });
 
 const HOJA: NativeStackNavigationOptions = {
   presentation: 'formSheet',
@@ -44,12 +45,6 @@ export default function RootLayout() {
     Newsreader_500Medium,
     Newsreader_600SemiBold,
   });
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;
@@ -101,6 +96,7 @@ function Navegacion() {
       <Stack.Screen name="frases" options={HOJA} />
       <Stack.Screen name="github" options={{ ...HOJA, sheetAllowedDetents: [0.58] }} />
       <Stack.Screen name="contrasena" options={{ ...HOJA, sheetAllowedDetents: [0.7] }} />
+      <Stack.Screen name="programar" options={{ ...HOJA, sheetAllowedDetents: [0.86] }} />
     </Stack>
   );
 }

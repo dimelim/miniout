@@ -7,6 +7,7 @@ export type Note = {
   body: string;
   hints: Hint[];
   done: boolean;
+  dueAt: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -172,7 +173,7 @@ export const api = {
   updateNote(
     accessToken: string,
     id: string,
-    input: { done?: boolean; body?: string; hints?: Hint[] }
+    input: { done?: boolean; body?: string; hints?: Hint[]; dueAt?: string | null }
   ) {
     return request<Note>(`/notes/${id}`, { method: 'PATCH', body: input, accessToken });
   },

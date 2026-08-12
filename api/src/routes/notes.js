@@ -21,6 +21,7 @@ function toNote(row) {
     body: decrypt(row.body),
     hints: decryptJson(row.hints),
     done: Boolean(row.done),
+    dueAt: row.due_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -46,7 +47,7 @@ export async function noteRoutes(app) {
       const validSince = since && !Number.isNaN(since.getTime()) ? since : new Date(0);
 
       const rows = await query(
-        `SELECT id, body, hints, done, created_at, updated_at, deleted_at
+        `SELECT id, body, hints, done, due_at, created_at, updated_at, deleted_at
          FROM notes
          WHERE user_id = :userId AND updated_at > :since
          ORDER BY updated_at ASC
@@ -71,6 +72,7 @@ export async function noteRoutes(app) {
             body: { type: 'string', minLength: 1, maxLength: MAX_BODY_LENGTH },
             hints: { type: 'array', maxItems: 8, items: hintSchema },
             createdAt: { type: 'string', maxLength: 40 },
+            dueAt: { type: ['string', 'null'], maxLength: 40 },
           },
         },
       },
@@ -78,24 +80,27 @@ export async function noteRoutes(app) {
     async (request, reply) => {
       const id = request.body.id ?? createId();
       const createdAt = request.body.createdAt ? new Date(request.body.createdAt) : new Date();
+      const dueAt = request.body.dueAt ? new Date(request.body.dueAt) : null;
 
       await query(
-        `INSERT INTO notes (id, user_id, body, hints, created_at)
-         VALUES (:id, :userId, :body, :hints, :createdAt)
+        `INSERT INTO notes (id, user_id, body, hints, due_at, created_at)
+         VALUES (:id, :userId, :body, :hints, :dueAt, :createdAt)
          ON DUPLICATE KEY UPDATE
            body = VALUES(body),
-           hints = VALUES(hints)`,
+           hints = VALUES(hints),
+           due_at = VALUES(due_at)`,
         {
           id,
           userId: request.userId,
           body: encrypt(request.body.body),
           hints: encryptJson(request.body.hints ?? []),
+          dueAt: dueAt && !Number.isNaN(dueAt.getTime()) ? dueAt : null,
           createdAt: Number.isNaN(createdAt.getTime()) ? new Date() : createdAt,
         }
       );
 
       const row = await queryOne(
-        `SELECT id, body, hints, done, created_at, updated_at, deleted_at
+        `SELECT id, body, hints, done, due_at, created_at, updated_at, deleted_at
          FROM notes WHERE id = :id AND user_id = :userId`,
         { id, userId: request.userId }
       );
@@ -121,6 +126,7 @@ export async function noteRoutes(app) {
             body: { type: 'string', minLength: 1, maxLength: MAX_BODY_LENGTH },
             hints: { type: 'array', maxItems: 8, items: hintSchema },
             done: { type: 'boolean' },
+            dueAt: { type: ['string', 'null'], maxLength: 40 },
           },
         },
       },
@@ -128,6 +134,13 @@ export async function noteRoutes(app) {
     async (request, reply) => {
       const fields = [];
       const params = { id: request.params.id, userId: request.userId };
+
+      if (request.body.dueAt !== undefined) {
+        const dueAt = request.body.dueAt ? new Date(request.body.dueAt) : null;
+
+        fields.push('due_at = :dueAt');
+        params.dueAt = dueAt && !Number.isNaN(dueAt.getTime()) ? dueAt : null;
+      }
 
       if (request.body.body !== undefined) {
         fields.push('body = :body');
@@ -153,7 +166,7 @@ export async function noteRoutes(app) {
       }
 
       const row = await queryOne(
-        `SELECT id, body, hints, done, created_at, updated_at, deleted_at
+        `SELECT id, body, hints, done, due_at, created_at, updated_at, deleted_at
          FROM notes WHERE id = :id AND user_id = :userId`,
         params
       );

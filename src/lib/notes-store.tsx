@@ -19,6 +19,7 @@ type NotesValue = {
   create: (body: string, hints?: Hint[]) => Promise<Note>;
   edit: (id: string, body: string) => Promise<void>;
   toggle: (note: Note) => Promise<void>;
+  schedule: (id: string, dueAt: string | null) => Promise<void>;
   remove: (id: string) => Promise<void>;
   find: (id: string | undefined) => Note | null;
 };
@@ -98,6 +99,16 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     [session]
   );
 
+  const schedule = useCallback(
+    async (id: string, dueAt: string | null) => {
+      if (!session) throw new Error('No hay sesión');
+
+      const updated = await api.updateNote(session.accessToken, id, { dueAt });
+      setNotes((current) => current.map((note) => (note.id === id ? updated : note)));
+    },
+    [session]
+  );
+
   const remove = useCallback(
     async (id: string) => {
       const anterior = notes;
@@ -121,8 +132,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ notes, isLoading, refresh, create, edit, toggle, remove, find }),
-    [notes, isLoading, refresh, create, edit, toggle, remove, find]
+    () => ({ notes, isLoading, refresh, create, edit, toggle, schedule, remove, find }),
+    [notes, isLoading, refresh, create, edit, toggle, schedule, remove, find]
   );
 
   return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;
