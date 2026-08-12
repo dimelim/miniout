@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { Platform } from 'react-native';
 
-import { api, isConfigured, type Account, type Session } from './api';
+import { ApiError, api, isConfigured, type Account, type Session } from './api';
 
 const KEY = 'miniout.session.v1';
 
@@ -82,11 +82,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const fresh = await api.refresh(stored.refreshToken);
         if (cancelled) return;
+
         await writeStored(JSON.stringify(fresh));
         setSession(fresh);
-        setAccount(await api.me(fresh.accessToken));
-      } catch {
-        await writeStored(null);
+
+        try {
+          setAccount(await api.me(fresh.accessToken));
+        } catch {}
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          await writeStored(null);
+        } else if (!cancelled) {
+          setSession(stored);
+        }
       } finally {
         if (!cancelled) setIsReady(true);
       }

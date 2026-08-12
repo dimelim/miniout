@@ -56,6 +56,8 @@ export function apiBaseUrl() {
   return BASE_URL;
 }
 
+const TIMEOUT_MS = 12_000;
+
 async function request<T>(
   path: string,
   options: { method?: string; body?: unknown; accessToken?: string } = {}
@@ -73,6 +75,9 @@ async function request<T>(
     headers.Authorization = `Bearer ${options.accessToken}`;
   }
 
+  const control = new AbortController();
+  const corte = setTimeout(() => control.abort(), TIMEOUT_MS);
+
   let response: Response;
 
   try {
@@ -80,9 +85,12 @@ async function request<T>(
       method: options.method ?? 'GET',
       headers,
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      signal: control.signal,
     });
   } catch {
     throw new ApiError('No hay conexion con el servidor', 0);
+  } finally {
+    clearTimeout(corte);
   }
 
   if (response.status === 204) {
