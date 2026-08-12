@@ -6,8 +6,8 @@ import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Appear } from '@/components/appear';
 import { AvatarButton } from '@/components/avatar-button';
+import { Aviso } from '@/components/aviso';
 import { GithubBadge } from '@/components/github-card';
 import { ChevronRightIcon, PlusIcon, SemesterIcon } from '@/components/icons';
 import { InkDrop } from '@/components/ink-drop';
@@ -44,7 +44,7 @@ function firstName(displayName: string | null | undefined) {
 export default function Inicio() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { account, session, markIntroSeen } = useAuth();
+  const { account, session } = useAuth();
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
@@ -55,12 +55,7 @@ export default function Inicio() {
   const [guardando, setGuardando] = useState(false);
   const [problema, setProblema] = useState<string | null>(null);
 
-  const [muted, danger, accent, background] = useThemeColor([
-    'muted',
-    'danger',
-    'accent',
-    'background',
-  ]);
+  const [muted, accent, background] = useThemeColor(['muted', 'accent', 'background']);
 
   const ahora = useMemo(() => new Date(), []);
   const nombre = firstName(account?.displayName);
@@ -182,36 +177,6 @@ export default function Inicio() {
           </View>
         </Animated.View>
 
-        {account && !account.introSeen && (
-          <Appear delay={120} className="mt-6">
-            <Card className="flex-row items-start gap-4">
-              <InkDrop size={40} mood="happy" />
-
-              <View className="flex-1">
-                <Text
-                  className="font-display text-foreground"
-                  style={{ fontSize: 19, lineHeight: 26, letterSpacing: -0.3 }}
-                >
-                  Esto es Miniout
-                </Text>
-                <Text
-                  className="mt-1.5 font-sans text-muted"
-                  style={{ fontSize: 14, lineHeight: 21 }}
-                >
-                  Escribe abajo lo que sea, como en una libreta. Si nombras una materia o un
-                  día, te lo propongo en un chip y lo dejo donde toca. Yo vivo aquí arriba.
-                </Text>
-
-                <View className="mt-3 flex-row">
-                  <Button size="sm" variant="tertiary" onPress={markIntroSeen}>
-                    <Button.Label>Entendido</Button.Label>
-                  </Button>
-                </View>
-              </View>
-            </Card>
-          </Appear>
-        )}
-
         <Animated.View entering={FadeInDown.duration(240).delay(60)} className="mt-7">
           <Card className="gap-3">
             <TextInput
@@ -255,13 +220,7 @@ export default function Inicio() {
             )}
           </Card>
 
-          {problema && (
-            <Animated.View entering={FadeIn.duration(180)} accessibilityLiveRegion="polite">
-              <Text className="mt-2" style={{ fontSize: 13, lineHeight: 19, color: danger }}>
-                {problema}
-              </Text>
-            </Animated.View>
-          )}
+          {problema && <Aviso mensaje={problema} className="mt-2" />}
         </Animated.View>
 
         <Seccion titulo="Hoy" meta={pendientes > 0 ? `${pendientes} sin hacer` : undefined}>

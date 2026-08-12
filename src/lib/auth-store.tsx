@@ -22,6 +22,7 @@ type AuthValue = {
   signIn: (session: Session) => Promise<void>;
   signOut: () => Promise<void>;
   saveName: (displayName: string) => Promise<void>;
+  saveAvatar: (avatarUrl: string | null) => Promise<void>;
   markIntroSeen: () => Promise<void>;
 };
 
@@ -116,6 +117,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [session]
   );
 
+  const saveAvatar = useCallback(
+    async (avatarUrl: string | null) => {
+      if (!session) throw new Error('No hay sesión');
+      setAccount(await api.updateAvatar(session.accessToken, avatarUrl));
+    },
+    [session]
+  );
+
   const markIntroSeen = useCallback(async () => {
     if (!session) return;
 
@@ -144,9 +153,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
       saveName,
+      saveAvatar,
       markIntroSeen,
     }),
-    [session, account, isReady, signIn, signOut, saveName, markIntroSeen]
+    [session, account, isReady, signIn, signOut, saveName, saveAvatar, markIntroSeen]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

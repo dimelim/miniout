@@ -1,7 +1,8 @@
+import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, type ComponentProps } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, useColorScheme, View } from 'react-native';
 import Animated, {
   Easing,
   interpolateColor,
@@ -91,14 +92,16 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>
 
 export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  const scheme = useColorScheme();
 
-  const [surface, border, muted, accent, accentSoft] = useThemeColor([
-    'surface',
+  const [border, muted, accent, accentSoft] = useThemeColor([
     'border',
     'muted',
     'accent',
     'accent-soft',
   ]);
+
+  const cristal = scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)';
 
   return (
     <View
@@ -111,17 +114,21 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
       }}
       pointerEvents="box-none"
     >
-      <View
+      <BlurView
+        intensity={scheme === 'dark' ? 42 : 60}
+        tint={scheme === 'dark' ? 'dark' : 'light'}
+        experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           borderRadius: 999,
           borderWidth: 1,
           borderColor: border,
-          backgroundColor: surface,
+          backgroundColor: cristal,
           paddingHorizontal: 6,
           paddingVertical: 6,
           minWidth: 160,
+          overflow: 'hidden',
           shadowColor: '#000',
           shadowOpacity: 0.22,
           shadowRadius: 20,
@@ -162,7 +169,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
             />
           );
         })}
-      </View>
+      </BlurView>
     </View>
   );
 }

@@ -6,29 +6,24 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { initial } from '@/components/avatar-button';
+import { Aviso } from '@/components/aviso';
 import { GITHUB_PATH, Glyph } from '@/components/github-card';
-import { ChevronRightIcon, DiscordIcon, GoogleIcon, MailIcon } from '@/components/icons';
+import { CheckIcon, ChevronRightIcon, DiscordIcon, GoogleIcon, MailIcon } from '@/components/icons';
+import { InkDrop } from '@/components/ink-drop';
+import { UserAvatar } from '@/components/user-avatar';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
 
 export default function Cuenta() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { account, session, signIn, signOut } = useAuth();
+  const { account, session, signIn, signOut, saveAvatar, markIntroSeen } = useAuth();
 
   const [cerrando, setCerrando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
 
-  const [accent, accentForeground, foreground, muted, danger, success] = useThemeColor([
-    'accent',
-    'accent-foreground',
-    'foreground',
-    'muted',
-    'danger',
-    'success',
-  ]);
+  const [accent, foreground, muted] = useThemeColor(['accent', 'foreground', 'muted']);
 
   const cerrarOtras = async () => {
     if (!session) return;
@@ -44,6 +39,16 @@ export default function Cuenta() {
       setProblema(error instanceof ApiError ? error.message : 'No se pudo cerrar las sesiones');
     } finally {
       setCerrando(false);
+    }
+  };
+
+  const cambiarFoto = async (url: string | null) => {
+    setProblema(null);
+
+    try {
+      await saveAvatar(url);
+    } catch (error) {
+      setProblema(error instanceof ApiError ? error.message : 'No se pudo cambiar la foto');
     }
   };
 
@@ -68,23 +73,12 @@ export default function Cuenta() {
 
         <Appear delay={70} className="mt-6">
           <Card className="flex-row items-center gap-4">
-            <View
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: 999,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: accent,
-              }}
-            >
-              <Text
-                className="font-semibold"
-                style={{ fontSize: 22, color: accentForeground }}
-              >
-                {initial(account?.displayName, account?.email)}
-              </Text>
-            </View>
+            <UserAvatar
+              size={52}
+              url={account?.avatarUrl}
+              displayName={account?.displayName}
+              email={account?.email}
+            />
 
             <View className="flex-1">
               <Text
@@ -100,7 +94,79 @@ export default function Cuenta() {
           </Card>
         </Appear>
 
-        <Appear delay={140} className="mt-8">
+        {account && !account.introSeen && (
+          <Appear delay={140} className="mt-3">
+            <Card variant="secondary" className="flex-row items-start gap-4">
+              <InkDrop size={38} mood="happy" />
+
+              <View className="flex-1">
+                <Text
+                  className="font-display text-foreground"
+                  style={{ fontSize: 18, lineHeight: 25, letterSpacing: -0.3 }}
+                >
+                  Esto son tus ajustes
+                </Text>
+                <Text
+                  className="mt-1.5 font-sans text-muted"
+                  style={{ fontSize: 14, lineHeight: 21 }}
+                >
+                  Aquí eliges tu foto, ves con qué correo entras y con qué método. Si algún día
+                  dejas la sesión abierta en otro teléfono, desde aquí la cierras sin salirte de
+                  este.
+                </Text>
+
+                <View className="mt-3 flex-row">
+                  <Button size="sm" variant="tertiary" onPress={markIntroSeen}>
+                    <Button.Label>Entendido</Button.Label>
+                  </Button>
+                </View>
+              </View>
+            </Card>
+          </Appear>
+        )}
+
+        {(account?.photos.length ?? 0) > 0 && (
+          <Appear delay={180} className="mt-8">
+            <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
+              Tu foto
+            </Text>
+
+            <Card className="gap-4">
+              <Text className="font-sans text-muted" style={{ fontSize: 13, lineHeight: 20 }}>
+                Usamos la de la cuenta con la que entraste. Puedes cambiarla o dejar tu inicial.
+              </Text>
+
+              <View className="flex-row items-center gap-3">
+                {account?.photos.map((foto) => (
+                  <Opcion
+                    key={foto.url}
+                    activa={account.avatarUrl === foto.url}
+                    accent={accent}
+                    onPress={() => cambiarFoto(foto.url)}
+                    etiqueta={`Usar la foto de ${foto.provider}`}
+                  >
+                    <UserAvatar size={52} url={foto.url} />
+                  </Opcion>
+                ))}
+
+                <Opcion
+                  activa={!account?.avatarUrl}
+                  accent={accent}
+                  onPress={() => cambiarFoto(null)}
+                  etiqueta="Usar tu inicial"
+                >
+                  <UserAvatar
+                    size={52}
+                    displayName={account?.displayName}
+                    email={account?.email}
+                  />
+                </Opcion>
+              </View>
+            </Card>
+          </Appear>
+        )}
+
+        <Appear delay={220} className="mt-8">
           <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
             Cómo entras
           </Text>
@@ -141,7 +207,7 @@ export default function Cuenta() {
           </Card>
         </Appear>
 
-        <Appear delay={210} className="mt-8">
+        <Appear delay={260} className="mt-8">
           <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
             Seguridad
           </Text>
@@ -163,7 +229,10 @@ export default function Cuenta() {
                 <Text className="font-medium text-foreground" style={{ fontSize: 16 }}>
                   Cerrar las demás sesiones
                 </Text>
-                <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 13, lineHeight: 19 }}>
+                <Text
+                  className="mt-0.5 font-sans text-muted"
+                  style={{ fontSize: 13, lineHeight: 19 }}
+                >
                   Este teléfono sigue dentro. Cualquier otro que tenga tu cuenta abierta se sale.
                 </Text>
               </View>
@@ -177,21 +246,13 @@ export default function Cuenta() {
                 <Button.Label>{cerrando ? 'Cerrando' : 'Cerrar las demás'}</Button.Label>
               </Button>
 
-              {aviso && (
-                <Text accessibilityLiveRegion="polite" style={{ fontSize: 13, color: success }}>
-                  {aviso}
-                </Text>
-              )}
-              {problema && (
-                <Text accessibilityLiveRegion="polite" style={{ fontSize: 13, color: danger }}>
-                  {problema}
-                </Text>
-              )}
+              {aviso && <Aviso mensaje={aviso} tono="exito" />}
+              {problema && <Aviso mensaje={problema} />}
             </Card>
           </View>
         </Appear>
 
-        <Appear delay={280} className="mt-8">
+        <Appear delay={300} className="mt-8">
           <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
             Miniout
           </Text>
@@ -218,6 +279,54 @@ export default function Cuenta() {
         </Appear>
       </ScrollView>
     </View>
+  );
+}
+
+function Opcion({
+  activa,
+  accent,
+  onPress,
+  etiqueta,
+  children,
+}: {
+  activa: boolean;
+  accent: string;
+  onPress: () => void;
+  etiqueta: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <PressableFeedback
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected: activa }}
+      accessibilityLabel={etiqueta}
+      style={{
+        padding: 3,
+        borderRadius: 999,
+        borderWidth: 2,
+        borderColor: activa ? accent : 'transparent',
+      }}
+    >
+      {children}
+      {activa && (
+        <View
+          style={{
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            width: 20,
+            height: 20,
+            borderRadius: 999,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: accent,
+          }}
+        >
+          <CheckIcon color="#1d1913" size={12} />
+        </View>
+      )}
+    </PressableFeedback>
   );
 }
 

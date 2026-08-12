@@ -53,7 +53,7 @@ function normalizeEmail(email) {
 
 async function findAccount(userId) {
   const user = await queryOne(
-    `SELECT id, email, display_name, password_hash, intro_seen_at, created_at
+    `SELECT id, email, display_name, avatar_url, password_hash, intro_seen_at, created_at
      FROM users WHERE id = :id`,
     { id: userId }
   );
@@ -61,7 +61,7 @@ async function findAccount(userId) {
   if (!user) return null;
 
   const identities = await query(
-    'SELECT provider FROM identities WHERE user_id = :id ORDER BY created_at ASC',
+    'SELECT provider, avatar_url FROM identities WHERE user_id = :id ORDER BY created_at ASC',
     { id: userId }
   );
 
@@ -69,6 +69,10 @@ async function findAccount(userId) {
     id: user.id,
     email: user.email,
     displayName: user.display_name,
+    avatarUrl: user.avatar_url,
+    photos: identities
+      .filter((identity) => identity.avatar_url)
+      .map((identity) => ({ provider: identity.provider, url: identity.avatar_url })),
     hasPassword: Boolean(user.password_hash),
     providers: identities.map((identity) => identity.provider),
     introSeen: Boolean(user.intro_seen_at),
@@ -84,6 +88,18 @@ async function linkAccount(provider, profile) {
   );
 
   if (identity) {
+    await query(
+      `UPDATE identities SET avatar_url = :avatarUrl
+       WHERE provider = :provider AND provider_account_id = :accountId`,
+      { avatarUrl: profile.avatarUrl ?? null, provider, accountId: profile.accountId }
+    );
+
+    await query(
+      `UPDATE users SET avatar_url = :avatarUrl
+       WHERE id = :id AND avatar_url IS NULL`,
+      { avatarUrl: profile.avatarUrl ?? null, id: identity.user_id }
+    );
+
     return { userId: identity.user_id, isNew: false };
   }
 
@@ -97,22 +113,34 @@ async function linkAccount(provider, profile) {
 
   if (!byEmail) {
     await query(
-      `INSERT INTO users (id, email, display_name)
-       VALUES (:id, :email, :displayName)`,
+      `INSERT INTO users (id, email, display_name, avatar_url)
+       VALUES (:id, :email, :displayName, :avatarUrl)`,
       {
         id: userId,
         email: profile.email
           ? normalizeEmail(profile.email)
           : `${provider}:${profile.accountId}`,
         displayName: profile.displayName || null,
+        avatarUrl: profile.avatarUrl ?? null,
       }
+    );
+  } else {
+    await query(
+      'UPDATE users SET avatar_url = :avatarUrl WHERE id = :id AND avatar_url IS NULL',
+      { avatarUrl: profile.avatarUrl ?? null, id: userId }
     );
   }
 
   await query(
-    `INSERT INTO identities (id, user_id, provider, provider_account_id)
-     VALUES (:id, :userId, :provider, :accountId)`,
-    { id: createId(), userId, provider, accountId: profile.accountId }
+    `INSERT INTO identities (id, user_id, provider, provider_account_id, avatar_url)
+     VALUES (:id, :userId, :provider, :accountId, :avatarUrl)`,
+    {
+      id: createId(),
+      userId,
+      provider,
+      accountId: profile.accountId,
+      avatarUrl: profile.avatarUrl ?? null,
+    }
   );
 
   return { userId, isNew: !byEmail };
@@ -308,11 +336,33 @@ export async function authRoutes(app) {
           properties: {
             displayName: { type: 'string', maxLength: 80 },
             introSeen: { type: 'boolean' },
+            avatarUrl: { type: ['string', 'null'], maxLength: 500 },
           },
         },
       },
     },
     async (request, reply) => {
+      if (request.body.avatarUrl !== undefined) {
+        const avatarUrl = request.body.avatarUrl;
+
+        if (avatarUrl !== null) {
+          const known = await queryOne(
+            `SELECT 1 AS ok FROM identities
+             WHERE user_id = :id AND avatar_url = :avatarUrl`,
+            { id: request.userId, avatarUrl }
+          );
+
+          if (!known) {
+            return reply.code(400).send({ error: 'esa foto no es de tu cuenta' });
+          }
+        }
+
+        await query('UPDATE users SET avatar_url = :avatarUrl WHERE id = :id', {
+          avatarUrl,
+          id: request.userId,
+        });
+      }
+
       if (request.body.displayName !== undefined) {
         const displayName = request.body.displayName.trim();
 

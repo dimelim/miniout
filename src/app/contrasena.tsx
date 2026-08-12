@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 import { Button } from 'heroui-native';
-import { useThemeColor } from 'heroui-native/hooks';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Aviso } from '@/components/aviso';
 import { PasswordField } from '@/components/password-field';
 import { StrengthBar } from '@/components/strength-bar';
 import { ApiError, api } from '@/lib/api';
@@ -22,7 +22,6 @@ export default function Contrasena() {
   const [problema, setProblema] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  const danger = useThemeColor('danger');
   const tieneContrasena = account?.hasPassword ?? false;
 
   const guardar = async () => {
@@ -103,15 +102,7 @@ export default function Contrasena() {
           </View>
         </View>
 
-        {problema && (
-          <Text
-            accessibilityLiveRegion="polite"
-            className="mt-4"
-            style={{ fontSize: 13, lineHeight: 19, color: danger }}
-          >
-            {problema}
-          </Text>
-        )}
+        {problema && <Aviso mensaje={problema} className="mt-4" />}
 
         <Button size="lg" className="mt-7" onPress={guardar} isDisabled={guardando}>
           <Button.Label>{guardando ? 'Guardando' : 'Guardar'}</Button.Label>

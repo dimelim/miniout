@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(320) NOT NULL,
   password_hash VARCHAR(255) NULL,
   display_name VARCHAR(80) NULL,
+  avatar_url VARCHAR(500) NULL,
   intro_seen_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY users_email_unique (email)
@@ -13,6 +14,7 @@ CREATE TABLE IF NOT EXISTS identities (
   user_id CHAR(26) NOT NULL,
   provider ENUM('google','discord') NOT NULL,
   provider_account_id VARCHAR(191) NOT NULL,
+  avatar_url VARCHAR(500) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY identities_provider_account (provider, provider_account_id),
   KEY identities_user (user_id),

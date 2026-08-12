@@ -14,6 +14,7 @@ const PROVIDERS = {
       accountId: profile.sub,
       email: profile.email_verified ? profile.email : null,
       displayName: profile.name ?? null,
+      avatarUrl: typeof profile.picture === 'string' ? profile.picture : null,
     }),
   },
   discord: {
@@ -27,6 +28,9 @@ const PROVIDERS = {
       accountId: profile.id,
       email: profile.verified ? profile.email : null,
       displayName: profile.global_name ?? profile.username ?? null,
+      avatarUrl: profile.avatar
+        ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png?size=160`
+        : null,
     }),
   },
 };

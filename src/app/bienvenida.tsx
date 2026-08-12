@@ -14,6 +14,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
+import { Aviso } from '@/components/aviso';
 import { CheckIcon, MinusIcon, PlusIcon } from '@/components/icons';
 import { Mark } from '@/components/mark';
 import { NameField } from '@/components/name-field';
@@ -259,7 +260,6 @@ function PasoNombre({
   problema,
   bottomInset,
 }: PasoNombreProps) {
-  const danger = useThemeColor('danger');
   const teclado = useAnimatedKeyboard({
     isStatusBarTranslucentAndroid: true,
     isNavigationBarTranslucentAndroid: true,
@@ -303,11 +303,7 @@ function PasoNombre({
           />
         </Appear>
 
-        {problema && (
-          <View accessibilityLiveRegion="polite" className="mt-3">
-            <Text style={{ fontSize: 13, lineHeight: 19, color: danger }}>{problema}</Text>
-          </View>
-        )}
+        {problema && <Aviso mensaje={problema} className="mt-3" />}
       </ScrollView>
 
       <Animated.View style={sobreElTeclado}>

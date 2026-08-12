@@ -6,6 +6,7 @@ import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Aviso } from '@/components/aviso';
 import { BackButton } from '@/components/back-button';
 import { PlusIcon } from '@/components/icons';
 import { ProjectIcon } from '@/components/project-icons';
@@ -216,15 +217,7 @@ export default function SemestreScreen() {
                 </PressableFeedback>
               </View>
 
-              {problema && (
-                <Text
-                  accessibilityLiveRegion="polite"
-                  className="mt-2 px-1"
-                  style={{ fontSize: 13, color: danger }}
-                >
-                  {problema}
-                </Text>
-              )}
+              {problema && <Aviso mensaje={problema} className="mt-2 px-1" />}
             </View>
           </>
         )}

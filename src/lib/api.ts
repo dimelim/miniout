@@ -20,10 +20,17 @@ export type Session = {
 
 export type Provider = 'google' | 'discord';
 
+export type AccountPhoto = {
+  provider: Provider;
+  url: string;
+};
+
 export type Account = {
   id: string;
   email: string;
   displayName: string | null;
+  avatarUrl: string | null;
+  photos: AccountPhoto[];
   hasPassword: boolean;
   providers: Provider[];
   introSeen: boolean;
@@ -123,6 +130,14 @@ export const api = {
     return request<Account>('/me', {
       method: 'PATCH',
       body: { displayName },
+      accessToken,
+    });
+  },
+
+  updateAvatar(accessToken: string, avatarUrl: string | null) {
+    return request<Account>('/me', {
+      method: 'PATCH',
+      body: { avatarUrl },
       accessToken,
     });
   },
