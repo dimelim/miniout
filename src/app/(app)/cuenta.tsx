@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
 import { Aviso } from '@/components/aviso';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GITHUB_PATH, Glyph } from '@/components/github-card';
 import { CheckIcon, ChevronRightIcon, DiscordIcon, GoogleIcon, MailIcon } from '@/components/icons';
 import { InkDrop } from '@/components/ink-drop';
@@ -20,6 +21,7 @@ export default function Cuenta() {
   const { account, session, signIn, signOut, saveAvatar, markIntroSeen } = useAuth();
 
   const [cerrando, setCerrando] = useState(false);
+  const [saliendo, setSaliendo] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
 
@@ -40,6 +42,12 @@ export default function Cuenta() {
     } finally {
       setCerrando(false);
     }
+  };
+
+  const salir = async () => {
+    setSaliendo(false);
+    await signOut();
+    router.replace('/');
   };
 
   const cambiarFoto = async (url: string | null) => {
@@ -272,12 +280,25 @@ export default function Cuenta() {
               <ChevronRightIcon color={muted} size={16} />
             </PressableFeedback>
 
-            <Button variant="tertiary" size="md" onPress={signOut}>
+            <Button variant="tertiary" size="md" onPress={() => setSaliendo(true)}>
               <Button.Label>Cerrar sesión</Button.Label>
             </Button>
           </View>
         </Appear>
       </ScrollView>
+
+      <ConfirmDialog
+        visible={saliendo}
+        titulo="Cerrar sesión"
+        mensaje={
+          account?.email
+            ? `Vas a salir de ${account.email} en este teléfono. Tus notas siguen en tu cuenta.`
+            : 'Vas a salir en este teléfono. Tus notas siguen en tu cuenta.'
+        }
+        confirmar="Cerrar sesión"
+        onConfirm={salir}
+        onCancel={() => setSaliendo(false)}
+      />
     </View>
   );
 }

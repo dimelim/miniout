@@ -2,11 +2,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Chip, PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
+import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/aviso';
 import { BackButton } from '@/components/back-button';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FormatBar, type Seleccion } from '@/components/format-bar';
 import { CheckIcon } from '@/components/icons';
 import { RuledPaper } from '@/components/ruled-paper';
@@ -28,6 +29,7 @@ export default function Nota() {
   const [seleccion, setSeleccion] = useState<Seleccion>({ start: 0, end: 0 });
   const [forzada, setForzada] = useState<Seleccion | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [preguntando, setPreguntando] = useState(false);
   const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, accentForeground, muted, border, danger] = useThemeColor([
@@ -78,26 +80,15 @@ export default function Nota() {
     }
   };
 
-  const borrar = () => {
-    Alert.alert(
-      'Borrar esta nota',
-      'Se va de todos tus dispositivos y no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Borrar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await remove(note.id);
-              router.back();
-            } catch {
-              setProblema('No se pudo borrar la nota');
-            }
-          },
-        },
-      ]
-    );
+  const borrar = async () => {
+    setPreguntando(false);
+
+    try {
+      await remove(note.id);
+      router.back();
+    } catch {
+      setProblema('No se pudo borrar la nota');
+    }
   };
 
   return (
@@ -202,7 +193,7 @@ export default function Nota() {
           </Button>
 
           <PressableFeedback
-            onPress={borrar}
+            onPress={() => setPreguntando(true)}
             accessibilityRole="button"
             accessibilityLabel="Borrar la nota"
             style={{ alignSelf: 'center', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 }}
@@ -223,6 +214,15 @@ export default function Nota() {
           setCuerpo(texto);
           setForzada(sel);
         }}
+      />
+
+      <ConfirmDialog
+        visible={preguntando}
+        titulo="Borrar esta nota"
+        mensaje="Se va de todos tus dispositivos y no se puede deshacer."
+        confirmar="Borrar la nota"
+        onConfirm={borrar}
+        onCancel={() => setPreguntando(false)}
       />
     </View>
   );
