@@ -169,7 +169,11 @@ export const api = {
     return request<Note>('/notes', { method: 'POST', body: input, accessToken });
   },
 
-  updateNote(accessToken: string, id: string, input: { done?: boolean; body?: string }) {
+  updateNote(
+    accessToken: string,
+    id: string,
+    input: { done?: boolean; body?: string; hints?: Hint[] }
+  ) {
     return request<Note>(`/notes/${id}`, { method: 'PATCH', body: input, accessToken });
   },
 

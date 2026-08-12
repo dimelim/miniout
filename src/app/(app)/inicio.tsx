@@ -14,8 +14,9 @@ import { InkDrop } from '@/components/ink-drop';
 import { NoteRow } from '@/components/note-row';
 import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
-import { ApiError, api, type Note } from '@/lib/api';
+import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useNotes } from '@/lib/notes-store';
 import { formatLongDate, isSameDay } from '@/lib/dates';
 import { detectHints } from '@/lib/hints';
 import { EMPTY_PROFILE, periodWords, readProfile, type Profile } from '@/lib/profile';
@@ -46,7 +47,7 @@ export default function Inicio() {
   const router = useRouter();
   const { account, session } = useAuth();
 
-  const [notes, setNotes] = useState<Note[]>([]);
+  const { notes, isLoading, refresh, create, toggle } = useNotes();
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [frases, setFrases] = useState<QuoteSettings>(DEFAULT_QUOTES);
@@ -74,20 +75,8 @@ export default function Inicio() {
     setPerfil(guardado);
     setFrases(misFrases);
 
-    if (!session) {
-      setCargando(false);
-      return;
-    }
-
-    try {
-      const payload = await api.notes(session.accessToken);
-      setNotes(payload.notes.filter((note) => !note.deletedAt));
-    } catch {
-      setProblema(null);
-    } finally {
-      setCargando(false);
-    }
-  }, [session]);
+    await refresh().catch(() => {});
+  }, [refresh]);
 
   useFocusEffect(
     useCallback(() => {
@@ -110,8 +99,7 @@ export default function Inicio() {
     setProblema(null);
 
     try {
-      const note = await api.createNote(session.accessToken, { body, hints: pistas });
-      setNotes((current) => [note, ...current]);
+      await create(body, pistas);
       setTexto('');
       Keyboard.dismiss();
     } catch (error) {
@@ -120,24 +108,6 @@ export default function Inicio() {
       );
     } finally {
       setGuardando(false);
-    }
-  };
-
-  const alternar = async (note: Note) => {
-    const done = !note.done;
-
-    setNotes((current) =>
-      current.map((item) => (item.id === note.id ? { ...item, done } : item))
-    );
-
-    if (!session) return;
-
-    try {
-      await api.updateNote(session.accessToken, note.id, { done });
-    } catch {
-      setNotes((current) =>
-        current.map((item) => (item.id === note.id ? { ...item, done: note.done } : item))
-      );
     }
   };
 
@@ -223,8 +193,11 @@ export default function Inicio() {
           {problema && <Aviso mensaje={problema} className="mt-2" />}
         </Animated.View>
 
-        <Seccion titulo="Hoy" meta={pendientes > 0 ? `${pendientes} sin hacer` : undefined}>
-          {cargando ? (
+        <Seccion
+          titulo="Hoy"
+          meta={pendientes > 0 ? `${pendientes} sin hacer` : undefined}
+        >
+          {isLoading ? (
             <View className="items-center py-6">
               <Spinner size="sm" />
             </View>
@@ -242,10 +215,27 @@ export default function Inicio() {
                     borderTopColor: muted + '22',
                   }}
                 >
-                  <NoteRow note={note} onToggle={() => alternar(note)} />
+                  <NoteRow
+                    note={note}
+                    onToggle={() => toggle(note)}
+                    onOpen={() => router.push(`/nota?id=${note.id}`)}
+                  />
                 </View>
               ))}
             </Animated.View>
+          )}
+
+          {notes.length > 0 && (
+            <Button
+              variant="tertiary"
+              size="md"
+              className="mt-3"
+              onPress={() => router.push('/notas')}
+            >
+              <Button.Label>
+                {notes.length === 1 ? 'Ver la nota' : `Ver las ${notes.length} notas`}
+              </Button.Label>
+            </Button>
           )}
         </Seccion>
 

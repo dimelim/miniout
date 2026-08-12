@@ -8,12 +8,14 @@ import Animated, {
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
-const DURATION = 220;
+const SPRING = { damping: 14, stiffness: 220, mass: 0.6 };
 
 type ItemProps = {
   label: string;
@@ -36,23 +38,39 @@ function Item({
 }: ItemProps) {
   const progress = useSharedValue(isFocused ? 1 : 0);
   const pressed = useSharedValue(0);
+  const salto = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withTiming(isFocused ? 1 : 0, { duration: DURATION, easing: EASE });
-  }, [isFocused, progress]);
+    progress.value = withSpring(isFocused ? 1 : 0, SPRING);
+
+    if (isFocused) {
+      salto.value = withSequence(
+        withTiming(1, { duration: 130, easing: EASE }),
+        withSpring(0, SPRING)
+      );
+    }
+  }, [isFocused, progress, salto]);
 
   const pillStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
-    transform: [{ scale: 0.9 + progress.value * 0.1 - pressed.value * 0.04 }],
+    transform: [{ scale: 0.86 + progress.value * 0.14 - pressed.value * 0.04 }],
     backgroundColor: pillColor,
   }));
 
   const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - pressed.value * 0.05 }],
+    transform: [{ scale: 1 - pressed.value * 0.06 }],
+  }));
+
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: -salto.value * 4 },
+      { scale: 1 + salto.value * 0.12 + progress.value * 0.04 },
+    ],
   }));
 
   const labelStyle = useAnimatedStyle(() => ({
     color: interpolateColor(progress.value, [0, 1], [restColor, activeColor]),
+    opacity: 0.7 + progress.value * 0.3,
   }));
 
   return (
@@ -75,7 +93,9 @@ function Item({
           style={[{ position: 'absolute', inset: 0, borderRadius: 999 }, pillStyle]}
         />
         <Animated.View style={[{ alignItems: 'center', gap: 2 }, contentStyle]}>
-          {renderIcon(isFocused ? activeColor : restColor)}
+          <Animated.View style={iconStyle}>
+            {renderIcon(isFocused ? activeColor : restColor)}
+          </Animated.View>
           <Animated.Text
             className="font-medium"
             style={[{ fontSize: 11, lineHeight: 14 }, labelStyle]}

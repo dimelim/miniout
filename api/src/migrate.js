@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { encrypt, encryptJson } from './crypto.js';
 import { pool } from './db.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -19,6 +20,11 @@ const COLUMNS = [
   { table: 'identities', column: 'avatar_url', definition: 'VARCHAR(500) NULL' },
 ];
 
+const TYPES = [
+  { table: 'notes', column: 'hints', type: 'text', definition: 'TEXT NOT NULL' },
+  { table: 'users', column: 'display_name', type: 'varchar', length: 500, definition: 'VARCHAR(500) NULL' },
+];
+
 async function ensureColumns() {
   for (const { table, column, definition } of COLUMNS) {
     const [rows] = await pool.query(
@@ -34,6 +40,57 @@ async function ensureColumns() {
   }
 }
 
+async function ensureTypes() {
+  for (const { table, column, type, length, definition } of TYPES) {
+    const [rows] = await pool.query(
+      `SELECT data_type, character_maximum_length FROM information_schema.columns
+       WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?`,
+      [table, column]
+    );
+
+    const actual = rows[0];
+    if (!actual) continue;
+
+    const igual =
+      actual.data_type === type &&
+      (length === undefined || Number(actual.character_maximum_length) === length);
+
+    if (igual) continue;
+
+    await pool.query(`ALTER TABLE ${table} MODIFY COLUMN ${column} ${definition}`);
+    console.log(`ok ${table}.${column} ahora es ${definition}`);
+  }
+}
+
+async function cifrarPendientes() {
+  const [notas] = await pool.query(
+    "SELECT id, body, hints FROM notes WHERE body NOT LIKE 'v1.%'"
+  );
+
+  for (const nota of notas) {
+    await pool.query('UPDATE notes SET body = ?, hints = ? WHERE id = ?', [
+      encrypt(nota.body),
+      encryptJson(typeof nota.hints === 'string' ? JSON.parse(nota.hints || '[]') : nota.hints),
+      nota.id,
+    ]);
+  }
+
+  const [usuarios] = await pool.query(
+    "SELECT id, display_name FROM users WHERE display_name IS NOT NULL AND display_name NOT LIKE 'v1.%'"
+  );
+
+  for (const usuario of usuarios) {
+    await pool.query('UPDATE users SET display_name = ? WHERE id = ?', [
+      encrypt(usuario.display_name),
+      usuario.id,
+    ]);
+  }
+
+  if (notas.length > 0 || usuarios.length > 0) {
+    console.log(`ok cifrado ${notas.length} notas y ${usuarios.length} nombres`);
+  }
+}
+
 async function main() {
   const sql = await readFile(join(here, 'schema.sql'), 'utf8');
   const statements = splitStatements(sql);
@@ -45,6 +102,8 @@ async function main() {
   }
 
   await ensureColumns();
+  await ensureTypes();
+  await cifrarPendientes();
 
   await pool.end();
   console.log(`${statements.length} sentencias aplicadas`);

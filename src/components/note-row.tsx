@@ -9,9 +9,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import type { Note } from '@/lib/api';
-
 import { CheckIcon } from './icons';
+import { RichText } from './rich-text';
+
+import type { Note } from '@/lib/api';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 const DURATION = 220;
@@ -19,9 +20,11 @@ const DURATION = 220;
 type NoteRowProps = {
   note: Note;
   onToggle: () => void;
+  onOpen: () => void;
+  lineas?: number;
 };
 
-export function NoteRow({ note, onToggle }: NoteRowProps) {
+export function NoteRow({ note, onToggle, onOpen, lineas = 4 }: NoteRowProps) {
   const [accent, accentForeground, border, muted] = useThemeColor([
     'accent',
     'accent-foreground',
@@ -46,18 +49,18 @@ export function NoteRow({ note, onToggle }: NoteRowProps) {
     transform: [{ scale: 0.5 + done.value * 0.5 }],
   }));
 
-  const label = useAnimatedStyle(() => ({ opacity: 1 - done.value * 0.5 }));
+  const cuerpo = useAnimatedStyle(() => ({ opacity: 1 - done.value * 0.45 }));
 
   return (
-    <PressableFeedback
-      onPress={onToggle}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: note.done }}
-      accessibilityLabel={note.body}
-      style={{ borderRadius: 14 }}
-    >
-      <PressableFeedback.Highlight />
-      <View className="flex-row items-start gap-3 py-3 pr-1">
+    <View className="flex-row items-start gap-3 py-3">
+      <PressableFeedback
+        onPress={onToggle}
+        hitSlop={10}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: note.done }}
+        accessibilityLabel={note.done ? 'Marcar como pendiente' : 'Marcar como hecha'}
+        style={{ borderRadius: 999, marginTop: 1 }}
+      >
         <Animated.View
           style={[
             {
@@ -67,7 +70,6 @@ export function NoteRow({ note, onToggle }: NoteRowProps) {
               borderWidth: 1.5,
               alignItems: 'center',
               justifyContent: 'center',
-              marginTop: 1,
             },
             box,
           ]}
@@ -76,21 +78,20 @@ export function NoteRow({ note, onToggle }: NoteRowProps) {
             <CheckIcon color={accentForeground} size={13} />
           </Animated.View>
         </Animated.View>
+      </PressableFeedback>
 
-        <Animated.View style={[{ flex: 1 }, label]}>
-          <Text
-            className="font-sans text-foreground"
-            style={{
-              fontSize: 15,
-              lineHeight: 22,
-              textDecorationLine: note.done ? 'line-through' : 'none',
-            }}
-          >
-            {note.body}
-          </Text>
+      <PressableFeedback
+        onPress={onOpen}
+        accessibilityRole="button"
+        accessibilityLabel={note.body}
+        style={{ flex: 1, borderRadius: 12 }}
+      >
+        <PressableFeedback.Highlight />
+        <Animated.View style={cuerpo}>
+          <RichText value={note.body} size={15} lineas={lineas} />
 
           {note.hints.length > 0 && (
-            <View className="mt-1.5 flex-row flex-wrap gap-1.5">
+            <View className="mt-2 flex-row flex-wrap gap-1.5">
               {note.hints.map((hint) => (
                 <View
                   key={`${hint.kind}-${hint.label}`}
@@ -110,7 +111,7 @@ export function NoteRow({ note, onToggle }: NoteRowProps) {
             </View>
           )}
         </Animated.View>
-      </View>
-    </PressableFeedback>
+      </PressableFeedback>
+    </View>
   );
 }

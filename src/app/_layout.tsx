@@ -20,6 +20,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Updater } from '@/components/updater';
 import { AuthProvider } from '@/lib/auth-store';
+import { NotesProvider } from '@/lib/notes-store';
 
 import '../global.css';
 
@@ -58,9 +59,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
         <AuthProvider>
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-          <Navegacion />
-          <Updater />
+          <NotesProvider>
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+            <Navegacion />
+            <Updater />
+          </NotesProvider>
         </AuthProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>

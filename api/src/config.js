@@ -27,6 +27,12 @@ if (jwtSecret.length < 32) {
   throw new Error('JWT_SECRET necesita al menos 32 caracteres');
 }
 
+const dataKey = Buffer.from(required('DATA_KEY'), 'base64');
+
+if (dataKey.length !== 32) {
+  throw new Error('DATA_KEY tiene que ser una clave de 32 bytes en base64');
+}
+
 export const config = {
   port: number('PORT', 8787),
   isProduction: optional('NODE_ENV', 'development') === 'production',
@@ -41,6 +47,7 @@ export const config = {
   },
 
   jwtSecret: new TextEncoder().encode(jwtSecret),
+  dataKey,
   accessTokenMinutes: number('ACCESS_TOKEN_MINUTES', 15),
   refreshTokenDays: number('REFRESH_TOKEN_DAYS', 30),
 

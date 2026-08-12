@@ -1,6 +1,7 @@
 import argon2 from 'argon2';
 
 import { config } from '../config.js';
+import { decrypt, encrypt } from '../crypto.js';
 import { query, queryOne } from '../db.js';
 import { createHandoff, redeemHandoff } from '../handoff.js';
 import { createId } from '../ids.js';
@@ -68,7 +69,7 @@ async function findAccount(userId) {
   return {
     id: user.id,
     email: user.email,
-    displayName: user.display_name,
+    displayName: decrypt(user.display_name),
     avatarUrl: user.avatar_url,
     photos: identities
       .filter((identity) => identity.avatar_url)
@@ -120,7 +121,7 @@ async function linkAccount(provider, profile) {
         email: profile.email
           ? normalizeEmail(profile.email)
           : `${provider}:${profile.accountId}`,
-        displayName: profile.displayName || null,
+        displayName: profile.displayName ? encrypt(profile.displayName) : null,
         avatarUrl: profile.avatarUrl ?? null,
       }
     );
@@ -173,7 +174,7 @@ export async function authRoutes(app) {
         id,
         email,
         passwordHash: await argon2.hash(password, HASH_OPTIONS),
-        displayName: displayName?.trim() || null,
+        displayName: displayName?.trim() ? encrypt(displayName.trim()) : null,
       }
     );
 
@@ -371,7 +372,7 @@ export async function authRoutes(app) {
         }
 
         await query('UPDATE users SET display_name = :displayName WHERE id = :id', {
-          displayName,
+          displayName: encrypt(displayName),
           id: request.userId,
         });
       }

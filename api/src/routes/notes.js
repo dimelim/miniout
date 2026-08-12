@@ -1,3 +1,4 @@
+import { decrypt, decryptJson, encrypt, encryptJson } from '../crypto.js';
 import { query, queryOne } from '../db.js';
 import { createId } from '../ids.js';
 
@@ -17,8 +18,8 @@ const hintSchema = {
 function toNote(row) {
   return {
     id: row.id,
-    body: row.body,
-    hints: typeof row.hints === 'string' ? JSON.parse(row.hints) : row.hints,
+    body: decrypt(row.body),
+    hints: decryptJson(row.hints),
     done: Boolean(row.done),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -80,15 +81,15 @@ export async function noteRoutes(app) {
 
       await query(
         `INSERT INTO notes (id, user_id, body, hints, created_at)
-         VALUES (:id, :userId, :body, CAST(:hints AS JSON), :createdAt)
+         VALUES (:id, :userId, :body, :hints, :createdAt)
          ON DUPLICATE KEY UPDATE
            body = VALUES(body),
            hints = VALUES(hints)`,
         {
           id,
           userId: request.userId,
-          body: request.body.body,
-          hints: JSON.stringify(request.body.hints ?? []),
+          body: encrypt(request.body.body),
+          hints: encryptJson(request.body.hints ?? []),
           createdAt: Number.isNaN(createdAt.getTime()) ? new Date() : createdAt,
         }
       );
@@ -130,11 +131,11 @@ export async function noteRoutes(app) {
 
       if (request.body.body !== undefined) {
         fields.push('body = :body');
-        params.body = request.body.body;
+        params.body = encrypt(request.body.body);
       }
       if (request.body.hints !== undefined) {
-        fields.push('hints = CAST(:hints AS JSON)');
-        params.hints = JSON.stringify(request.body.hints);
+        fields.push('hints = :hints');
+        params.hints = encryptJson(request.body.hints);
       }
       if (request.body.done !== undefined) {
         fields.push('done = :done');
