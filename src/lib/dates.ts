@@ -23,6 +23,21 @@ const MONTHS = [
   'dic',
 ];
 
+const LONG_MONTHS = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function startOfDay(date: Date) {
@@ -56,6 +71,14 @@ export function formatRelative(date: Date, now = new Date()) {
 
 export function weekdayName(index: number) {
   return DAYS[index];
+}
+
+export function formatLongDate(date: Date) {
+  return `${DAYS[date.getDay()]}, ${date.getDate()} de ${LONG_MONTHS[date.getMonth()]}`;
+}
+
+export function isSameDay(a: Date, b: Date) {
+  return daysBetween(a, b) === 0;
 }
 
 function capitalize(value: string) {

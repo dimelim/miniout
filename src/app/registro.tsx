@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import Animated, {
   Easing,
-  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -17,15 +16,9 @@ import { PasswordField } from '@/components/password-field';
 import { TextLink } from '@/components/text-link';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
-import {
-  emailError,
-  nameError,
-  normalizeEmail,
-  passwordError,
-  passwordStrength,
-} from '@/lib/credentials';
+import { rememberMethod } from '@/lib/last-provider';
+import { emailError, normalizeEmail, passwordError, passwordStrength } from '@/lib/credentials';
 
-const ENTER = 240;
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 const BAR_WIDTH = 120;
 
@@ -80,14 +73,12 @@ export default function Registro() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{
-    name: string | null;
-    email: string | null;
-    password: string | null;
-  }>({ name: null, email: null, password: null });
+  const [errors, setErrors] = useState<{ email: string | null; password: string | null }>({
+    email: null,
+    password: null,
+  });
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -95,32 +86,23 @@ export default function Registro() {
   const danger = useThemeColor('danger');
 
   const submit = async () => {
-    const next = {
-      name: nameError(name),
-      email: emailError(email),
-      password: passwordError(password),
-    };
+    const next = { email: emailError(email), password: passwordError(password) };
     setErrors(next);
     setProblem(null);
 
-    if (next.name || next.email || next.password) return;
+    if (next.email || next.password) return;
 
     if (!isConfigured) {
-      setProblem('La app todavía no tiene servidor. Tus notas se quedan en este teléfono.');
+      setProblem('La app todavía no tiene servidor. Vuelve a intentarlo en un momento.');
       return;
     }
 
     setBusy(true);
 
     try {
-      await signIn(
-        await api.register({
-          email: normalizeEmail(email),
-          password,
-          displayName: name.trim(),
-        })
-      );
-      router.replace('/captura');
+      await rememberMethod('correo');
+      await signIn(await api.register({ email: normalizeEmail(email), password }));
+      router.replace('/bienvenida');
     } catch (error) {
       setProblem(error instanceof ApiError ? error.message : 'No se pudo crear la cuenta');
     } finally {
@@ -143,7 +125,7 @@ export default function Registro() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View entering={FadeInDown.duration(ENTER)}>
+          <View>
             <Text
               className="font-display text-foreground"
               style={{ fontSize: 34, lineHeight: 38, letterSpacing: -0.7 }}
@@ -153,22 +135,9 @@ export default function Registro() {
             <Text className="mt-3 font-sans text-muted" style={{ fontSize: 15, lineHeight: 23 }}>
               Solo sirve para que tus apuntes te sigan a otro teléfono.
             </Text>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(70)} className="mt-8 gap-5">
-            <TextField isInvalid={Boolean(errors.name)}>
-              <Label>Nombre</Label>
-              <Input
-                value={name}
-                onChangeText={setName}
-                placeholder="Cómo quieres que te llame"
-                autoCapitalize="words"
-                autoComplete="name"
-                returnKeyType="next"
-              />
-              {errors.name && <FieldError>{errors.name}</FieldError>}
-            </TextField>
-
+          <View className="mt-8 gap-5">
             <TextField isInvalid={Boolean(errors.email)}>
               <Label>Correo</Label>
               <Input
@@ -195,9 +164,9 @@ export default function Registro() {
               />
               <StrengthBar password={password} />
             </View>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(140)} className="mt-8 gap-3">
+          <View className="mt-8 gap-3">
             {problem && (
               <Text style={{ fontSize: 13, lineHeight: 19, color: danger }}>{problem}</Text>
             )}
@@ -210,7 +179,7 @@ export default function Registro() {
               label="Ya tengo cuenta, quiero entrar"
               onPress={() => router.replace('/acceder')}
             />
-          </Animated.View>
+          </View>
         </ScrollView>
       </View>
     </KeyboardAvoidingView>

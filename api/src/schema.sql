@@ -30,6 +30,19 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   CONSTRAINT refresh_tokens_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS handoffs (
+  id CHAR(26) NOT NULL PRIMARY KEY,
+  user_id CHAR(26) NOT NULL,
+  code_hash CHAR(64) NOT NULL,
+  is_new TINYINT(1) NOT NULL DEFAULT 0,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY handoffs_code (code_hash),
+  KEY handoffs_user (user_id),
+  CONSTRAINT handoffs_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS notes (
   id CHAR(26) NOT NULL PRIMARY KEY,
   user_id CHAR(26) NOT NULL,

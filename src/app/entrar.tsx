@@ -1,18 +1,18 @@
 import { useRouter } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
 import { DiscordIcon, GoogleIcon, MailIcon } from '@/components/icons';
+import { LastUsedBadge } from '@/components/last-used-badge';
 import { Mark } from '@/components/mark';
 import { useAuth } from '@/lib/auth-store';
-import { isProviderConfigured, signInWithProvider, type Provider } from '@/lib/oauth';
-
-const ENTER = 240;
+import { readLastMethod, rememberMethod, type SignInMethod } from '@/lib/last-provider';
+import { signInWithProvider, type Provider } from '@/lib/oauth';
 
 export default function Entrar() {
   const router = useRouter();
@@ -21,8 +21,13 @@ export default function Entrar() {
 
   const [busy, setBusy] = useState<Provider | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [ultimo, setUltimo] = useState<SignInMethod | null>(null);
 
   const [foreground, danger] = useThemeColor(['foreground', 'danger']);
+
+  useEffect(() => {
+    readLastMethod().then(setUltimo);
+  }, []);
 
   const withProvider = async (provider: Provider) => {
     setProblem(null);
@@ -31,16 +36,14 @@ export default function Entrar() {
       setProblem('La app todavía no tiene servidor. Entra con correo o vuelve luego.');
       return;
     }
-    if (!isProviderConfigured(provider)) {
-      setProblem(`Todavía no está configurado el acceso con ${provider}.`);
-      return;
-    }
 
     setBusy(provider);
 
     try {
-      await signIn(await signInWithProvider(provider));
-      router.replace('/captura');
+      const session = await signInWithProvider(provider);
+      await rememberMethod(provider);
+      await signIn(session);
+      router.replace(session.isNew ? '/bienvenida' : '/inicio');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo entrar';
       if (message !== 'cancelado') setProblem(message);
@@ -83,7 +86,8 @@ export default function Entrar() {
             </Animated.View>
           )}
 
-          <Animated.View entering={FadeInDown.duration(ENTER)}>
+          <View>
+            {ultimo === 'google' && <LastUsedBadge />}
             <Button
               size="lg"
               variant="tertiary"
@@ -95,9 +99,10 @@ export default function Entrar() {
                 {busy === 'google' ? 'Abriendo Google' : 'Continuar con Google'}
               </Button.Label>
             </Button>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(60)}>
+          <View>
+            {ultimo === 'discord' && <LastUsedBadge />}
             <Button
               size="lg"
               variant="tertiary"
@@ -109,9 +114,10 @@ export default function Entrar() {
                 {busy === 'discord' ? 'Abriendo Discord' : 'Continuar con Discord'}
               </Button.Label>
             </Button>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(120)}>
+          <View>
+            {ultimo === 'correo' && <LastUsedBadge />}
             <Button
               size="lg"
               variant="tertiary"
@@ -121,7 +127,7 @@ export default function Entrar() {
               <MailIcon color={foreground} size={18} />
               <Button.Label>Continuar con correo</Button.Label>
             </Button>
-          </Animated.View>
+          </View>
         </View>
       </View>
     </View>

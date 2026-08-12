@@ -1,8 +1,10 @@
 import argon2 from 'argon2';
 
+import { config } from '../config.js';
 import { query, queryOne } from '../db.js';
+import { createHandoff, redeemHandoff } from '../handoff.js';
 import { createId } from '../ids.js';
-import { exchangeOAuthCode } from '../oauth.js';
+import { authorizeUrl, fetchProfile, isConfigured, signState, verifyState } from '../oauth.js';
 import {
   issueRefreshToken,
   revokeAllRefreshTokens,
@@ -20,6 +22,10 @@ const HASH_OPTIONS = {
   parallelism: 1,
 };
 
+const ESTRICTO = {
+  rateLimit: { max: 10, timeWindow: '5 minutes' },
+};
+
 const credentialsSchema = {
   body: {
     type: 'object',
@@ -33,10 +39,11 @@ const credentialsSchema = {
   },
 };
 
-async function session(userId) {
+async function session(userId, isNew = false) {
   return {
     accessToken: await signAccessToken(userId),
     refreshToken: await issueRefreshToken(userId),
+    isNew,
   };
 }
 
@@ -44,8 +51,66 @@ function normalizeEmail(email) {
   return email.trim().toLowerCase();
 }
 
+async function findAccount(userId) {
+  const user = await queryOne(
+    'SELECT id, email, display_name, created_at FROM users WHERE id = :id',
+    { id: userId }
+  );
+
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.display_name,
+    createdAt: user.created_at,
+  };
+}
+
+async function linkAccount(provider, profile) {
+  const identity = await queryOne(
+    `SELECT user_id FROM identities
+     WHERE provider = :provider AND provider_account_id = :accountId`,
+    { provider, accountId: profile.accountId }
+  );
+
+  if (identity) {
+    return { userId: identity.user_id, isNew: false };
+  }
+
+  const byEmail = profile.email
+    ? await queryOne('SELECT id FROM users WHERE email = :email', {
+        email: normalizeEmail(profile.email),
+      })
+    : null;
+
+  const userId = byEmail?.id ?? createId();
+
+  if (!byEmail) {
+    await query(
+      `INSERT INTO users (id, email, display_name)
+       VALUES (:id, :email, :displayName)`,
+      {
+        id: userId,
+        email: profile.email
+          ? normalizeEmail(profile.email)
+          : `${provider}:${profile.accountId}`,
+        displayName: profile.displayName || null,
+      }
+    );
+  }
+
+  await query(
+    `INSERT INTO identities (id, user_id, provider, provider_account_id)
+     VALUES (:id, :userId, :provider, :accountId)`,
+    { id: createId(), userId, provider, accountId: profile.accountId }
+  );
+
+  return { userId, isNew: !byEmail };
+}
+
 export async function authRoutes(app) {
-  app.post('/auth/register', { schema: credentialsSchema }, async (request, reply) => {
+  app.post('/auth/register', { schema: credentialsSchema, config: ESTRICTO }, async (request, reply) => {
     const email = normalizeEmail(request.body.email);
     const { password, displayName } = request.body;
 
@@ -75,10 +140,10 @@ export async function authRoutes(app) {
       }
     );
 
-    return reply.code(201).send(await session(id));
+    return reply.code(201).send(await session(id, true));
   });
 
-  app.post('/auth/login', { schema: credentialsSchema }, async (request, reply) => {
+  app.post('/auth/login', { schema: credentialsSchema, config: ESTRICTO }, async (request, reply) => {
     const email = normalizeEmail(request.body.email);
     const user = await queryOne(
       'SELECT id, password_hash FROM users WHERE email = :email',
@@ -129,90 +194,131 @@ export async function authRoutes(app) {
     return { ok: true };
   });
 
-  app.post(
-    '/auth/oauth/:provider',
+  const providerParams = {
+    type: 'object',
+    required: ['provider'],
+    properties: { provider: { type: 'string', enum: ['google', 'discord'] } },
+  };
+
+  app.get(
+    '/auth/:provider/start',
+    { schema: { params: providerParams } },
+    async (request, reply) => {
+      const { provider } = request.params;
+
+      if (!isConfigured(provider)) {
+        return reply.code(503).send({ error: `${provider} no esta configurado` });
+      }
+
+      return reply.redirect(authorizeUrl(provider, await signState(provider)), 302);
+    }
+  );
+
+  app.get(
+    '/auth/:provider/callback',
     {
       schema: {
-        params: {
+        params: providerParams,
+        querystring: {
           type: 'object',
-          required: ['provider'],
-          properties: { provider: { type: 'string', enum: ['google', 'discord'] } },
-        },
-        body: {
-          type: 'object',
-          required: ['code', 'codeVerifier'],
-          additionalProperties: false,
           properties: {
             code: { type: 'string', maxLength: 2048 },
-            codeVerifier: { type: 'string', maxLength: 256 },
+            state: { type: 'string', maxLength: 2048 },
+            error: { type: 'string', maxLength: 200 },
           },
         },
       },
     },
     async (request, reply) => {
       const { provider } = request.params;
+      const { code, state } = request.query;
+
+      const back = (params) =>
+        reply.redirect(`${config.appRedirect}?${new URLSearchParams(params).toString()}`, 302);
+
+      if (request.query.error || !code || !state) {
+        return back({ error: 'cancelado' });
+      }
 
       let profile;
       try {
-        profile = await exchangeOAuthCode(provider, request.body.code, request.body.codeVerifier);
+        await verifyState(state, provider);
+        profile = await fetchProfile(provider, code);
       } catch (error) {
         request.log.warn({ provider, err: error.message }, 'fallo el intercambio de oauth');
-        return reply.code(401).send({ error: 'no se pudo verificar la cuenta' });
+        return back({ error: 'no_verificado' });
       }
 
-      const identity = await queryOne(
-        `SELECT user_id FROM identities
-         WHERE provider = :provider AND provider_account_id = :accountId`,
-        { provider, accountId: profile.accountId }
-      );
+      const { userId, isNew } = await linkAccount(provider, profile);
+      return back({ code: await createHandoff(userId, isNew) });
+    }
+  );
 
-      if (identity) {
-        return session(identity.user_id);
+  app.post(
+    '/auth/exchange',
+    {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['code'],
+          additionalProperties: false,
+          properties: { code: { type: 'string', maxLength: 200 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const redeemed = await redeemHandoff(request.body.code);
+
+      if (!redeemed) {
+        return reply.code(401).send({ error: 'ese codigo ya no sirve, vuelve a entrar' });
       }
 
-      const byEmail = profile.email
-        ? await queryOne('SELECT id FROM users WHERE email = :email', {
-            email: normalizeEmail(profile.email),
-          })
-        : null;
-
-      const userId = byEmail?.id ?? createId();
-
-      if (!byEmail) {
-        await query(
-          `INSERT INTO users (id, email, display_name)
-           VALUES (:id, :email, :displayName)`,
-          {
-            id: userId,
-            email: profile.email ? normalizeEmail(profile.email) : `${provider}:${profile.accountId}`,
-            displayName: profile.displayName || null,
-          }
-        );
-      }
-
-      await query(
-        `INSERT INTO identities (id, user_id, provider, provider_account_id)
-         VALUES (:id, :userId, :provider, :accountId)`,
-        { id: createId(), userId, provider, accountId: profile.accountId }
-      );
-
-      return session(userId);
+      return session(redeemed.userId, redeemed.isNew);
     }
   );
 
   app.get('/me', { preHandler: app.authenticate }, async (request, reply) => {
-    const user = await queryOne(
-      'SELECT id, email, display_name, created_at FROM users WHERE id = :id',
-      { id: request.userId }
-    );
-    if (!user) {
+    const account = await findAccount(request.userId);
+
+    if (!account) {
       return reply.code(404).send({ error: 'esa cuenta ya no existe' });
     }
-    return {
-      id: user.id,
-      email: user.email,
-      displayName: user.display_name,
-      createdAt: user.created_at,
-    };
+
+    return account;
   });
+
+  app.patch(
+    '/me',
+    {
+      preHandler: app.authenticate,
+      schema: {
+        body: {
+          type: 'object',
+          required: ['displayName'],
+          additionalProperties: false,
+          properties: { displayName: { type: 'string', maxLength: 80 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const displayName = request.body.displayName.trim();
+
+      if (!displayName) {
+        return reply.code(400).send({ error: 'escribe un nombre' });
+      }
+
+      await query('UPDATE users SET display_name = :displayName WHERE id = :id', {
+        displayName,
+        id: request.userId,
+      });
+
+      const account = await findAccount(request.userId);
+
+      if (!account) {
+        return reply.code(404).send({ error: 'esa cuenta ya no existe' });
+      }
+
+      return account;
+    }
+  );
 }

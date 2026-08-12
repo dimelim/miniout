@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "lat.shielus.miniout",
       "adaptiveIcon": {
         "backgroundColor": "#1d1913",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -42,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "701dc55b-84dc-4150-8930-e6d205fcb4e8"
+      }
+    },
+    "owner": "dimelim"
   }
 }

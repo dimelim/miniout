@@ -49,8 +49,10 @@ export const config = {
     .map((origin) => origin.trim())
     .filter(Boolean),
 
+  apiBaseUrl: optional('API_BASE_URL', 'http://localhost:8787').replace(/\/+$/, ''),
+  appRedirect: optional('APP_REDIRECT', 'miniout://auth'),
+
   oauth: {
-    redirectUri: optional('OAUTH_REDIRECT_URI', 'miniout://auth'),
     google: {
       clientId: optional('GOOGLE_CLIENT_ID'),
       clientSecret: optional('GOOGLE_CLIENT_SECRET'),

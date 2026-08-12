@@ -6,6 +6,7 @@ import Animated, {
   FadeIn,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
@@ -17,15 +18,16 @@ const TYPE_MS = 52;
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 const MOVE_MS = 320;
 const PRESS_MS = 130;
+const BLINK_MS = 620;
 
 export function TypingDemo({ isActive }: { isActive: boolean }) {
   const [typed, setTyped] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [accepted, setAccepted] = useState<boolean[]>([false, false]);
-  const [caretOn, setCaretOn] = useState(true);
 
   const layouts = useRef<(LayoutRectangle | null)[]>([null, null]);
 
+  const caret = useSharedValue(1);
   const tapX = useSharedValue(0);
   const tapY = useSharedValue(0);
   const tapScale = useSharedValue(0);
@@ -40,9 +42,8 @@ export function TypingDemo({ isActive }: { isActive: boolean }) {
   ]);
 
   useEffect(() => {
-    const blink = setInterval(() => setCaretOn((on) => !on), 520);
-    return () => clearInterval(blink);
-  }, []);
+    caret.value = withRepeat(withTiming(0, { duration: BLINK_MS, easing: EASE }), -1, true);
+  }, [caret]);
 
   useEffect(() => {
     if (!isActive) {
@@ -113,6 +114,8 @@ export function TypingDemo({ isActive }: { isActive: boolean }) {
     };
   }, [isActive, tapOpacity, tapScale, tapX, tapY]);
 
+  const caretStyle = useAnimatedStyle(() => ({ opacity: caret.value }));
+
   const tapStyle = useAnimatedStyle(() => ({
     opacity: tapOpacity.value,
     transform: [
@@ -132,9 +135,9 @@ export function TypingDemo({ isActive }: { isActive: boolean }) {
           <Text className="font-sans text-foreground" style={{ fontSize: 15, lineHeight: 22 }}>
             {typed || <Text className="text-muted">Escribe algo</Text>}
           </Text>
-          <View
+          <Animated.View
             className="ml-1 h-[18px] w-0.5 rounded-full"
-            style={{ backgroundColor: accent, opacity: caretOn ? 1 : 0 }}
+            style={[{ backgroundColor: accent }, caretStyle]}
           />
         </View>
       </View>

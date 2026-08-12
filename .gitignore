@@ -48,3 +48,6 @@ example
 
 # instrucciones de agente, no van al repo
 CLAUDE.md
+
+# ajustes de agente, no van al repo
+.claude/

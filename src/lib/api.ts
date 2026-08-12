@@ -1,8 +1,21 @@
+import type { Hint } from './hints';
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
+export type Note = {
+  id: string;
+  body: string;
+  hints: Hint[];
+  done: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
 
 export type Session = {
   accessToken: string;
   refreshToken: string;
+  isNew?: boolean;
 };
 
 export type Account = {
@@ -24,6 +37,10 @@ export class ApiError extends Error {
 
 export function isConfigured() {
   return BASE_URL.length > 0;
+}
+
+export function apiBaseUrl() {
+  return BASE_URL;
 }
 
 async function request<T>(
@@ -73,7 +90,7 @@ async function request<T>(
 }
 
 export const api = {
-  register(input: { email: string; password: string; displayName?: string }) {
+  register(input: { email: string; password: string }) {
     return request<Session>('/auth/register', { method: 'POST', body: input });
   },
 
@@ -89,11 +106,35 @@ export const api = {
     return request<{ ok: true }>('/auth/logout', { method: 'POST', accessToken });
   },
 
-  oauth(provider: 'google' | 'discord', input: { code: string; codeVerifier: string }) {
-    return request<Session>(`/auth/oauth/${provider}`, { method: 'POST', body: input });
+  exchange(code: string) {
+    return request<Session>('/auth/exchange', { method: 'POST', body: { code } });
   },
 
   me(accessToken: string) {
     return request<Account>('/me', { accessToken });
+  },
+
+  updateName(accessToken: string, displayName: string) {
+    return request<Account>('/me', {
+      method: 'PATCH',
+      body: { displayName },
+      accessToken,
+    });
+  },
+
+  notes(accessToken: string) {
+    return request<{ notes: Note[]; syncedAt: string }>('/notes', { accessToken });
+  },
+
+  createNote(accessToken: string, input: { body: string; hints: Hint[] }) {
+    return request<Note>('/notes', { method: 'POST', body: input, accessToken });
+  },
+
+  updateNote(accessToken: string, id: string, input: { done?: boolean; body?: string }) {
+    return request<Note>(`/notes/${id}`, { method: 'PATCH', body: input, accessToken });
+  },
+
+  removeNote(accessToken: string, id: string) {
+    return request<{ ok: true }>(`/notes/${id}`, { method: 'DELETE', accessToken });
   },
 };

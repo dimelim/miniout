@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -17,6 +17,7 @@ import { SlideDots } from '@/components/slide-dots';
 
 const SLIDES = [MarcaSlide, CapturaSlide, DiaSlide];
 const AUTOPLAY_MS = 5200;
+const RESUME_MS = 320;
 
 export default function Onboarding() {
   const router = useRouter();
@@ -25,9 +26,25 @@ export default function Onboarding() {
   const scroller = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
+  const [demos, setDemos] = useState(false);
 
   const [accent, border] = useThemeColor(['accent', 'border']);
   const isLast = index === SLIDES.length - 1;
+
+  useEffect(() => {
+    router.prefetch('/entrar');
+  }, [router]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setTimeout(() => setDemos(true), RESUME_MS);
+
+      return () => {
+        clearTimeout(timer);
+        setDemos(false);
+      };
+    }, [])
+  );
 
   const goTo = useCallback(
     (next: number) => {
@@ -38,14 +55,14 @@ export default function Onboarding() {
   );
 
   useEffect(() => {
-    if (!autoplay) return;
+    if (!autoplay || !demos) return;
 
     const timer = setTimeout(() => {
       goTo((index + 1) % SLIDES.length);
     }, AUTOPLAY_MS);
 
     return () => clearTimeout(timer);
-  }, [autoplay, index, goTo]);
+  }, [autoplay, demos, index, goTo]);
 
   const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = Math.round(event.nativeEvent.contentOffset.x / width);
@@ -54,11 +71,14 @@ export default function Onboarding() {
 
   const advance = () => {
     setAutoplay(false);
-    if (isLast) {
-      router.push('/entrar');
+
+    if (!isLast) {
+      goTo(index + 1);
       return;
     }
-    goTo(index + 1);
+
+    setDemos(false);
+    requestAnimationFrame(() => router.push('/entrar'));
   };
 
   return (
@@ -77,7 +97,7 @@ export default function Onboarding() {
         >
           {SLIDES.map((Slide, position) => (
             <View key={position} style={{ width }} className="px-7 pb-2 pt-6">
-              <Slide isActive={position === index} />
+              <Slide isActive={demos && position === index} />
             </View>
           ))}
         </ScrollView>
@@ -87,7 +107,7 @@ export default function Onboarding() {
             <SlideDots
               count={SLIDES.length}
               index={index}
-              isPlaying={autoplay}
+              isPlaying={autoplay && demos}
               autoplayMs={AUTOPLAY_MS}
               restColor={border}
               activeColor={accent}

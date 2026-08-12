@@ -21,6 +21,7 @@ type AuthValue = {
   isConfigured: boolean;
   signIn: (session: Session) => Promise<void>;
   signOut: () => Promise<void>;
+  saveName: (displayName: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -106,6 +107,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const saveName = useCallback(
+    async (displayName: string) => {
+      if (!session) throw new Error('No hay sesión');
+      setAccount(await api.updateName(session.accessToken, displayName));
+    },
+    [session]
+  );
+
   const signOut = useCallback(async () => {
     if (session) {
       await api.logout(session.accessToken).catch(() => {});
@@ -123,8 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isConfigured: isConfigured(),
       signIn,
       signOut,
+      saveName,
     }),
-    [session, account, isReady, signIn, signOut]
+    [session, account, isReady, signIn, signOut, saveName]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

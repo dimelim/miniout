@@ -3,7 +3,6 @@ import { Button, FieldError, Input, Label, TextField } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
@@ -11,9 +10,8 @@ import { PasswordField } from '@/components/password-field';
 import { TextLink } from '@/components/text-link';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { rememberMethod } from '@/lib/last-provider';
 import { emailError, normalizeEmail, passwordError } from '@/lib/credentials';
-
-const ENTER = 240;
 
 export default function Acceder() {
   const router = useRouter();
@@ -39,15 +37,17 @@ export default function Acceder() {
     if (next.email || next.password) return;
 
     if (!isConfigured) {
-      setProblem('La app todavía no tiene servidor. Tus notas se quedan en este teléfono.');
+      setProblem('La app todavía no tiene servidor. Vuelve a intentarlo en un momento.');
       return;
     }
 
     setBusy(true);
 
     try {
-      await signIn(await api.login({ email: normalizeEmail(email), password }));
-      router.replace('/captura');
+      const session = await api.login({ email: normalizeEmail(email), password });
+      await rememberMethod('correo');
+      await signIn(session);
+      router.replace(session.isNew ? '/bienvenida' : '/inicio');
     } catch (error) {
       setProblem(error instanceof ApiError ? error.message : 'No se pudo entrar');
     } finally {
@@ -70,7 +70,7 @@ export default function Acceder() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View entering={FadeInDown.duration(ENTER)}>
+          <View>
             <Text
               className="font-display text-foreground"
               style={{ fontSize: 34, lineHeight: 38, letterSpacing: -0.7 }}
@@ -80,9 +80,9 @@ export default function Acceder() {
             <Text className="mt-3 font-sans text-muted" style={{ fontSize: 15, lineHeight: 23 }}>
               Con el mismo correo con el que la creaste.
             </Text>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(70)} className="mt-8 gap-5">
+          <View className="mt-8 gap-5">
             <TextField isInvalid={Boolean(errors.email)}>
               <Label>Correo</Label>
               <Input
@@ -106,9 +106,9 @@ export default function Acceder() {
               autoComplete="current-password"
               onSubmitEditing={submit}
             />
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.duration(ENTER).delay(140)} className="mt-8 gap-3">
+          <View className="mt-8 gap-3">
             {problem && (
               <Text style={{ fontSize: 13, lineHeight: 19, color: danger }}>{problem}</Text>
             )}
@@ -121,7 +121,7 @@ export default function Acceder() {
               label="No tengo cuenta, quiero crear una"
               onPress={() => router.replace('/registro')}
             />
-          </Animated.View>
+          </View>
         </ScrollView>
       </View>
     </KeyboardAvoidingView>

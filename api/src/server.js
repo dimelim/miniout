@@ -73,18 +73,7 @@ app.setNotFoundHandler(async (_request, reply) => {
   return reply.code(404).send({ error: 'esa ruta no existe' });
 });
 
-await app.register(
-  async (instance) => {
-    await instance.register(rateLimit, {
-      max: 10,
-      timeWindow: '5 minutes',
-      keyGenerator: (request) => request.ip,
-    });
-    await instance.register(authRoutes);
-  },
-  { prefix: '' }
-);
-
+await app.register(authRoutes);
 await app.register(noteRoutes);
 
 app.get('/health', async () => ({ ok: true }));
