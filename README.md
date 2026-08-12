@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-e0891c?style=flat-square"></a>
+  <a href="LICENSE"><img alt="License Apache 2.0" src="https://img.shields.io/badge/license-Apache%202.0-e0891c?style=flat-square"></a>
   <img alt="Expo SDK 57" src="https://img.shields.io/badge/expo-SDK%2057-1d1913?style=flat-square">
   <img alt="React Native 0.86" src="https://img.shields.io/badge/react%20native-0.86-1d1913?style=flat-square">
   <a href="README.es.md"><img alt="Leeme en espanol" src="https://img.shields.io/badge/l%C3%A9eme%20en-espa%C3%B1ol-6c665d?style=flat-square"></a>
@@ -29,11 +29,23 @@ mentions a day becomes something due.
   none to create a task.
 - Write "parcial de calculo el viernes" and Miniout offers the subject and the
   day as chips. You decide whether they stay.
-- Anything that mentions a day shows up in that day with a checkbox and turns
-  overdue on its own. You never fill in a task form.
-- Notes are written to the device first, so nothing blocks writing and nothing
-  is lost offline.
-- Three screens and there will not be a fourth. Capture, notebook and day.
+- Setup asks four questions once: what to call you, school or university, your
+  grading scale and the passing mark. The app renames things to match, so a
+  semester becomes a term if you are still in school.
+- Semesters hold subjects, each with its own icon and color, and a note that
+  mentions a subject counts towards it.
+- A phrase a day, either ours or the ones you write.
+- Your account travels with you: email, Google or Discord, with the profile
+  photo from whichever you used.
+
+## Status
+
+Alpha. The tags [v1.0.0-alpha.1](https://github.com/dimelim/miniout/releases)
+onwards carry installable Android builds. Anything the app can do today is real
+and talks to the live API, but screens keep moving.
+
+Builds ship with over the air updates, so a new JS version arrives on its own
+the next time you open the app.
 
 ## Stack
 
@@ -65,11 +77,12 @@ npm run icons     # rebuilds the app icons from the mark
 
 ```
 src/
-  app/            expo-router routes, the onboarding and the three screens
-  components/     the mark, the signature and the demo pieces
-  lib/            date formatting, hint detection and the notes store
+  app/            expo-router routes: onboarding, sign in, setup, home, account
+  components/     the mark, the signature, the ink drop and the shared pieces
+  lib/            dates, hint detection, semesters, profile and the api client
   global.css      the design tokens that theme heroui-native
 api/              the service that backs accounts and sync
+scripts/          icon generation and the api deploy
 ```
 
 ## Design

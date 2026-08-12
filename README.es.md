@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/badge/licencia-MIT-e0891c?style=flat-square"></a>
+  <a href="LICENSE"><img alt="Licencia Apache 2.0" src="https://img.shields.io/badge/licencia-Apache%202.0-e0891c?style=flat-square"></a>
   <img alt="Expo SDK 57" src="https://img.shields.io/badge/expo-SDK%2057-1d1913?style=flat-square">
   <img alt="React Native 0.86" src="https://img.shields.io/badge/react%20native-0.86-1d1913?style=flat-square">
   <a href="README.md"><img alt="Read me in English" src="https://img.shields.io/badge/read%20me%20in-english-6c665d?style=flat-square"></a>
@@ -29,11 +29,24 @@ mencione un dia pasa a tener fecha.
   ni para crear una tarea.
 - Escribe "parcial de calculo el viernes" y Miniout te ofrece la materia y el
   dia como chips. Tu decides si se quedan.
-- Lo que mencione un dia aparece en ese dia con su casilla y se marca vencido
-  solo. Nunca rellenas un formulario de tarea.
-- Las notas van primero al dispositivo, asi que nada bloquea la escritura y no
-  se pierde nada sin conexion.
-- Tres pantallas y no habra una cuarta. Captura, cuaderno y dia.
+- El alta pregunta cuatro cosas una sola vez: como llamarte, colegio o
+  universidad, tu escala de notas y con cuanto pasas. La app se adapta, asi que
+  los semestres pasan a llamarse periodos si estas en el colegio.
+- Los semestres guardan materias, cada uno con su icono y su color, y una nota
+  que mencione una materia cuenta para ella.
+- Una frase al dia, las nuestras o las que escribas tu.
+- Tu cuenta te sigue: correo, Google o Discord, con la foto del metodo que
+  usaste.
+
+## Estado
+
+En alpha. Las etiquetas desde
+[v1.0.0-alpha.1](https://github.com/dimelim/miniout/releases) llevan builds de
+Android instalables. Lo que la app hace hoy es real y habla con la API en vivo,
+pero las pantallas siguen moviendose.
+
+Las builds llevan actualizaciones por aire, asi que la version nueva llega sola
+la proxima vez que abras la app.
 
 ## Stack
 
@@ -65,11 +78,12 @@ npm run icons     # regenera los iconos de la app desde la marca
 
 ```
 src/
-  app/            rutas de expo-router, la bienvenida y las tres pantallas
-  components/     la marca, la firma y las piezas de demo
-  lib/            formato de fechas, deteccion de pistas y el store de notas
+  app/            rutas de expo-router: onboarding, acceso, alta, inicio, cuenta
+  components/     la marca, la firma, la gota de tinta y las piezas comunes
+  lib/            fechas, deteccion de pistas, semestres, perfil y cliente de api
   global.css      los tokens de diseno que tematizan heroui-native
 api/              el servicio que da cuentas y sincronizacion
+scripts/          generacion de iconos y despliegue de la api
 ```
 
 ## Diseno
