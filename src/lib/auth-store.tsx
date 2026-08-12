@@ -100,10 +100,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    restore();
+    const rendirse = setTimeout(() => {
+      if (!cancelled) setIsReady(true);
+    }, 4000);
+
+    restore()
+      .catch(() => {
+        if (!cancelled) setIsReady(true);
+      })
+      .finally(() => clearTimeout(rendirse));
 
     return () => {
       cancelled = true;
+      clearTimeout(rendirse);
     };
   }, []);
 

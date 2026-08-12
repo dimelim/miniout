@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { useAuth } from '@/lib/auth-store';
@@ -8,9 +8,7 @@ import { useAuth } from '@/lib/auth-store';
 const TOPE_MS = 2500;
 
 export default function Arranque() {
-  const router = useRouter();
   const { isReady, session } = useAuth();
-  const salio = useRef(false);
 
   useEffect(() => {
     const rendirse = setTimeout(() => {
@@ -21,14 +19,15 @@ export default function Arranque() {
   }, []);
 
   useEffect(() => {
-    if (!isReady || salio.current) return;
-
-    salio.current = true;
-    router.replace(session ? '/inicio' : '/onboarding');
+    if (!isReady) return;
 
     const timer = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 60);
     return () => clearTimeout(timer);
-  }, [isReady, session, router]);
+  }, [isReady]);
 
-  return <View className="flex-1 bg-background" />;
+  if (!isReady) {
+    return <View className="flex-1 bg-background" />;
+  }
+
+  return <Redirect href={session ? '/inicio' : '/onboarding'} />;
 }

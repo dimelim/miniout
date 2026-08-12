@@ -9,13 +9,13 @@ import {
 } from '@expo-google-fonts/newsreader';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import type { NativeStackNavigationOptions } from 'expo-router';
+import type { ErrorBoundaryProps, NativeStackNavigationOptions } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useThemeColor } from 'heroui-native/hooks';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Updater } from '@/components/updater';
@@ -24,8 +24,11 @@ import { NotesProvider } from '@/lib/notes-store';
 
 import '../global.css';
 
-SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({ fade: true, duration: 320 });
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+try {
+  SplashScreen.setOptions({ fade: true, duration: 320 });
+} catch {}
 
 const HOJA: NativeStackNavigationOptions = {
   presentation: 'formSheet',
@@ -35,6 +38,46 @@ const HOJA: NativeStackNavigationOptions = {
   animation: 'slide_from_bottom',
   gestureEnabled: true,
 };
+
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  SplashScreen.hideAsync().catch(() => {});
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#171511',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 32,
+      }}
+    >
+      <Text style={{ color: '#fbfaf7', fontSize: 22, textAlign: 'center' }}>
+        Miniout se atascó
+      </Text>
+      <Text
+        style={{ color: '#a49c8e', fontSize: 14, textAlign: 'center', marginTop: 10 }}
+      >
+        {error.message}
+      </Text>
+
+      <Pressable
+        onPress={retry}
+        style={{
+          marginTop: 28,
+          borderRadius: 999,
+          backgroundColor: '#e0891c',
+          paddingHorizontal: 24,
+          paddingVertical: 13,
+        }}
+      >
+        <Text style={{ color: '#1d1913', fontSize: 15, fontWeight: '600' }}>
+          Volver a intentar
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
