@@ -15,27 +15,20 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
-const SPRING = { damping: 14, stiffness: 220, mass: 0.6 };
+const SPRING = { damping: 15, stiffness: 240, mass: 0.6 };
+
+const ALTO = 58;
 
 type ItemProps = {
   label: string;
   isFocused: boolean;
   restColor: string;
   activeColor: string;
-  pillColor: string;
   onPress: () => void;
   renderIcon: (color: string) => React.ReactNode;
 };
 
-function Item({
-  label,
-  isFocused,
-  restColor,
-  activeColor,
-  pillColor,
-  onPress,
-  renderIcon,
-}: ItemProps) {
+function Item({ label, isFocused, restColor, activeColor, onPress, renderIcon }: ItemProps) {
   const progress = useSharedValue(isFocused ? 1 : 0);
   const pressed = useSharedValue(0);
   const salto = useSharedValue(0);
@@ -45,32 +38,32 @@ function Item({
 
     if (isFocused) {
       salto.value = withSequence(
-        withTiming(1, { duration: 130, easing: EASE }),
+        withTiming(1, { duration: 120, easing: EASE }),
         withSpring(0, SPRING)
       );
     }
   }, [isFocused, progress, salto]);
 
-  const pillStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [{ scale: 0.86 + progress.value * 0.14 - pressed.value * 0.04 }],
-    backgroundColor: pillColor,
+  const contenido = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - pressed.value * 0.07 }],
   }));
 
-  const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - pressed.value * 0.06 }],
-  }));
-
-  const iconStyle = useAnimatedStyle(() => ({
+  const icono = useAnimatedStyle(() => ({
     transform: [
-      { translateY: -salto.value * 4 },
-      { scale: 1 + salto.value * 0.12 + progress.value * 0.04 },
+      { translateY: -salto.value * 3 - progress.value * 2 },
+      { scale: 1 + salto.value * 0.1 },
     ],
   }));
 
-  const labelStyle = useAnimatedStyle(() => ({
+  const etiqueta = useAnimatedStyle(() => ({
     color: interpolateColor(progress.value, [0, 1], [restColor, activeColor]),
-    opacity: 0.7 + progress.value * 0.3,
+    opacity: 0.55 + progress.value * 0.45,
+    transform: [{ translateY: -progress.value * 1 }],
+  }));
+
+  const punto = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ scale: 0.4 + progress.value * 0.6 }],
   }));
 
   return (
@@ -85,25 +78,32 @@ function Item({
       accessibilityRole="tab"
       accessibilityState={{ selected: isFocused }}
       accessibilityLabel={label}
-      style={{ flex: 1, alignItems: 'center' }}
+      style={{ flex: 1, height: ALTO, alignItems: 'center', justifyContent: 'center' }}
     >
-      <View style={{ paddingHorizontal: 18, paddingVertical: 8 }}>
+      <Animated.View style={[{ alignItems: 'center', gap: 3 }, contenido]}>
+        <Animated.View style={icono}>{renderIcon(isFocused ? activeColor : restColor)}</Animated.View>
+
+        <Animated.Text
+          className="font-medium"
+          style={[{ fontSize: 11, lineHeight: 13 }, etiqueta]}
+        >
+          {label}
+        </Animated.Text>
+
         <Animated.View
-          pointerEvents="none"
-          style={[{ position: 'absolute', inset: 0, borderRadius: 999 }, pillStyle]}
+          style={[
+            {
+              position: 'absolute',
+              bottom: -8,
+              width: 4,
+              height: 4,
+              borderRadius: 999,
+              backgroundColor: activeColor,
+            },
+            punto,
+          ]}
         />
-        <Animated.View style={[{ alignItems: 'center', gap: 2 }, contentStyle]}>
-          <Animated.View style={iconStyle}>
-            {renderIcon(isFocused ? activeColor : restColor)}
-          </Animated.View>
-          <Animated.Text
-            className="font-medium"
-            style={[{ fontSize: 11, lineHeight: 14 }, labelStyle]}
-          >
-            {label}
-          </Animated.Text>
-        </Animated.View>
-      </View>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -114,53 +114,32 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
 
-  const [border, muted, accent, accentSoft] = useThemeColor([
-    'border',
-    'muted',
-    'accent',
-    'accent-soft',
-  ]);
+  const [separator, muted, accent] = useThemeColor(['separator', 'muted', 'accent']);
 
-  const cristal = scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)';
+  const velo =
+    scheme === 'dark' ? 'rgba(23,21,17,0.72)' : 'rgba(251,250,247,0.72)';
 
   return (
-    <View
+    <BlurView
+      intensity={scheme === 'dark' ? 40 : 55}
+      tint={scheme === 'dark' ? 'dark' : 'light'}
+      experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
       style={{
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: insets.bottom + 12,
-        alignItems: 'center',
+        bottom: 0,
+        paddingBottom: insets.bottom,
+        backgroundColor: velo,
+        borderTopWidth: 1,
+        borderTopColor: separator,
       }}
-      pointerEvents="box-none"
     >
-      <BlurView
-        intensity={scheme === 'dark' ? 42 : 60}
-        tint={scheme === 'dark' ? 'dark' : 'light'}
-        experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          borderRadius: 999,
-          borderWidth: 1,
-          borderColor: border,
-          backgroundColor: cristal,
-          paddingHorizontal: 6,
-          paddingVertical: 6,
-          minWidth: 160,
-          overflow: 'hidden',
-          shadowColor: '#000',
-          shadowOpacity: 0.22,
-          shadowRadius: 20,
-          shadowOffset: { width: 0, height: 8 },
-          elevation: 12,
-        }}
-      >
+      <View className="flex-row items-center px-2">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-          const label =
-            typeof options.title === 'string' ? options.title : route.name;
+          const label = typeof options.title === 'string' ? options.title : route.name;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -181,15 +160,14 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
               isFocused={isFocused}
               restColor={muted}
               activeColor={accent}
-              pillColor={accentSoft}
               onPress={onPress}
               renderIcon={(color) =>
-                options.tabBarIcon?.({ focused: isFocused, color, size: 21 }) ?? null
+                options.tabBarIcon?.({ focused: isFocused, color, size: 22 }) ?? null
               }
             />
           );
         })}
-      </BlurView>
-    </View>
+      </View>
+    </BlurView>
   );
 }

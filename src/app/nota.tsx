@@ -12,7 +12,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FormatBar, type Seleccion } from '@/components/format-bar';
 import { CheckIcon } from '@/components/icons';
 import { RuledPaper } from '@/components/ruled-paper';
-import { ApiError } from '@/lib/api';
+import { ApiError, type Note } from '@/lib/api';
 import { formatDayLabel, formatRelative } from '@/lib/dates';
 import { detectHints } from '@/lib/hints';
 import { useNotes } from '@/lib/notes-store';
@@ -41,9 +41,11 @@ export default function Nota() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { find, edit, toggle, remove } = useNotes();
+  const { find, create, edit, toggle, remove } = useNotes();
 
-  const note = find(id);
+  const [creada, setCreada] = useState<Note | null>(null);
+  const note = find(id) ?? creada;
+
   const original = useRef(note?.body ?? '');
 
   const [cuerpo, setCuerpo] = useState(note?.body ?? '');
@@ -53,18 +55,17 @@ export default function Nota() {
   const [preguntando, setPreguntando] = useState(false);
   const [problema, setProblema] = useState<string | null>(null);
 
-  const [accent, accentForeground, muted, border, danger, warning, background] = useThemeColor([
+  const [accent, accentForeground, muted, border, danger, warning] = useThemeColor([
     'accent',
     'accent-foreground',
     'muted',
     'border',
     'danger',
     'warning',
-    'background',
   ]);
 
   const pistas = useMemo(() => detectHints(cuerpo), [cuerpo]);
-  const cambiado = cuerpo.trim() !== original.current.trim() && cuerpo.trim().length > 0;
+  const cambiado = cuerpo.trim().length > 0 && cuerpo.trim() !== original.current.trim();
   const entrega = estadoDeEntrega(note?.dueAt ?? null);
 
   useEffect(() => {
@@ -72,7 +73,7 @@ export default function Nota() {
     original.current = note.body;
   }, [note]);
 
-  if (!note) {
+  if (!note && id) {
     return (
       <View className="flex-1 bg-background">
         <View className="px-7" style={{ paddingTop: insets.top + 12 }}>
@@ -88,14 +89,21 @@ export default function Nota() {
   }
 
   const guardar = async () => {
-    if (!cambiado) return;
+    const limpio = cuerpo.trim();
+
+    if (!limpio || limpio === original.current.trim()) return;
 
     setGuardando(true);
     setProblema(null);
 
     try {
-      await edit(note.id, cuerpo.trim());
-      original.current = cuerpo.trim();
+      if (note) {
+        await edit(note.id, limpio);
+      } else {
+        setCreada(await create(limpio));
+      }
+
+      original.current = limpio;
     } catch (error) {
       setProblema(error instanceof ApiError ? error.message : 'No se pudo guardar el cambio');
     } finally {
@@ -105,6 +113,11 @@ export default function Nota() {
 
   const borrar = async () => {
     setPreguntando(false);
+
+    if (!note) {
+      router.back();
+      return;
+    }
 
     try {
       await remove(note.id);
@@ -144,71 +157,78 @@ export default function Nota() {
           </Text>
         </PressableFeedback>
 
-        <View className="flex-row items-center gap-2">
-          <PressableFeedback
-            onPress={() => router.push(`/programar?id=${note.id}`)}
-            accessibilityRole="button"
-            accessibilityLabel={entrega ? `Programada ${entrega.etiqueta}` : 'Programar la nota'}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: entrega ? colorEntrega : border,
-              paddingHorizontal: 12,
-              paddingVertical: 7,
-            }}
-          >
-            <PressableFeedback.Highlight />
-            <View
+        {note && (
+          <View className="flex-row items-center gap-2">
+            <PressableFeedback
+              onPress={() => router.push(`/programar?id=${note.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={entrega ? `Programada ${entrega.etiqueta}` : 'Programar la nota'}
               style={{
-                width: 6,
-                height: 6,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
                 borderRadius: 999,
-                backgroundColor: entrega ? colorEntrega : muted,
+                borderWidth: 1,
+                borderColor: entrega ? colorEntrega : border,
+                paddingHorizontal: 12,
+                paddingVertical: 7,
               }}
-            />
-            <Text className="font-medium" style={{ fontSize: 13, color: entrega ? colorEntrega : muted }}>
-              {entrega ? entrega.etiqueta : 'Sin fecha'}
-            </Text>
-          </PressableFeedback>
+            >
+              <PressableFeedback.Highlight />
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 999,
+                  backgroundColor: entrega ? colorEntrega : muted,
+                }}
+              />
+              <Text
+                className="font-medium"
+                style={{ fontSize: 13, color: entrega ? colorEntrega : muted }}
+              >
+                {entrega ? entrega.etiqueta : 'Sin fecha'}
+              </Text>
+            </PressableFeedback>
 
-          <PressableFeedback
-            onPress={() => toggle(note)}
-            hitSlop={8}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: note.done }}
-            accessibilityLabel={note.done ? 'Marcar como pendiente' : 'Marcar como hecha'}
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 999,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 1,
-              borderColor: note.done ? accent : border,
-              backgroundColor: note.done ? accent : 'transparent',
-            }}
-          >
-            <PressableFeedback.Highlight />
-            <CheckIcon color={note.done ? accentForeground : muted} size={15} />
-          </PressableFeedback>
-        </View>
+            <PressableFeedback
+              onPress={() => toggle(note)}
+              hitSlop={8}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: note.done }}
+              accessibilityLabel={note.done ? 'Marcar como pendiente' : 'Marcar como hecha'}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 999,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: note.done ? accent : border,
+                backgroundColor: note.done ? accent : 'transparent',
+              }}
+            >
+              <PressableFeedback.Highlight />
+              <CheckIcon color={note.done ? accentForeground : muted} size={15} />
+            </PressableFeedback>
+          </View>
+        )}
       </View>
 
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 26,
           paddingTop: 18,
-          paddingBottom: insets.bottom + 120,
+          paddingBottom: insets.bottom + 140,
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <Appear rise={6}>
           <Text className="font-medium text-muted" style={{ fontSize: 12 }}>
-            {formatDayLabel(new Date(note.createdAt))} · editada {formatRelative(new Date(note.updatedAt))}
+            {note
+              ? `${formatDayLabel(new Date(note.createdAt))} · editada ${formatRelative(new Date(note.updatedAt))}`
+              : 'Nota nueva'}
           </Text>
         </Appear>
 
@@ -225,6 +245,7 @@ export default function Nota() {
             if (forzada) setForzada(null);
           }}
           multiline
+          autoFocus={!note}
           maxLength={8000}
           placeholder="Escribe algo"
           placeholderTextColor={muted}
@@ -237,9 +258,9 @@ export default function Nota() {
             fontSize: 17,
             lineHeight: 28,
             padding: 0,
-            minHeight: 200,
+            minHeight: 220,
             textAlignVertical: 'top',
-            textDecorationLine: note.done ? 'line-through' : 'none',
+            textDecorationLine: note?.done ? 'line-through' : 'none',
           }}
         />
 
@@ -260,19 +281,21 @@ export default function Nota() {
 
         {problema && <Aviso mensaje={problema} className="mt-5" />}
 
-        <View className="mt-10 items-center">
-          <PressableFeedback
-            onPress={() => setPreguntando(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Borrar la nota"
-            style={{ borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 }}
-          >
-            <PressableFeedback.Highlight />
-            <Text className="font-medium" style={{ fontSize: 14, color: danger }}>
-              Borrar nota
-            </Text>
-          </PressableFeedback>
-        </View>
+        {note && (
+          <View className="mt-10 items-center">
+            <PressableFeedback
+              onPress={() => setPreguntando(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Borrar la nota"
+              style={{ borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 }}
+            >
+              <PressableFeedback.Highlight />
+              <Text className="font-medium" style={{ fontSize: 14, color: danger }}>
+                Borrar nota
+              </Text>
+            </PressableFeedback>
+          </View>
+        )}
       </ScrollView>
 
       <FormatBar

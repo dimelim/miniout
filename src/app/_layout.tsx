@@ -18,8 +18,10 @@ import { useEffect } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { LockScreen } from '@/components/lock-screen';
 import { Updater } from '@/components/updater';
 import { AuthProvider } from '@/lib/auth-store';
+import { LockProvider } from '@/lib/lock';
 import { NotesProvider } from '@/lib/notes-store';
 
 import '../global.css';
@@ -100,9 +102,12 @@ export default function RootLayout() {
       <HeroUINativeProvider>
         <AuthProvider>
           <NotesProvider>
+            <LockProvider>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
             <Navegacion />
-            <Updater />
+              <Updater />
+              <LockScreen />
+            </LockProvider>
           </NotesProvider>
         </AuthProvider>
       </HeroUINativeProvider>
@@ -142,6 +147,8 @@ function Navegacion() {
       <Stack.Screen name="github" options={{ ...HOJA, sheetAllowedDetents: [0.58] }} />
       <Stack.Screen name="contrasena" options={{ ...HOJA, sheetAllowedDetents: [0.7] }} />
       <Stack.Screen name="programar" options={{ ...HOJA, sheetAllowedDetents: [0.86] }} />
+      <Stack.Screen name="ajustes" />
+      <Stack.Screen name="minilock" options={{ ...HOJA, sheetAllowedDetents: [0.88] }} />
     </Stack>
   );
 }

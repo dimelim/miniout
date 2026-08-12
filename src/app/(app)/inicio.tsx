@@ -2,23 +2,20 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Button, Card, Chip, PressableFeedback, Spinner } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useMemo, useState } from 'react';
-import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
+import { ScrollView, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AvatarButton } from '@/components/avatar-button';
-import { Aviso } from '@/components/aviso';
 import { GithubBadge } from '@/components/github-card';
 import { ChevronRightIcon, PlusIcon, SemesterIcon } from '@/components/icons';
 import { InkDrop } from '@/components/ink-drop';
 import { NoteRow } from '@/components/note-row';
 import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
-import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
 import { useNotes } from '@/lib/notes-store';
 import { formatLongDate, isSameDay } from '@/lib/dates';
-import { detectHints } from '@/lib/hints';
 import { EMPTY_PROFILE, periodWords, readProfile, type Profile } from '@/lib/profile';
 import {
   DEFAULT_QUOTES,
@@ -47,20 +44,15 @@ export default function Inicio() {
   const router = useRouter();
   const { account, session } = useAuth();
 
-  const { notes, isLoading, refresh, create, toggle } = useNotes();
+  const { notes, isLoading, refresh, toggle } = useNotes();
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [frases, setFrases] = useState<QuoteSettings>(DEFAULT_QUOTES);
-  const [cargando, setCargando] = useState(true);
-  const [texto, setTexto] = useState('');
-  const [guardando, setGuardando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [muted, accent, background] = useThemeColor(['muted', 'accent', 'background']);
 
   const ahora = useMemo(() => new Date(), []);
   const nombre = firstName(account?.displayName);
-  const pistas = useMemo(() => detectHints(texto), [texto]);
   const palabras = periodWords(perfil.stage);
   const frase = quoteOfTheDay(frases, ahora);
 
@@ -96,27 +88,6 @@ export default function Inicio() {
     });
   }, [notes]);
   const pendientes = deHoy.filter((note) => !note.done).length;
-
-  const guardar = async () => {
-    const body = texto.trim();
-
-    if (!body || !session) return;
-
-    setGuardando(true);
-    setProblema(null);
-
-    try {
-      await create(body, pistas);
-      setTexto('');
-      Keyboard.dismiss();
-    } catch (error) {
-      setProblema(
-        error instanceof ApiError ? error.message : 'No se pudo guardar. Vuelve a intentarlo.'
-      );
-    } finally {
-      setGuardando(false);
-    }
-  };
 
   return (
     <View className="flex-1 bg-background">
@@ -155,49 +126,31 @@ export default function Inicio() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(240).delay(60)} className="mt-7">
-          <Card className="gap-3">
-            <TextInput
-              value={texto}
-              onChangeText={setTexto}
-              placeholder="Escribe algo"
-              placeholderTextColor={muted}
-              selectionColor={accent}
-              cursorColor={accent}
-              multiline
-              maxLength={8000}
-              accessibilityLabel="Escribe una nota"
-              className="font-sans text-foreground"
-              style={{
-                fontSize: 16,
-                lineHeight: 24,
-                minHeight: 52,
-                padding: 0,
-                textAlignVertical: 'top',
-              }}
-            />
-
-            {texto.trim().length > 0 && (
-              <Animated.View
-                entering={FadeIn.duration(160)}
-                exiting={FadeOut.duration(120)}
-                className="flex-row items-center justify-between gap-3"
+          <PressableFeedback
+            onPress={() => router.push('/nota')}
+            accessibilityRole="button"
+            accessibilityLabel="Escribir una nota"
+            className="rounded-[24px] bg-surface p-5 shadow-surface"
+          >
+            <PressableFeedback.Highlight />
+            <View className="flex-row items-center gap-3">
+              <Text className="flex-1 font-sans text-muted" style={{ fontSize: 16 }}>
+                Escribe algo
+              </Text>
+              <View
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 999,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: accent,
+                }}
               >
-                <View className="flex-1 flex-row flex-wrap gap-1.5">
-                  {pistas.map((pista) => (
-                    <Chip key={`${pista.kind}-${pista.label}`} size="sm" variant="secondary">
-                      <Chip.Label>{pista.label}</Chip.Label>
-                    </Chip>
-                  ))}
-                </View>
-
-                <Button size="sm" onPress={guardar} isDisabled={guardando}>
-                  <Button.Label>{guardando ? 'Guardando' : 'Guardar'}</Button.Label>
-                </Button>
-              </Animated.View>
-            )}
-          </Card>
-
-          {problema && <Aviso mensaje={problema} className="mt-2" />}
+                <PlusIcon color={background} size={16} />
+              </View>
+            </View>
+          </PressableFeedback>
         </Animated.View>
 
         <Seccion

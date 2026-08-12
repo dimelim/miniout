@@ -222,6 +222,13 @@ export default function Cuenta() {
 
           <View className="gap-2.5">
             <Fila
+              titulo="Ajustes"
+              descripcion="Tu nombre, dónde estudias, tus notas y MiniLock."
+              onPress={() => router.push('/ajustes')}
+              muted={muted}
+            />
+
+            <Fila
               titulo={account?.hasPassword ? 'Cambiar contraseña' : 'Poner una contraseña'}
               descripcion={
                 account?.hasPassword

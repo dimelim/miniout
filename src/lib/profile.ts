@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEY = 'miniout.profile.v1';
 
 export type Stage = 'colegio' | 'universidad';
-export type ScaleId = '0-5' | '1-10' | '0-100' | 'letras';
+export type ScaleId = '0-5' | '1-10' | '0-20' | '0-100' | 'letras';
 
 export type Profile = {
   stage: Stage | null;
@@ -25,6 +25,7 @@ export const SCALES: {
 }[] = [
   { id: '0-5', label: 'De 0 a 5', sample: '4,2', min: 0, max: 5, step: 0.1, defaultPass: 3, decimals: 1 },
   { id: '1-10', label: 'De 1 a 10', sample: '8,5', min: 1, max: 10, step: 0.5, defaultPass: 6, decimals: 1 },
+  { id: '0-20', label: 'De 0 a 20', sample: '17', min: 0, max: 20, step: 1, defaultPass: 14, decimals: 0 },
   { id: '0-100', label: 'De 0 a 100', sample: '85', min: 0, max: 100, step: 1, defaultPass: 60, decimals: 0 },
   { id: 'letras', label: 'Con letras', sample: 'B+', min: 0, max: 0, step: 0, defaultPass: 0, decimals: 0 },
 ];

@@ -86,14 +86,16 @@ export function FormatBar({ value, selection, onChange, bottomInset }: FormatBar
   return (
     <Animated.View
       pointerEvents="box-none"
-      style={[
-        { position: 'absolute', left: 0, right: 0, bottom: bottomInset + 10, paddingHorizontal: 24 },
-        barra,
-      ]}
+      style={[{ position: 'absolute', left: 0, right: 0, bottom: bottomInset }, barra]}
     >
       <View
-        className="flex-row items-center gap-1 self-start rounded-full p-1.5"
-        style={{ backgroundColor: surface, borderWidth: 1, borderColor: border }}
+        className="flex-row items-center justify-around px-2 py-2"
+        style={{
+          backgroundColor: surface,
+          borderTopWidth: 1,
+          borderTopColor: border,
+          paddingBottom: 10,
+        }}
       >
         <Boton
           etiqueta="Negrita"
@@ -167,7 +169,7 @@ export function FormatBar({ value, selection, onChange, bottomInset }: FormatBar
 }
 
 function Separador({ color }: { color: string }) {
-  return <View style={{ width: 1, height: 18, marginHorizontal: 3, backgroundColor: color }} />;
+  return <View style={{ width: 1, height: 20, backgroundColor: color, opacity: 0.7 }} />;
 }
 
 function Boton({
