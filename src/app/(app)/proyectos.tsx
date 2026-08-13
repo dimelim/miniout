@@ -44,6 +44,17 @@ export default function Proyectos() {
 
   const sueltas = notes.filter((note) => !note.projectId).length;
 
+  const mover = (id: string, salto: number) => {
+    const ids = projects.map((project) => project.id);
+    const desde = ids.indexOf(id);
+    const hasta = Math.min(ids.length - 1, Math.max(0, desde + salto));
+
+    if (desde < 0 || desde === hasta) return;
+
+    ids.splice(hasta, 0, ids.splice(desde, 1)[0]);
+    reorder(ids);
+  };
+
   return (
     <View className="flex-1 bg-background">
       <RuledPaper opacity={0.3} />
@@ -103,6 +114,13 @@ export default function Proyectos() {
                   onPress={() => abrir(`/proyecto-notas?id=${project.id}`)}
                   accessibilityRole="button"
                   accessibilityLabel={`Abrir ${project.name}`}
+                  accessibilityActions={[
+                    { name: 'subir', label: 'Subirlo un puesto' },
+                    { name: 'bajar', label: 'Bajarlo un puesto' },
+                  ]}
+                  onAccessibilityAction={(evento) =>
+                    mover(project.id, evento.nativeEvent.actionName === 'subir' ? -1 : 1)
+                  }
                   className="h-full flex-row items-center gap-3 rounded-[22px] bg-surface px-4 shadow-surface"
                 >
                   <PressableFeedback.Highlight />

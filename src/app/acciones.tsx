@@ -104,7 +104,7 @@ export default function Acciones() {
             etiqueta="Calificarla"
             detalle={
               note.grade === null
-                ? 'Todavía no tiene nota'
+                ? 'Todavía no tiene calificación'
                 : `Sacaste ${gradeLabel(note.grade, perfil)}`
             }
             icono={<GradeIcon color={foreground} size={17} />}

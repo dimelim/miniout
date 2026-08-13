@@ -9,7 +9,13 @@ import { Appear } from '@/components/appear';
 import { Aviso } from '@/components/aviso';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FormatBar, type Seleccion } from '@/components/format-bar';
-import { CheckIcon, ChevronLeftIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  GradeIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@/components/icons';
 import { NoteImage } from '@/components/note-image';
 import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
@@ -211,8 +217,8 @@ export default function Nota() {
       <RuledPaper opacity={0.3} />
 
       <View
-        className="flex-row items-center justify-between gap-3 px-5"
-        style={{ paddingTop: insets.top + 10 }}
+        className="flex-row items-center justify-between gap-3"
+        style={{ paddingTop: insets.top + 10, paddingHorizontal: 22 }}
       >
         <PressableFeedback
           onPress={salir}
@@ -337,11 +343,10 @@ export default function Nota() {
 
             <Etiqueta
               onPress={() => abrir(`/calificar?id=${note.id}`)}
-              etiqueta={
-                note.grade === null ? 'Sin nota' : `Nota ${gradeLabel(note.grade, perfil)}`
-              }
+              etiqueta={note.grade === null ? 'Calificar' : gradeLabel(note.grade, perfil)}
               color={note.grade === null ? border : colorNota}
-              texto={note.grade === null ? muted : colorNota}
+              texto={note.grade === null ? muted : foreground}
+              icono={<GradeIcon color={note.grade === null ? muted : colorNota} size={13} />}
             />
           </View>
         )}

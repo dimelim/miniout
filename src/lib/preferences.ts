@@ -15,7 +15,7 @@ export const ORDERS: { id: NoteOrder; label: string }[] = [
   { id: 'recientes', label: 'Lo último' },
   { id: 'antiguas', label: 'Lo primero' },
   { id: 'entrega', label: 'Por entrega' },
-  { id: 'calificacion', label: 'Por nota' },
+  { id: 'calificacion', label: 'Por calificación' },
 ];
 
 export async function readPrefs(): Promise<NotePrefs> {

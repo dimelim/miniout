@@ -217,8 +217,8 @@ export function NoteRow({
                       paddingVertical: 1.5,
                     }}
                   >
-                    <ProjectIcon name={proyecto.icon} color={proyecto.color} size={10} />
-                    <Text className="font-medium" style={{ fontSize: 11, color: proyecto.color }}>
+                    <ProjectIcon name={proyecto.icon} color={muted} size={10} />
+                    <Text className="font-medium" style={{ fontSize: 11, color: muted }}>
                       {proyecto.name}
                     </Text>
                   </View>

@@ -179,7 +179,7 @@ export default function Notas() {
                 icono={
                   <ProjectIcon
                     name={item.icon}
-                    color={proyecto === item.id ? accentForeground : item.color}
+                    color={proyecto === item.id ? accentForeground : muted}
                     size={13}
                   />
                 }

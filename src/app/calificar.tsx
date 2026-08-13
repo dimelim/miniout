@@ -164,7 +164,7 @@ export default function Calificar() {
 
         <Appear delay={190} className="mt-8 gap-3">
           <Button size="lg" onPress={() => guardar(valor)} isDisabled={valor === null}>
-            <Button.Label>{guardando ? 'Guardando' : 'Guardar la nota'}</Button.Label>
+            <Button.Label>{guardando ? 'Guardando' : 'Guardar la calificación'}</Button.Label>
           </Button>
 
           {note?.grade !== null && note?.grade !== undefined && (
