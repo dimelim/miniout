@@ -171,15 +171,34 @@ function Casco({ size, tinta }: { size: number; tinta: string }) {
 function Gafas({ size, tinta }: { size: number; tinta: string }) {
   return (
     <Svg
-      width={size * 0.86}
-      height={size * 0.34}
-      viewBox="0 0 86 34"
-      style={{ position: 'absolute', top: size * 0.26, left: size * 0.07 }}
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      style={{ position: 'absolute', top: 0, left: 0 }}
       pointerEvents="none"
     >
-      <Circle cx="21" cy="17" r="14" stroke={tinta} strokeWidth="5" fill="none" />
-      <Circle cx="65" cy="17" r="14" stroke={tinta} strokeWidth="5" fill="none" />
-      <Rect x="33" y="14" width="20" height="5" rx="2.5" fill={tinta} />
+      <Rect
+        x="22.5"
+        y="37"
+        width="26"
+        height="26"
+        rx="9"
+        stroke={tinta}
+        strokeWidth="5"
+        fill="none"
+      />
+      <Rect
+        x="51.5"
+        y="37"
+        width="26"
+        height="26"
+        rx="9"
+        stroke={tinta}
+        strokeWidth="5"
+        fill="none"
+      />
+      <Rect x="13.5" y="47.5" width="9" height="5" rx="2.5" fill={tinta} />
+      <Rect x="77.5" y="47.5" width="9" height="5" rx="2.5" fill={tinta} />
     </Svg>
   );
 }

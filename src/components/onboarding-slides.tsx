@@ -1,15 +1,97 @@
-import { Chip } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
-import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Text, View, useWindowDimensions } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { DiaDemo } from './dia-demo';
 import { HintChip } from './hint-chip';
+import { InkDrop } from './ink-drop';
 import { Mark } from './mark';
 import { SignatureMark } from './signature-mark';
 import { TypingDemo } from './typing-demo';
 
 export type SlideProps = { isActive: boolean };
+
+const EASE = Easing.bezier(0.32, 0.72, 0, 1);
+
+export function MascotaSlide({ isActive }: SlideProps) {
+  const { width } = useWindowDimensions();
+  const [accesorio, setAccesorio] = useState<'ninguno' | 'casco' | 'gafas' | 'antena'>('ninguno');
+  const [color, setColor] = useState<string | null>(null);
+
+  const paseo = useSharedValue(0);
+  const recorrido = Math.max(60, width - 56 - 96);
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    paseo.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2600, easing: EASE }),
+        withTiming(0, { duration: 2600, easing: EASE })
+      ),
+      -1
+    );
+  }, [isActive, paseo]);
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    const orden: ('ninguno' | 'gafas' | 'casco' | 'antena')[] = [
+      'ninguno',
+      'gafas',
+      'casco',
+      'antena',
+    ];
+    const tintas = [null, '#6b6fc4', '#4f9068', '#c2553c'];
+    let paso = 0;
+
+    const timer = setInterval(() => {
+      paso += 1;
+      setAccesorio(orden[paso % orden.length]);
+      setColor(tintas[paso % tintas.length]);
+    }, 1300);
+
+    return () => clearInterval(timer);
+  }, [isActive]);
+
+  const camina = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: paseo.value * recorrido },
+      { rotate: `${Math.sin(paseo.value * Math.PI * 4) * 7}deg` },
+    ],
+  }));
+
+  return (
+    <View className="flex-1 justify-center gap-8">
+      <View style={{ height: 110, justifyContent: 'center' }}>
+        <Animated.View style={camina}>
+          <InkDrop size={96} mood="happy" color={color ?? undefined} accesorio={accesorio} />
+        </Animated.View>
+      </View>
+
+      <View className="gap-2">
+        <Text
+          className="font-display text-foreground"
+          style={{ fontSize: 30, lineHeight: 34, letterSpacing: -0.6 }}
+        >
+          Y esta te acompaña
+        </Text>
+        <Text className="font-sans text-muted" style={{ fontSize: 16, lineHeight: 25 }}>
+          Vive en tu inicio, te dice qué te falta y te cuida las notas con un código si
+          quieres. Le pones nombre, color y hasta gafas.
+        </Text>
+      </View>
+    </View>
+  );
+}
 
 export function MarcaSlide({ isActive }: SlideProps) {
   return (

@@ -12,6 +12,8 @@ export const NOVEDADES: Novedad[] = [
     fecha: '13 de agosto de 2026',
     cambios: [
       'Pestaña nueva: Mascota. Ponle nombre, elige su color y qué lleva puesto: casco, gafas o antena. El cambio se ve en toda la app.',
+      'La bienvenida termina presentándote a la mascota, que se pasea y se va probando accesorios.',
+      'Los cortes y evaluaciones se renombran tocando su nombre: llámalos como los llame tu profesor.',
       'La mascota te guía: en las materias vacías te explica cada sección con sus palabras.',
       'La nota es a pantalla completa, escribes sobre el papel rayado sin tarjeta de por medio.',
       'La materia se reorganizó: arriba cómo vas y tu próxima clase, y los campos de añadir solo aparecen cuando los pides.',

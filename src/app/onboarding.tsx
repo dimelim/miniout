@@ -11,11 +11,16 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CapturaSlide, DiaSlide, MarcaSlide } from '@/components/onboarding-slides';
+import {
+  CapturaSlide,
+  DiaSlide,
+  MarcaSlide,
+  MascotaSlide,
+} from '@/components/onboarding-slides';
 import { RuledPaper } from '@/components/ruled-paper';
 import { SlideDots } from '@/components/slide-dots';
 
-const SLIDES = [MarcaSlide, CapturaSlide, DiaSlide];
+const SLIDES = [MarcaSlide, CapturaSlide, DiaSlide, MascotaSlide];
 const AUTOPLAY_MS = 5200;
 const RESUME_MS = 320;
 

@@ -35,7 +35,7 @@ export function Evaluaciones({
 }: EvaluacionesProps) {
   const [nombre, setNombre] = useState('');
 
-  const [muted, foreground, border, surfaceSecondary, danger, warning, success, background] =
+  const [muted, foreground, border, surfaceSecondary, danger, warning, success, background, link] =
     useThemeColor([
       'muted',
       'foreground',
@@ -45,6 +45,7 @@ export function Evaluaciones({
       'warning',
       'success',
       'background',
+      'link',
     ]);
 
   const total = pesoTotal(subject.evaluaciones);
@@ -87,6 +88,18 @@ export function Evaluaciones({
           fecha: null,
         },
       ],
+    }));
+  };
+
+  const cambiarNombre = (id: string, texto: string) => {
+    const limpio = texto.trim();
+    if (!limpio) return;
+
+    onCambiar((una) => ({
+      ...una,
+      evaluaciones: una.evaluaciones.map((otra) =>
+        otra.id === id ? { ...otra, nombre: limpio.slice(0, 60) } : otra
+      ),
     }));
   };
 
@@ -197,20 +210,39 @@ export function Evaluaciones({
             key={una.id}
             className="flex-row items-center gap-3 rounded-[18px] bg-surface p-3.5 shadow-surface"
           >
-            <PressableFeedback
-              onPress={() => onCalificar(una.id)}
-              accessibilityRole="button"
-              accessibilityLabel={`Calificar ${una.nombre}`}
-              style={{ flex: 1, borderRadius: 12 }}
-            >
-              <PressableFeedback.Highlight />
-              <Text className="font-medium text-foreground" style={{ fontSize: 15 }}>
-                {una.nombre}
-              </Text>
-              <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 12, lineHeight: 17 }}>
-                {una.nota === null ? 'Sin calificar' : `Sacaste ${gradeLabel(una.nota, perfil)}`}
-              </Text>
-            </PressableFeedback>
+            <View className="flex-1">
+              <TextInput
+                defaultValue={una.nombre}
+                onChangeText={(texto) => cambiarNombre(una.id, texto)}
+                maxLength={60}
+                selectionColor={color}
+                cursorColor={color}
+                accessibilityLabel={`Nombre de ${una.nombre}`}
+                className="font-medium text-foreground"
+                style={{ fontSize: 15, padding: 0 }}
+              />
+
+              <PressableFeedback
+                onPress={() => onCalificar(una.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`Calificar ${una.nombre}`}
+                style={{ alignSelf: 'flex-start', borderRadius: 8, marginTop: 1 }}
+              >
+                <PressableFeedback.Highlight />
+                <Text
+                  className="font-sans"
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 17,
+                    color: una.nota === null ? link : foreground,
+                  }}
+                >
+                  {una.nota === null
+                    ? 'Poner la nota'
+                    : `Sacaste ${gradeLabel(una.nota, perfil)}`}
+                </Text>
+              </PressableFeedback>
+            </View>
 
             <View
               className="flex-row items-center gap-0.5 rounded-[10px] px-2"

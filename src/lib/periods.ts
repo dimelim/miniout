@@ -38,21 +38,12 @@ export type Subject = {
   evaluaciones: Evaluacion[];
 };
 
+
 export const REPARTOS: { id: string; label: string; pesos: number[]; detalle: string }[] = [
   { id: 'tres-cortes', label: 'Tres cortes', pesos: [30, 30, 40], detalle: '30, 30 y 40' },
   { id: 'dos-parciales', label: 'Dos parciales', pesos: [50, 50], detalle: 'Mitad y mitad' },
-  {
-    id: 'cuatro',
-    label: 'Cuatro notas',
-    pesos: [25, 25, 25, 25],
-    detalle: 'Todas valen igual',
-  },
-  {
-    id: 'con-final',
-    label: 'Con examen final',
-    pesos: [20, 20, 20, 40],
-    detalle: 'El final pesa 40',
-  },
+  { id: 'cuatro', label: 'Cuatro notas', pesos: [25, 25, 25, 25], detalle: 'Todas valen igual' },
+  { id: 'con-final', label: 'Con examen final', pesos: [20, 20, 20, 40], detalle: 'El final pesa 40' },
 ];
 
 export const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
