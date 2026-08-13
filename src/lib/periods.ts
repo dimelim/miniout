@@ -88,13 +88,13 @@ export function completarSubject(subject: Partial<Subject> & { id: string; name:
   };
 }
 
-export function ordenarClases(clases: Clase[]) {
+export function ordenarClases(clases: Clase[] = []) {
   return [...clases].sort((una, otra) =>
     una.dia === otra.dia ? una.inicio.localeCompare(otra.inicio) : una.dia - otra.dia
   );
 }
 
-export function resumenHorario(clases: Clase[]) {
+export function resumenHorario(clases: Clase[] = []) {
   if (clases.length === 0) return null;
 
   return ordenarClases(clases)
@@ -118,20 +118,20 @@ export function normalizarHora(valor: string) {
   return `${limpio.slice(0, 2)}:${limpio.slice(2)}`;
 }
 
-export function clasesDelDia(subjects: Subject[], dia: number) {
+export function clasesDelDia(subjects: Subject[] = [], dia: number) {
   return subjects
     .flatMap((subject) =>
-      subject.clases
+      (subject.clases ?? [])
         .filter((clase) => clase.dia === dia)
         .map((clase) => ({ subject, clase }))
     )
     .sort((una, otra) => una.clase.inicio.localeCompare(otra.clase.inicio));
 }
 
-export function encargosPendientes(subjects: Subject[]) {
+export function encargosPendientes(subjects: Subject[] = []) {
   return subjects
     .flatMap((subject) =>
-      subject.encargos.filter((encargo) => !encargo.hecho).map((encargo) => ({ subject, encargo }))
+      (subject.encargos ?? []).filter((encargo) => !encargo.hecho).map((encargo) => ({ subject, encargo }))
     )
     .sort((uno, otro) => {
       if (!uno.encargo.fecha && !otro.encargo.fecha) return 0;

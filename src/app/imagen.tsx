@@ -39,12 +39,13 @@ export default function VisorImagen() {
   const [borrando, setBorrando] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
-  const [background, foreground, muted, surface, danger] = useThemeColor([
-    'background',
+  const [foreground, muted, surface, danger, accent, accentForeground] = useThemeColor([
     'foreground',
     'muted',
     'surface',
     'danger',
+    'accent',
+    'accent-foreground',
   ]);
 
   const note = find(id);
@@ -147,6 +148,16 @@ export default function VisorImagen() {
     router.back();
   };
 
+  const colocar = async (arriba: boolean) => {
+    if (Boolean(imagen.arriba) === arriba) return;
+
+    await edit(note.id, {
+      media: note.media.map((media) =>
+        media.name === imagen.name ? { ...media, arriba } : media
+      ),
+    });
+  };
+
   const enderezar = () => {
     offsetX.value = withTiming(0, { duration: 220, easing: EASE });
     offsetY.value = withTiming(0, { duration: 220, easing: EASE });
@@ -245,6 +256,45 @@ export default function VisorImagen() {
         >
           Arrastra para moverla, pellizca para acercarla y gira con dos dedos.
         </Text>
+      </View>
+
+      <View className="px-5">
+        <View
+          className="flex-row gap-1.5 rounded-[16px] p-1"
+          style={{ backgroundColor: surface }}
+        >
+          {[
+            { arriba: true, etiqueta: 'Encima del texto' },
+            { arriba: false, etiqueta: 'Debajo del texto' },
+          ].map((opcion) => {
+            const activa = Boolean(imagen.arriba) === opcion.arriba;
+
+            return (
+              <PressableFeedback
+                key={opcion.etiqueta}
+                onPress={() => colocar(opcion.arriba)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: activa }}
+                accessibilityLabel={opcion.etiqueta}
+                style={{
+                  flex: 1,
+                  paddingVertical: 11,
+                  borderRadius: 13,
+                  alignItems: 'center',
+                  backgroundColor: activa ? accent : 'transparent',
+                }}
+              >
+                <PressableFeedback.Highlight />
+                <Text
+                  className="font-medium"
+                  style={{ fontSize: 13, color: activa ? accentForeground : muted }}
+                >
+                  {opcion.etiqueta}
+                </Text>
+              </PressableFeedback>
+            );
+          })}
+        </View>
       </View>
 
       <View

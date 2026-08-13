@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { Chip, PressableFeedback, Spinner, useToast } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -30,6 +30,8 @@ import {
   desplazar,
   diferencia,
   limitesDeLinea,
+  normalizar,
+  quitar,
   tieneMarcasViejas,
   tieneTodo,
   VINETA,
@@ -47,6 +49,9 @@ import { estadoDeEntrega } from '@/lib/schedule';
 
 const MINIATURA = 132;
 const CUERPO = 17;
+
+const TIPOS: MarcaTipo[] = ['negrita', 'cursiva', 'subrayado', 'titulo'];
+const ESCRIBIBLES: MarcaTipo[] = ['negrita', 'cursiva', 'subrayado'];
 
 function contenidoInicial(note: Note | null) {
   if (!note) return { texto: '', marcas: [] as Marca[] };
@@ -87,11 +92,13 @@ export default function Nota() {
   const inicial = useRef(contenidoInicial(note));
   const original = useRef({ title: note?.title ?? '', body: inicial.current.texto });
   const cargado = useRef(!id || Boolean(note));
+  const escribiendo = useRef(false);
 
   const [titulo, setTitulo] = useState(note?.title ?? '');
   const [cuerpo, setCuerpo] = useState(inicial.current.texto);
   const [marcas, setMarcas] = useState<Marca[]>(inicial.current.marcas);
   const [seleccion, setSeleccion] = useState<Seleccion>({ start: 0, end: 0 });
+  const [pendientes, setPendientes] = useState<Partial<Record<MarcaTipo, boolean>>>({});
   const [forzada, setForzada] = useState<Seleccion | null>(null);
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [guardando, setGuardando] = useState(false);
@@ -126,15 +133,21 @@ export default function Nota() {
     titulo.trim() !== original.current.title.trim();
   const entrega = estadoDeEntrega(note?.dueAt ?? null);
   const proyecto = buscarProyecto(note?.projectId);
+  const arriba = note?.media.filter((imagen) => imagen.arriba) ?? [];
+  const abajo = note?.media.filter((imagen) => !imagen.arriba) ?? [];
 
   const activos = useMemo(() => {
     const desde = seleccion.start === seleccion.end ? seleccion.start - 1 : seleccion.start;
     const hasta = seleccion.end;
 
-    return (['negrita', 'cursiva', 'subrayado', 'titulo'] as MarcaTipo[]).filter((tipo) =>
-      tieneTodo(marcas, tipo, Math.max(0, desde), Math.max(1, hasta))
-    );
-  }, [marcas, seleccion]);
+    return TIPOS.filter((tipo) => {
+      const querido = pendientes[tipo];
+
+      if (querido !== undefined && tipo !== 'titulo') return querido;
+
+      return tieneTodo(marcas, tipo, Math.max(0, desde), Math.max(1, hasta));
+    });
+  }, [marcas, pendientes, seleccion]);
 
   useEffect(() => {
     readProfile().then(setPerfil);
@@ -155,8 +168,30 @@ export default function Nota() {
   const cambiarCuerpo = (texto: string) => {
     const continuado = continuarVineta(cuerpo, texto);
     const definitivo = continuado ?? texto;
+    const cambio = diferencia(cuerpo, definitivo);
 
-    setMarcas((actuales) => desplazar(actuales, diferencia(cuerpo, definitivo)));
+    setMarcas((actuales) => {
+      let siguientes = desplazar(actuales, cambio);
+
+      if (cambio.insertados > 0) {
+        const desde = cambio.desde;
+        const hasta = desde + cambio.insertados;
+
+        for (const tipo of ESCRIBIBLES) {
+          const querido = pendientes[tipo];
+
+          if (querido === true) {
+            siguientes = normalizar([...siguientes, { tipo, desde, hasta }]);
+          } else if (querido === false) {
+            siguientes = quitar(siguientes, tipo, desde, hasta);
+          }
+        }
+      }
+
+      return siguientes;
+    });
+
+    escribiendo.current = true;
     setCuerpo(definitivo);
 
     if (continuado) {
@@ -166,6 +201,11 @@ export default function Nota() {
   };
 
   const aplicarMarca = (tipo: MarcaTipo) => {
+    if (tipo !== 'titulo' && seleccion.start === seleccion.end) {
+      setPendientes((actuales) => ({ ...actuales, [tipo]: !activos.includes(tipo) }));
+      return;
+    }
+
     const rango =
       tipo === 'titulo'
         ? limitesDeLinea(cuerpo, seleccion.start)
@@ -422,26 +462,7 @@ export default function Nota() {
         )}
 
         <View className="mt-4 rounded-[24px] bg-surface px-5 py-4 shadow-surface">
-          {(note?.media.length ?? 0) > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="-mx-1 mb-4"
-              contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
-            >
-              {note?.media.map((imagen: Imagen) => (
-                <PressableFeedback
-                  key={imagen.name}
-                  onPress={() => abrir(`/imagen?id=${note.id}&name=${imagen.name}`)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Abrir la imagen"
-                  style={{ borderRadius: 18 }}
-                >
-                  <NoteImage imagen={imagen} width={MINIATURA} height={MINIATURA} />
-                </PressableFeedback>
-              ))}
-            </ScrollView>
-          )}
+          <Tira imagenes={arriba} note={note} abrir={abrir} className="mb-4" />
 
           {subiendo && (
             <View className="mb-4 flex-row items-center gap-2">
@@ -459,6 +480,13 @@ export default function Nota() {
             onSelectionChange={(event) => {
               setSeleccion(event.nativeEvent.selection);
               if (forzada) setForzada(null);
+
+              if (escribiendo.current) {
+                escribiendo.current = false;
+                return;
+              }
+
+              setPendientes({});
             }}
             multiline
             autoFocus={!note}
@@ -500,6 +528,8 @@ export default function Nota() {
               </Text>
             </View>
           )}
+
+          <Tira imagenes={abajo} note={note} abrir={abrir} className="mt-4" />
 
           {pistas.length > 0 && (
             <View className="mt-4 flex-row flex-wrap gap-1.5 border-t border-border pt-3">
@@ -544,6 +574,41 @@ export default function Nota() {
         onCancel={() => setPreguntando(false)}
       />
     </View>
+  );
+}
+
+function Tira({
+  imagenes,
+  note,
+  abrir,
+  className,
+}: {
+  imagenes: Imagen[];
+  note: Note | null;
+  abrir: (href: Href) => void;
+  className: string;
+}) {
+  if (!note || imagenes.length === 0) return null;
+
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      className={`-mx-1 ${className}`}
+      contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
+    >
+      {imagenes.map((imagen) => (
+        <PressableFeedback
+          key={imagen.name}
+          onPress={() => abrir(`/imagen?id=${note.id}&name=${imagen.name}`)}
+          accessibilityRole="button"
+          accessibilityLabel="Abrir la imagen"
+          style={{ borderRadius: 18 }}
+        >
+          <NoteImage imagen={imagen} width={MINIATURA} height={MINIATURA} />
+        </PressableFeedback>
+      ))}
+    </ScrollView>
   );
 }
 

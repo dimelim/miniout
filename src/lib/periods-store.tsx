@@ -29,6 +29,10 @@ type PeriodsValue = {
 
 const PeriodsContext = createContext<PeriodsValue | null>(null);
 
+function sanear(period: Period): Period {
+  return { ...period, subjects: (period.subjects ?? []).map(completarSubject) };
+}
+
 export function PeriodsProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
   const [periods, setPeriods] = useState<Period[]>([]);
@@ -62,12 +66,12 @@ export function PeriodsProvider({ children }: { children: ReactNode }) {
           }
 
           await AsyncStorage.removeItem(VIEJOS);
-          setPeriods(subidos);
+          setPeriods(subidos.map(sanear));
           return;
         }
       }
 
-      setPeriods(payload.periods);
+      setPeriods(payload.periods.map(sanear));
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +85,7 @@ export function PeriodsProvider({ children }: { children: ReactNode }) {
     async (input: { name: string; icon: string; color: string }) => {
       if (!session) throw new Error('No hay sesión');
 
-      const period = await api.createPeriod(session.accessToken, input);
+      const period = sanear(await api.createPeriod(session.accessToken, input));
       setPeriods((current) => [...current, period]);
 
       return period;
@@ -107,7 +111,7 @@ export function PeriodsProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const updated = await api.updatePeriod(session.accessToken, id, patch);
+        const updated = sanear(await api.updatePeriod(session.accessToken, id, patch));
         setPeriods((current) => current.map((period) => (period.id === id ? updated : period)));
       } catch (error) {
         setPeriods(anterior);

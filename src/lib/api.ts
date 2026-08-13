@@ -6,6 +6,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export type NoteImage = {
   name: string;
+  arriba?: boolean;
   width: number;
   height: number;
   scale?: number;

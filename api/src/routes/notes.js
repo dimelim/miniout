@@ -37,6 +37,7 @@ const mediaSchema = {
   additionalProperties: false,
   properties: {
     name: { type: 'string', maxLength: 40 },
+    arriba: { type: 'boolean' },
     width: { type: 'integer', minimum: 0, maximum: 20000 },
     height: { type: 'integer', minimum: 0, maximum: 20000 },
     scale: { type: 'number', minimum: 0.1, maximum: 8 },

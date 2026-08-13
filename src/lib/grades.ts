@@ -33,23 +33,23 @@ export function gradeLabel(value: number, profile: Profile) {
   return formatGrade(value, gradeScale(profile).decimals);
 }
 
-export function pesoTotal(evaluaciones: Evaluacion[]) {
+export function pesoTotal(evaluaciones: Evaluacion[] = []) {
   return evaluaciones.reduce((suma, una) => suma + una.peso, 0);
 }
 
-export function pesoCalificado(evaluaciones: Evaluacion[]) {
+export function pesoCalificado(evaluaciones: Evaluacion[] = []) {
   return evaluaciones
     .filter((una) => una.nota !== null)
     .reduce((suma, una) => suma + una.peso, 0);
 }
 
-export function aporteActual(evaluaciones: Evaluacion[]) {
+export function aporteActual(evaluaciones: Evaluacion[] = []) {
   return evaluaciones
     .filter((una) => una.nota !== null)
     .reduce((suma, una) => suma + (una.nota as number) * (una.peso / 100), 0);
 }
 
-export function notaHastaAhora(evaluaciones: Evaluacion[]) {
+export function notaHastaAhora(evaluaciones: Evaluacion[] = []) {
   const calificado = pesoCalificado(evaluaciones);
 
   if (calificado === 0) return null;
@@ -57,7 +57,7 @@ export function notaHastaAhora(evaluaciones: Evaluacion[]) {
   return (aporteActual(evaluaciones) * 100) / calificado;
 }
 
-export function faltaParaPasar(evaluaciones: Evaluacion[], profile: Profile) {
+export function faltaParaPasar(evaluaciones: Evaluacion[] = [], profile: Profile) {
   const pendiente = pesoTotal(evaluaciones) - pesoCalificado(evaluaciones);
 
   if (pendiente <= 0) return null;
@@ -73,7 +73,7 @@ export function faltaParaPasar(evaluaciones: Evaluacion[], profile: Profile) {
   };
 }
 
-export function promedioDelPeriodo(subjects: Subject[]) {
+export function promedioDelPeriodo(subjects: Subject[] = []) {
   const conNota = subjects
     .map((subject) => ({
       nota: notaHastaAhora(subject.evaluaciones),

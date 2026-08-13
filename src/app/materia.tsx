@@ -62,7 +62,10 @@ export default function Materia() {
 
   const clases = useMemo(() => (subject ? ordenarClases(subject.clases) : []), [subject]);
   const apuntes = useMemo(
-    () => (subject ? [...subject.apuntes].sort((uno, otro) => otro.fecha.localeCompare(uno.fecha)) : []),
+    () =>
+      subject
+        ? [...(subject.apuntes ?? [])].sort((uno, otro) => otro.fecha.localeCompare(uno.fecha))
+        : [],
     [subject]
   );
 
