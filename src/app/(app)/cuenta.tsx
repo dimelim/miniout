@@ -14,10 +14,12 @@ import { InkDrop } from '@/components/ink-drop';
 import { UserAvatar } from '@/components/user-avatar';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useAbrir } from '@/lib/navigate';
 
 export default function Cuenta() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const abrir = useAbrir();
   const { account, session, signIn, signOut, saveAvatar, markIntroSeen } = useAuth();
 
   const [cerrando, setCerrando] = useState(false);
@@ -224,7 +226,7 @@ export default function Cuenta() {
             <Fila
               titulo="Ajustes"
               descripcion="Tu nombre, dónde estudias, tus notas y MiniLock."
-              onPress={() => router.push('/ajustes')}
+              onPress={() => abrir('/ajustes')}
               muted={muted}
             />
 
@@ -235,7 +237,7 @@ export default function Cuenta() {
                   ? 'Se cierran las sesiones de los demás dispositivos.'
                   : 'Entraste con Google o Discord. Con una contraseña también podrás entrar con tu correo.'
               }
-              onPress={() => router.push('/contrasena')}
+              onPress={() => abrir('/contrasena')}
               muted={muted}
             />
 
@@ -274,7 +276,7 @@ export default function Cuenta() {
 
           <View className="gap-2.5">
             <PressableFeedback
-              onPress={() => router.push('/github')}
+              onPress={() => abrir('/github')}
               accessibilityRole="button"
               accessibilityLabel="Miniout en GitHub"
               className="flex-row items-center gap-3 rounded-[20px] bg-surface p-4 shadow-surface"
