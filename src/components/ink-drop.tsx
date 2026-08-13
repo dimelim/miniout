@@ -11,6 +11,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import Svg, { Path, Rect } from 'react-native-svg';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 
@@ -111,35 +112,6 @@ export function InkDrop({ size = 44, mood = 'idle', hat = false }: InkDropProps)
   return (
     <Pressable onPress={saludar} accessible={false} hitSlop={10}>
       <Animated.View style={[{ width: size, height: size, alignItems: 'center' }, body]}>
-        {hat && (
-          <View
-            style={{
-              position: 'absolute',
-              top: -size * 0.2,
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                width: size * 0.5,
-                height: size * 0.26,
-                borderTopLeftRadius: size,
-                borderTopRightRadius: size,
-                backgroundColor: foreground,
-              }}
-            />
-            <View
-              style={{
-                width: size * 0.78,
-                height: size * 0.09,
-                borderRadius: size,
-                marginTop: -size * 0.01,
-                backgroundColor: foreground,
-              }}
-            />
-          </View>
-        )}
-
         <View
           style={{
             width: size,
@@ -150,12 +122,33 @@ export function InkDrop({ size = 44, mood = 'idle', hat = false }: InkDropProps)
             backgroundColor: accent,
           }}
         >
-          <Animated.View style={[{ flexDirection: 'row', gap: size * 0.17 }, eyes]}>
+          <Animated.View
+            style={[
+              { flexDirection: 'row', gap: size * 0.17, marginTop: hat ? size * 0.06 : 0 },
+              eyes,
+            ]}
+          >
             <View style={eye} />
             <View style={eye} />
           </Animated.View>
         </View>
+
+        {hat && <Casco size={size} tinta={foreground} />}
       </Animated.View>
     </Pressable>
+  );
+}
+
+function Casco({ size, tinta }: { size: number; tinta: string }) {
+  return (
+    <Svg
+      width={size * 1.04}
+      height={size * 0.46}
+      viewBox="0 0 104 46"
+      style={{ position: 'absolute', top: -size * 0.26, left: -size * 0.02 }}
+    >
+      <Path d="M21 37a31 36 0 0 1 62 0z" fill={tinta} />
+      <Rect x="0" y="36" width="104" height="10" rx="5" fill={tinta} />
+    </Svg>
   );
 }
