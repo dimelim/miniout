@@ -176,7 +176,6 @@ export default function ProyectoNotas() {
               >
                 <NoteRow
                   note={note}
-                  perfil={perfil}
                   onToggle={() => toggle(note)}
                   onOpen={() => abrir(`/nota?id=${note.id}`)}
                   onMenu={() => abrir(`/acciones?id=${note.id}`)}

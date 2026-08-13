@@ -19,14 +19,41 @@ export type Encargo = {
   hecho: boolean;
 };
 
+export type Evaluacion = {
+  id: string;
+  nombre: string;
+  peso: number;
+  nota: number | null;
+  fecha: string | null;
+};
+
 export type Subject = {
   id: string;
   name: string;
   createdAt: string;
+  creditos?: number;
   clases: Clase[];
   apuntes: Apunte[];
   encargos: Encargo[];
+  evaluaciones: Evaluacion[];
 };
+
+export const REPARTOS: { id: string; label: string; pesos: number[]; detalle: string }[] = [
+  { id: 'tres-cortes', label: 'Tres cortes', pesos: [30, 30, 40], detalle: '30, 30 y 40' },
+  { id: 'dos-parciales', label: 'Dos parciales', pesos: [50, 50], detalle: 'Mitad y mitad' },
+  {
+    id: 'cuatro',
+    label: 'Cuatro notas',
+    pesos: [25, 25, 25, 25],
+    detalle: 'Todas valen igual',
+  },
+  {
+    id: 'con-final',
+    label: 'Con examen final',
+    pesos: [20, 20, 20, 40],
+    detalle: 'El final pesa 40',
+  },
+];
 
 export const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 export const DIAS_CORTOS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -53,9 +80,11 @@ export function completarSubject(subject: Partial<Subject> & { id: string; name:
     id: subject.id,
     name: subject.name,
     createdAt: subject.createdAt ?? new Date().toISOString(),
+    ...(subject.creditos ? { creditos: subject.creditos } : {}),
     clases: subject.clases ?? [],
     apuntes: subject.apuntes ?? [],
     encargos: subject.encargos ?? [],
+    evaluaciones: subject.evaluaciones ?? [],
   };
 }
 

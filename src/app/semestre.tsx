@@ -12,7 +12,9 @@ import { BackButton } from '@/components/back-button';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { ChevronRightIcon, ClockIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { ProjectIcon } from '@/components/project-icons';
+import { KeyboardSpace } from '@/components/keyboard-space';
 import { RuledPaper } from '@/components/ruled-paper';
+import { SendButton } from '@/components/send-button';
 import { useAbrir } from '@/lib/navigate';
 import {
   clasesDelDia,
@@ -337,28 +339,23 @@ export default function Semestre() {
                 style={{ fontSize: 16, paddingVertical: 10, paddingHorizontal: 0 }}
               />
 
-              <PressableFeedback
+              <SendButton
+                activo={Boolean(materia.trim())}
+                color={periodo.color}
+                fondo={surfaceSecondary}
+                contraste={background}
+                muted={muted}
+                etiqueta="Añadir materia"
                 onPress={agregar}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel="Añadir materia"
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 999,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: materia.trim() ? periodo.color : surfaceSecondary,
-                }}
-              >
-                <PressableFeedback.Highlight />
-                <PlusIcon color={materia.trim() ? background : muted} size={16} />
-              </PressableFeedback>
+                size={38}
+              />
             </View>
 
             {problema && <Aviso mensaje={problema} className="mt-2 px-1" />}
           </View>
         </Appear>
+
+        <KeyboardSpace bottomInset={insets.bottom} />
       </ScrollView>
 
       <ConfirmDialog

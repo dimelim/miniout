@@ -1,18 +1,26 @@
 import { Button, PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
-import { useEffect, useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CheckIcon, PlusIcon } from '@/components/icons';
+import { Appear } from '@/components/appear';
+import { Aviso } from '@/components/aviso';
+import { CheckIcon, CloseIcon } from '@/components/icons';
+import { KeyboardSpace } from '@/components/keyboard-space';
+import { SendButton } from '@/components/send-button';
 import {
   DEFAULT_QUOTES,
+  FUENTES,
   MAX_QUOTE_LENGTH,
+  RITMOS,
+  listaDeFrases,
   quoteError,
+  quoteOfTheDay,
   readQuoteSettings,
   saveQuoteSettings,
   type QuoteSettings,
-  type QuoteSource,
 } from '@/lib/quotes';
 
 export default function Frases() {
@@ -22,22 +30,28 @@ export default function Frases() {
   const [nueva, setNueva] = useState('');
   const [problema, setProblema] = useState<string | null>(null);
 
-  const [accent, accentForeground, muted, foreground, danger] = useThemeColor([
-    'accent',
-    'accent-foreground',
-    'muted',
-    'foreground',
-    'danger',
-  ]);
+  const [accent, accentForeground, muted, foreground, surfaceTertiary, background] =
+    useThemeColor([
+      'accent',
+      'accent-foreground',
+      'muted',
+      'foreground',
+      'surface-tertiary',
+      'background',
+    ]);
 
   useEffect(() => {
     readQuoteSettings().then(setSettings);
   }, []);
 
-  const cambiar = (siguiente: QuoteSettings) => {
+  const cambiar = (patch: Partial<QuoteSettings>) => {
+    const siguiente = { ...settings, ...patch };
     setSettings(siguiente);
     saveQuoteSettings(siguiente);
   };
+
+  const lista = useMemo(() => listaDeFrases(settings), [settings]);
+  const deHoy = useMemo(() => quoteOfTheDay(settings), [settings]);
 
   const agregar = () => {
     const problem = quoteError(nueva);
@@ -45,8 +59,9 @@ export default function Frases() {
 
     if (problem) return;
 
-    cambiar({ source: 'propias', own: [...settings.own, nueva.trim()] });
+    cambiar({ own: [...settings.own, nueva.trim()] });
     setNueva('');
+    Keyboard.dismiss();
   };
 
   return (
@@ -60,165 +75,218 @@ export default function Frases() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text
-          className="font-display text-foreground"
-          style={{ fontSize: 25, letterSpacing: -0.4 }}
-        >
-          Frase del día
-        </Text>
-        <Text className="mt-2 font-sans text-muted" style={{ fontSize: 14, lineHeight: 21 }}>
-          Usa las de Miniout o escribe las tuyas. Cada día sale una.
-        </Text>
+        <Appear>
+          <Text
+            className="font-display text-foreground"
+            style={{ fontSize: 25, letterSpacing: -0.4 }}
+          >
+            Frases
+          </Text>
+        </Appear>
 
-        <View className="mt-6 gap-2">
-          <Fuente
-            titulo="Las de Miniout"
-            descripcion="24 frases sobre estudiar y no rendirse."
-            activa={settings.source === 'miniout'}
-            accent={accent}
-            accentForeground={accentForeground}
-            onPress={() => cambiar({ ...settings, source: 'miniout' })}
-          />
-          <Fuente
-            titulo="Las mías"
-            descripcion={
-              settings.own.length === 0
-                ? 'Todavía no has escrito ninguna.'
-                : `${settings.own.length} ${settings.own.length === 1 ? 'frase tuya' : 'frases tuyas'}.`
-            }
-            activa={settings.source === 'propias'}
-            accent={accent}
-            accentForeground={accentForeground}
-            onPress={() => cambiar({ ...settings, source: 'propias' })}
-          />
-        </View>
+        <Appear delay={60} className="mt-5">
+          <View className="rounded-[22px] bg-surface p-5 shadow-surface">
+            <Text
+              className="font-display text-foreground"
+              style={{ fontSize: 20, lineHeight: 28, letterSpacing: -0.3 }}
+            >
+              {deHoy.texto}
+            </Text>
+            {deHoy.autor && (
+              <Text className="mt-2 font-medium text-muted" style={{ fontSize: 13 }}>
+                {deHoy.autor}
+              </Text>
+            )}
+          </View>
+        </Appear>
 
-        {settings.own.length > 0 && (
-          <View className="mt-5 gap-1.5">
+        <Appear delay={110} className="mt-7">
+          <Text className="mb-3 font-medium text-muted" style={{ fontSize: 12 }}>
+            De dónde salen
+          </Text>
+
+          <View className="flex-row flex-wrap gap-2">
+            {FUENTES.map((fuente) => (
+              <Pastilla
+                key={fuente.id}
+                activa={settings.source === fuente.id}
+                etiqueta={fuente.label}
+                onPress={() => cambiar({ source: fuente.id })}
+                accent={accent}
+                accentForeground={accentForeground}
+                fondo={surfaceTertiary}
+                texto={foreground}
+              />
+            ))}
+          </View>
+        </Appear>
+
+        <Appear delay={150} className="mt-7">
+          <Text className="mb-3 font-medium text-muted" style={{ fontSize: 12 }}>
+            Cada cuánto cambia
+          </Text>
+
+          <View className="flex-row flex-wrap gap-2">
+            {RITMOS.map((ritmo) => (
+              <Pastilla
+                key={ritmo.id}
+                activa={settings.rate === ritmo.id}
+                etiqueta={ritmo.label}
+                onPress={() => cambiar({ rate: ritmo.id })}
+                accent={accent}
+                accentForeground={accentForeground}
+                fondo={surfaceTertiary}
+                texto={foreground}
+              />
+            ))}
+          </View>
+        </Appear>
+
+        <Appear delay={190} className="mt-7">
+          <Text className="mb-3 font-medium text-muted" style={{ fontSize: 12 }}>
+            {settings.own.length === 1 ? 'Tu frase' : `Tus frases (${settings.own.length})`}
+          </Text>
+
+          <Animated.View layout={LinearTransition.duration(200)} className="gap-2">
             {settings.own.map((frase) => (
               <View
                 key={frase}
-                className="flex-row items-center gap-3 rounded-[16px] bg-surface px-4 py-3 shadow-surface"
+                className="flex-row items-start gap-3 rounded-[18px] bg-surface p-4 shadow-surface"
               >
                 <Text
-                  className="flex-1 font-display text-foreground"
-                  style={{ fontSize: 16, lineHeight: 23 }}
+                  className="flex-1 font-sans text-foreground"
+                  style={{ fontSize: 15, lineHeight: 22 }}
                 >
                   {frase}
                 </Text>
+
                 <PressableFeedback
                   onPress={() =>
-                    cambiar({ ...settings, own: settings.own.filter((item) => item !== frase) })
+                    cambiar({ own: settings.own.filter((otra) => otra !== frase) })
                   }
                   hitSlop={10}
                   accessibilityRole="button"
-                  accessibilityLabel={`Quitar ${frase}`}
-                  style={{ borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}
+                  accessibilityLabel="Quitar la frase"
+                  style={{ padding: 6, borderRadius: 999 }}
                 >
                   <PressableFeedback.Highlight />
-                  <Text className="font-medium" style={{ fontSize: 13, color: muted }}>
-                    Quitar
-                  </Text>
+                  <CloseIcon color={muted} size={14} />
                 </PressableFeedback>
               </View>
             ))}
-          </View>
-        )}
+          </Animated.View>
 
-        <View className="mt-6 flex-row items-end gap-3">
-          <TextInput
-            value={nueva}
-            onChangeText={setNueva}
-            placeholder="Escribe tu frase"
-            placeholderTextColor={muted}
-            selectionColor={accent}
-            cursorColor={accent}
-            maxLength={MAX_QUOTE_LENGTH}
-            returnKeyType="done"
-            onSubmitEditing={agregar}
-            accessibilityLabel="Nueva frase"
-            className="font-sans"
-            style={{
-              flex: 1,
-              fontSize: 15,
-              color: foreground,
-              borderBottomWidth: 1.5,
-              borderBottomColor: accent,
-              paddingBottom: 8,
-              paddingHorizontal: 0,
-            }}
-          />
-
-          <Button size="sm" variant="tertiary" onPress={agregar}>
-            <PlusIcon color={muted} size={14} />
-            <Button.Label>Añadir</Button.Label>
-          </Button>
-        </View>
-
-        {problema && (
-          <Text
-            accessibilityLiveRegion="polite"
-            className="mt-2"
-            style={{ fontSize: 13, color: danger }}
+          <View
+            className="mt-2 flex-row items-center gap-3 rounded-[18px] px-4 py-2"
+            style={{ borderWidth: 1.5, borderColor: surfaceTertiary }}
           >
-            {problema}
+            <TextInput
+              value={nueva}
+              onChangeText={(valor) => {
+                setNueva(valor);
+                if (problema) setProblema(null);
+              }}
+              placeholder="Escribe una tuya"
+              placeholderTextColor={muted}
+              selectionColor={accent}
+              cursorColor={accent}
+              maxLength={MAX_QUOTE_LENGTH}
+              returnKeyType="done"
+              onSubmitEditing={agregar}
+              accessibilityLabel="Tu frase"
+              className="flex-1 font-sans text-foreground"
+              style={{ fontSize: 15, paddingVertical: 10, paddingHorizontal: 0 }}
+            />
+
+            <SendButton
+              activo={Boolean(nueva.trim())}
+              color={accent}
+              fondo={surfaceTertiary}
+              contraste={background}
+              muted={muted}
+              etiqueta="Añadir la frase"
+              onPress={agregar}
+            />
+          </View>
+
+          {problema && <Aviso mensaje={problema} className="mt-2 px-1" />}
+        </Appear>
+
+        <Appear delay={230} className="mt-7">
+          <Text className="mb-3 font-medium text-muted" style={{ fontSize: 12 }}>
+            {`Las que pueden salir (${lista.length})`}
           </Text>
-        )}
+
+          <View className="gap-2">
+            {lista.map((frase, indice) => (
+              <View
+                key={`${frase.texto}-${indice}`}
+                className="rounded-[16px] px-4 py-3"
+                style={{ backgroundColor: surfaceTertiary }}
+              >
+                <Text
+                  className="font-sans text-foreground"
+                  style={{ fontSize: 14, lineHeight: 21 }}
+                >
+                  {frase.texto}
+                </Text>
+                {frase.autor && (
+                  <Text className="mt-1 font-medium text-muted" style={{ fontSize: 12 }}>
+                    {frase.autor}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        </Appear>
+
+        <KeyboardSpace bottomInset={insets.bottom} />
       </ScrollView>
     </View>
   );
 }
 
-function Fuente({
-  titulo,
-  descripcion,
+function Pastilla({
   activa,
+  etiqueta,
+  onPress,
   accent,
   accentForeground,
-  onPress,
+  fondo,
+  texto,
 }: {
-  titulo: string;
-  descripcion: string;
   activa: boolean;
+  etiqueta: string;
+  onPress: () => void;
   accent: string;
   accentForeground: string;
-  onPress: () => void;
+  fondo: string;
+  texto: string;
 }) {
   return (
     <PressableFeedback
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ selected: activa }}
-      accessibilityLabel={`${titulo}. ${descripcion}`}
-      className="rounded-[18px] bg-surface p-4 shadow-surface"
-      style={{ borderWidth: 1.5, borderColor: activa ? accent : 'transparent' }}
+      accessibilityLabel={etiqueta}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 7,
+        borderRadius: 999,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        backgroundColor: activa ? accent : fondo,
+      }}
     >
       <PressableFeedback.Highlight />
-      <View className="flex-row items-center gap-3">
-        <View className="flex-1">
-          <Text className="font-medium text-foreground" style={{ fontSize: 16 }}>
-            {titulo}
-          </Text>
-          <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 13 }}>
-            {descripcion}
-          </Text>
-        </View>
-
-        {activa && (
-          <View
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 999,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: accent,
-            }}
-          >
-            <CheckIcon color={accentForeground} size={13} />
-          </View>
-        )}
-      </View>
+      {activa && <CheckIcon color={accentForeground} size={12} />}
+      <Text
+        className="font-medium"
+        style={{ fontSize: 14, color: activa ? accentForeground : texto }}
+      >
+        {etiqueta}
+      </Text>
     </PressableFeedback>
   );
 }

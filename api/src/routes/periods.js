@@ -44,6 +44,19 @@ const encargoSchema = {
   },
 };
 
+const evaluacionSchema = {
+  type: 'object',
+  required: ['id', 'nombre', 'peso'],
+  additionalProperties: false,
+  properties: {
+    id: { type: 'string', maxLength: 30 },
+    nombre: { type: 'string', minLength: 1, maxLength: 60 },
+    peso: { type: 'number', minimum: 0, maximum: 100 },
+    nota: { type: ['number', 'null'], minimum: 0, maximum: 1000 },
+    fecha: { type: ['string', 'null'], maxLength: 40 },
+  },
+};
+
 const subjectSchema = {
   type: 'object',
   required: ['id', 'name'],
@@ -52,9 +65,11 @@ const subjectSchema = {
     id: { type: 'string', maxLength: 30 },
     name: { type: 'string', minLength: 1, maxLength: 60 },
     createdAt: { type: 'string', maxLength: 40 },
+    creditos: { type: 'integer', minimum: 0, maximum: 30 },
     clases: { type: 'array', maxItems: 20, items: claseSchema },
     apuntes: { type: 'array', maxItems: 200, items: apunteSchema },
     encargos: { type: 'array', maxItems: 100, items: encargoSchema },
+    evaluaciones: { type: 'array', maxItems: 30, items: evaluacionSchema },
   },
 };
 

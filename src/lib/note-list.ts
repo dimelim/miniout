@@ -5,7 +5,6 @@ type Filtro = {
   busqueda?: string;
   projectId?: string | null;
   hideDone?: boolean;
-  soloConNota?: boolean;
 };
 
 function tiempo(valor: string | null) {
@@ -36,18 +35,6 @@ export function ordenarNotas(notes: Note[], order: NoteOrder) {
     });
   }
 
-  if (order === 'calificacion') {
-    return copia.sort((a, b) => {
-      if (a.grade === null && b.grade === null) {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      if (a.grade === null) return 1;
-      if (b.grade === null) return -1;
-
-      return b.grade - a.grade;
-    });
-  }
-
   return copia.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -58,7 +45,6 @@ export function filtrarNotas(notes: Note[], filtro: Filtro) {
 
   return notes.filter((note) => {
     if (filtro.hideDone && note.done) return false;
-    if (filtro.soloConNota && note.grade === null) return false;
     if (filtro.projectId !== undefined && note.projectId !== filtro.projectId) return false;
 
     if (!texto) return true;

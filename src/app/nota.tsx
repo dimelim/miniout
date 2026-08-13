@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Chip, PressableFeedback } from 'heroui-native';
+import { Chip, PressableFeedback, Spinner, useToast } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
@@ -14,7 +14,6 @@ import {
   ChecklistIcon,
   ChevronLeftIcon,
   CopyIcon,
-  GradeIcon,
   PlusIcon,
   TrashIcon,
 } from '@/components/icons';
@@ -37,7 +36,6 @@ import {
   type Marca,
   type MarcaTipo,
 } from '@/lib/format';
-import { gradeLabel, gradeTone } from '@/lib/grades';
 import { detectHints } from '@/lib/hints';
 import { elegirImagen, subirImagen, type Origen } from '@/lib/images';
 import { useAbrir } from '@/lib/navigate';
@@ -99,7 +97,6 @@ export default function Nota() {
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [preguntando, setPreguntando] = useState(false);
-  const [aviso, setAviso] = useState<string | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, accentForeground, muted, border, danger, warning, success, foreground] =
@@ -118,6 +115,7 @@ export default function Nota() {
     setCuerpo((actual) => (actual.trim() ? `${actual.trimEnd()} ${texto}` : texto));
   }, []);
 
+  const { toast } = useToast();
   const dictado = useDictado(dictar);
   const conAdjuntos = useMemo(() => puedeUsarImagenes(), []);
   const conCopia = useMemo(() => puedeCopiar(), []);
@@ -251,7 +249,9 @@ export default function Nota() {
   const copiarNota = async () => {
     const texto = titulo.trim() ? `${titulo.trim()}\n\n${cuerpo}` : cuerpo;
 
-    setAviso((await copiar(texto)) ? 'Copiada' : null);
+    if (await copiar(texto)) {
+      toast.show({ variant: 'success', label: 'Copiada', description: 'Ya la puedes pegar' });
+    }
   };
 
   const adjuntar = async (origen: Origen) => {
@@ -306,10 +306,6 @@ export default function Nota() {
 
   const colorEntrega =
     entrega?.tono === 'vencido' ? danger : entrega?.tono === 'hoy' ? warning : muted;
-
-  const tono =
-    note?.grade !== null && note?.grade !== undefined ? gradeTone(note.grade, perfil) : null;
-  const colorNota = tono === 'bajo' ? danger : tono === 'justo' ? warning : success;
 
   return (
     <View className="flex-1 bg-background">
@@ -422,17 +418,40 @@ export default function Nota() {
               texto={entrega ? colorEntrega : muted}
             />
 
-            <Etiqueta
-              onPress={() => abrir(`/calificar?id=${note.id}`)}
-              etiqueta={note.grade === null ? 'Calificar' : gradeLabel(note.grade, perfil)}
-              color={note.grade === null ? border : colorNota}
-              texto={note.grade === null ? muted : foreground}
-              icono={<GradeIcon color={note.grade === null ? muted : colorNota} size={13} />}
-            />
           </View>
         )}
 
         <View className="mt-4 rounded-[24px] bg-surface px-5 py-4 shadow-surface">
+          {(note?.media.length ?? 0) > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="-mx-1 mb-4"
+              contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
+            >
+              {note?.media.map((imagen: Imagen) => (
+                <PressableFeedback
+                  key={imagen.name}
+                  onPress={() => abrir(`/imagen?id=${note.id}&name=${imagen.name}`)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Abrir la imagen"
+                  style={{ borderRadius: 18 }}
+                >
+                  <NoteImage imagen={imagen} width={MINIATURA} height={MINIATURA} />
+                </PressableFeedback>
+              ))}
+            </ScrollView>
+          )}
+
+          {subiendo && (
+            <View className="mb-4 flex-row items-center gap-2">
+              <Spinner size="sm" />
+              <Text className="font-medium text-muted" style={{ fontSize: 13 }}>
+                Subiendo la imagen
+              </Text>
+            </View>
+          )}
+
           <TextInput
             onChangeText={cambiarCuerpo}
             onBlur={guardar}
@@ -462,31 +481,24 @@ export default function Nota() {
             <Formateado texto={cuerpo} marcas={marcas} size={CUERPO} />
           </TextInput>
 
-          {(note?.media.length ?? 0) > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="-mx-1 mt-4"
-              contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
-            >
-              {note?.media.map((imagen: Imagen) => (
-                <PressableFeedback
-                  key={imagen.name}
-                  onPress={() => abrir(`/imagen?id=${note.id}&name=${imagen.name}`)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Abrir la imagen"
-                  style={{ borderRadius: 18 }}
-                >
-                  <NoteImage imagen={imagen} width={MINIATURA} height={MINIATURA} />
-                </PressableFeedback>
-              ))}
-            </ScrollView>
-          )}
-
-          {subiendo && (
-            <Text className="mt-3 font-medium text-muted" style={{ fontSize: 13 }}>
-              Subiendo la imagen
-            </Text>
+          {dictado.escuchando && (
+            <View className="mt-1 flex-row items-start gap-2">
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 999,
+                  marginTop: CUERPO * 0.62,
+                  backgroundColor: danger,
+                }}
+              />
+              <Text
+                className="flex-1 font-sans"
+                style={{ fontSize: CUERPO, lineHeight: CUERPO * 1.6, color: muted }}
+              >
+                {dictado.parcial || 'Te escucho'}
+              </Text>
+            </View>
           )}
 
           {pistas.length > 0 && (
@@ -501,12 +513,11 @@ export default function Nota() {
         </View>
 
         {dictado.escuchando && (
-          <Text className="mt-4 text-center font-medium" style={{ fontSize: 13, color: danger }}>
-            Te escucho. Habla y toca el micrófono para parar.
+          <Text className="mt-4 text-center font-medium text-muted" style={{ fontSize: 12 }}>
+            Toca el micrófono otra vez para parar.
           </Text>
         )}
 
-        {aviso && <Aviso mensaje={aviso} tono="exito" className="mt-4" />}
         {dictado.problema && <Aviso mensaje={dictado.problema} className="mt-4" />}
         {problema && <Aviso mensaje={problema} className="mt-4" />}
       </ScrollView>

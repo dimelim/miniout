@@ -10,15 +10,12 @@ import {
   CheckIcon,
   CopyIcon,
   FolderIcon,
-  GradeIcon,
   PencilIcon,
   SemesterIcon,
   TrashIcon,
 } from '@/components/icons';
-import { gradeLabel } from '@/lib/grades';
 import { copiar, puedeCopiar } from '@/lib/native';
 import { useNotes } from '@/lib/notes-store';
-import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
 import { useProjects } from '@/lib/projects-store';
 import { estadoDeEntrega } from '@/lib/schedule';
 
@@ -29,7 +26,6 @@ export default function Acciones() {
   const { find, toggle, remove } = useNotes();
   const { find: buscarProyecto } = useProjects();
 
-  const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [borrando, setBorrando] = useState(false);
   const [copiada, setCopiada] = useState(false);
 
@@ -38,10 +34,6 @@ export default function Acciones() {
     'danger',
     'surface-secondary',
   ]);
-
-  useEffect(() => {
-    readProfile().then(setPerfil);
-  }, []);
 
   const note = find(id);
   const proyecto = buscarProyecto(note?.projectId);
@@ -101,19 +93,6 @@ export default function Acciones() {
             fondo={surfaceSecondary}
             color={foreground}
             onPress={() => router.replace(`/programar?id=${note.id}`)}
-          />
-
-          <Accion
-            etiqueta="Calificarla"
-            detalle={
-              note.grade === null
-                ? 'Todavía no tiene calificación'
-                : `Sacaste ${gradeLabel(note.grade, perfil)}`
-            }
-            icono={<GradeIcon color={foreground} size={17} />}
-            fondo={surfaceSecondary}
-            color={foreground}
-            onPress={() => router.replace(`/calificar?id=${note.id}`)}
           />
 
           {puedeCopiar() && (

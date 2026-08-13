@@ -1,3 +1,4 @@
+import type { Evaluacion, Subject } from './periods';
 import { SCALES, findScale, formatGrade, type Profile } from './profile';
 
 export type GradeTone = 'alto' | 'justo' | 'bajo';
@@ -30,6 +31,61 @@ export function gradeTone(value: number, profile: Profile): GradeTone {
 
 export function gradeLabel(value: number, profile: Profile) {
   return formatGrade(value, gradeScale(profile).decimals);
+}
+
+export function pesoTotal(evaluaciones: Evaluacion[]) {
+  return evaluaciones.reduce((suma, una) => suma + una.peso, 0);
+}
+
+export function pesoCalificado(evaluaciones: Evaluacion[]) {
+  return evaluaciones
+    .filter((una) => una.nota !== null)
+    .reduce((suma, una) => suma + una.peso, 0);
+}
+
+export function aporteActual(evaluaciones: Evaluacion[]) {
+  return evaluaciones
+    .filter((una) => una.nota !== null)
+    .reduce((suma, una) => suma + (una.nota as number) * (una.peso / 100), 0);
+}
+
+export function notaHastaAhora(evaluaciones: Evaluacion[]) {
+  const calificado = pesoCalificado(evaluaciones);
+
+  if (calificado === 0) return null;
+
+  return (aporteActual(evaluaciones) * 100) / calificado;
+}
+
+export function faltaParaPasar(evaluaciones: Evaluacion[], profile: Profile) {
+  const pendiente = pesoTotal(evaluaciones) - pesoCalificado(evaluaciones);
+
+  if (pendiente <= 0) return null;
+
+  const necesario = ((passMarkOf(profile) - aporteActual(evaluaciones)) * 100) / pendiente;
+  const scale = gradeScale(profile);
+
+  return {
+    pendiente,
+    necesario: Math.max(scale.min, Number(necesario.toFixed(2))),
+    imposible: necesario > scale.max,
+    yaPasaste: necesario <= scale.min,
+  };
+}
+
+export function promedioDelPeriodo(subjects: Subject[]) {
+  const conNota = subjects
+    .map((subject) => ({
+      nota: notaHastaAhora(subject.evaluaciones),
+      creditos: subject.creditos && subject.creditos > 0 ? subject.creditos : 1,
+    }))
+    .filter((una): una is { nota: number; creditos: number } => una.nota !== null);
+
+  if (conNota.length === 0) return null;
+
+  const creditos = conNota.reduce((suma, una) => suma + una.creditos, 0);
+
+  return conNota.reduce((suma, una) => suma + una.nota * una.creditos, 0) / creditos;
 }
 
 export function gradeSteps(profile: Profile) {

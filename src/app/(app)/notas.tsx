@@ -56,7 +56,6 @@ export default function Notas() {
     const filtradas = filtrarNotas(notes, {
       busqueda,
       hideDone: prefs.hideDone,
-      soloConNota: prefs.soloConNota,
       projectId: prefs.projectId === null ? undefined : prefs.projectId,
     });
 
@@ -68,7 +67,6 @@ export default function Notas() {
 
   const resumen = [
     proyectoFiltrado?.name,
-    prefs.soloConNota ? 'calificadas' : null,
     prefs.hideDone ? 'sin las hechas' : null,
     prefs.order === DEFAULT_PREFS.order
       ? null
@@ -196,7 +194,6 @@ export default function Notas() {
               >
                 <NoteRow
                   note={note}
-                  perfil={perfil}
                   proyecto={buscarProyecto(note.projectId)}
                   onToggle={() => toggle(note)}
                   onOpen={() => abrir(`/nota?id=${note.id}`)}

@@ -1,7 +1,8 @@
-import { Button, Card, Chip, PressableFeedback } from 'heroui-native';
+import { Button, Card, Chip, PressableFeedback, useToast } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, useState } from 'react';
 import { ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
@@ -9,6 +10,7 @@ import { Aviso } from '@/components/aviso';
 import { BackButton } from '@/components/back-button';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { CheckIcon, ChevronRightIcon } from '@/components/icons';
+import { KeyboardSpace } from '@/components/keyboard-space';
 import { RuledPaper } from '@/components/ruled-paper';
 import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
@@ -40,12 +42,12 @@ export default function Ajustes() {
   const insets = useSafeAreaInsets();
   const { account, saveName } = useAuth();
   const { tieneClave, quitar } = useLock();
+  const { toast } = useToast();
 
   const [nombre, setNombre] = useState(account?.displayName ?? '');
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [prefs, setPrefs] = useState<NotePrefs>(DEFAULT_PREFS);
   const [guardando, setGuardando] = useState(false);
-  const [aviso, setAviso] = useState<string | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
   const [quitandoClave, setQuitandoClave] = useState(false);
 
@@ -67,7 +69,6 @@ export default function Ajustes() {
   const guardarNombre = async () => {
     const problem = nameError(nombre);
     setProblema(problem);
-    setAviso(null);
 
     if (problem) return;
 
@@ -75,7 +76,7 @@ export default function Ajustes() {
 
     try {
       await saveName(nombre.trim());
-      setAviso('Listo, ahora te llamo así.');
+      toast.show({ variant: 'success', label: 'Listo', description: 'Ahora te llamo así.' });
     } catch (error) {
       setProblema(error instanceof ApiError ? error.message : 'No se pudo guardar tu nombre');
     } finally {
@@ -156,7 +157,6 @@ export default function Ajustes() {
               style={{ height: 2, borderRadius: 999, backgroundColor: accent, opacity: 0.9 }}
             />
 
-            {aviso && <Aviso mensaje={aviso} tono="exito" />}
             {problema && <Aviso mensaje={problema} />}
 
             <Button size="sm" onPress={guardarNombre} isDisabled={guardando}>
@@ -305,6 +305,8 @@ export default function Ajustes() {
             </View>
           </PressableFeedback>
         </Appear>
+
+        <KeyboardSpace bottomInset={insets.bottom} />
       </ScrollView>
 
       <ConfirmDialog
@@ -346,30 +348,47 @@ function Opcion({
     'surface-tertiary',
   ]);
 
+  const marcada = useSharedValue(activa ? 1 : 0);
+
+  useEffect(() => {
+    marcada.value = withSpring(activa ? 1 : 0, { damping: 13, stiffness: 220, mass: 0.5 });
+  }, [activa, marcada]);
+
+  const pastilla = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 + marcada.value * 0.04 }],
+    backgroundColor: activa ? accent : surfaceTertiary,
+  }));
+
   return (
     <PressableFeedback
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ selected: activa }}
       accessibilityLabel={etiqueta}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        borderRadius: 999,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        backgroundColor: activa ? accent : surfaceTertiary,
-      }}
+      style={{ borderRadius: 999 }}
     >
       <PressableFeedback.Highlight />
-      {activa && <CheckIcon color={accentForeground} size={12} />}
-      <Text
-        className="font-medium"
-        style={{ fontSize: 14, color: activa ? accentForeground : foreground }}
+      <Animated.View
+        style={[
+          {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            borderRadius: 999,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+          },
+          pastilla,
+        ]}
       >
-        {etiqueta}
-      </Text>
+        {activa && <CheckIcon color={accentForeground} size={12} />}
+        <Text
+          className="font-medium"
+          style={{ fontSize: 14, color: activa ? accentForeground : foreground }}
+        >
+          {etiqueta}
+        </Text>
+      </Animated.View>
     </PressableFeedback>
   );
 }

@@ -117,19 +117,7 @@ export default function Filtros() {
           ))}
         </View>
 
-        <View className="mt-7 gap-4 rounded-[20px] bg-surface p-4 shadow-surface">
-          <Interruptor
-            etiqueta="Solo las calificadas"
-            detalle="Deja fuera lo que todavía no tiene nota."
-            valor={prefs.soloConNota}
-            onChange={(soloConNota) => cambiar({ soloConNota })}
-            accent={accent}
-            accentForeground={accentForeground}
-            border={border}
-          />
-
-          <View style={{ height: 1, backgroundColor: border }} />
-
+        <View className="mt-7 rounded-[20px] bg-surface p-4 shadow-surface">
           <Interruptor
             etiqueta="Esconder las hechas"
             detalle="La lista se queda solo con lo que te falta."

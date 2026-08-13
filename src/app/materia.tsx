@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,9 +9,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Appear } from '@/components/appear';
 import { BackButton } from '@/components/back-button';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { Evaluaciones } from '@/components/evaluaciones';
 import { CheckIcon, ClockIcon, CloseIcon, PlusIcon, TrashIcon } from '@/components/icons';
+import { KeyboardSpace } from '@/components/keyboard-space';
 import { RuledPaper } from '@/components/ruled-paper';
+import { SendButton } from '@/components/send-button';
 import { formatDayLabel } from '@/lib/dates';
+import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
 import { useAbrir } from '@/lib/navigate';
 import {
   crearId,
@@ -39,6 +43,11 @@ export default function Materia() {
   const [encargo, setEncargo] = useState('');
   const [apunte, setApunte] = useState('');
   const [borrando, setBorrando] = useState(false);
+  const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
+
+  useEffect(() => {
+    readProfile().then(setPerfil);
+  }, []);
 
   const [muted, danger, border, surfaceSecondary, accent, accentForeground, background] =
     useThemeColor([
@@ -177,7 +186,23 @@ export default function Materia() {
           />
         </Appear>
 
-        <Appear delay={70} className="mt-8">
+        <Appear delay={60} className="mt-8">
+          <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
+            Cómo te va
+          </Text>
+
+          <Evaluaciones
+            subject={subject}
+            perfil={perfil}
+            color={periodo.color}
+            onCambiar={cambiar}
+            onCalificar={(evaluacion) =>
+              abrir(`/calificar?periodo=${periodo.id}&materia=${subject.id}&id=${evaluacion}`)
+            }
+          />
+        </Appear>
+
+        <Appear delay={110} className="mt-8">
           <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
             Horario
           </Text>
@@ -253,7 +278,7 @@ export default function Materia() {
           </PressableFeedback>
         </Appear>
 
-        <Appear delay={120} className="mt-8">
+        <Appear delay={150} className="mt-8">
           <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
             Lo que te mandaron
           </Text>
@@ -385,7 +410,7 @@ export default function Materia() {
           />
         </Appear>
 
-        <Appear delay={170} className="mt-8">
+        <Appear delay={190} className="mt-8">
           <Text className="mb-1 font-display text-foreground" style={{ fontSize: 20 }}>
             Cómo fue cada día
           </Text>
@@ -442,6 +467,8 @@ export default function Materia() {
             maximo={MAX_APUNTE}
           />
         </Appear>
+
+        <KeyboardSpace bottomInset={insets.bottom} />
       </ScrollView>
 
       <ConfirmDialog
@@ -505,23 +532,15 @@ function Campo({
         style={{ fontSize: 15, paddingVertical: 10, paddingHorizontal: 0 }}
       />
 
-      <PressableFeedback
+      <SendButton
+        activo={Boolean(valor.trim())}
+        color={color}
+        fondo={fondo}
+        contraste={background}
+        muted={muted}
+        etiqueta="Añadir"
         onPress={onEnviar}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel="Añadir"
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 999,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: valor.trim() ? color : fondo,
-        }}
-      >
-        <PressableFeedback.Highlight />
-        <PlusIcon color={valor.trim() ? background : muted} size={15} />
-      </PressableFeedback>
+      />
     </View>
   );
 }

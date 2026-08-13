@@ -6,6 +6,7 @@ type Estado = 'apagado' | 'escuchando';
 
 export function useDictado(alTexto: (texto: string) => void) {
   const [estado, setEstado] = useState<Estado>('apagado');
+  const [parcial, setParcial] = useState('');
   const [problema, setProblema] = useState<string | null>(null);
   const [disponible, setDisponible] = useState(false);
   const escrito = useRef('');
@@ -22,21 +23,32 @@ export function useDictado(alTexto: (texto: string) => void) {
 
     const resultado = ExpoSpeechRecognitionModule.addListener('result', (evento) => {
       const texto = evento.results[0]?.transcript?.trim();
-      if (!texto || !evento.isFinal) return;
+      if (!texto) return;
 
-      const nuevo = texto.slice(escrito.current.length).trim();
+      if (!evento.isFinal) {
+        setParcial(texto);
+        return;
+      }
+
+      const nuevo = texto.startsWith(escrito.current)
+        ? texto.slice(escrito.current.length).trim()
+        : texto;
+
       escrito.current = texto;
+      setParcial('');
 
-      alTexto(nuevo || texto);
+      if (nuevo) alTexto(nuevo);
     });
 
     const fin = ExpoSpeechRecognitionModule.addListener('end', () => {
       escrito.current = '';
+      setParcial('');
       setEstado('apagado');
     });
 
     const fallo = ExpoSpeechRecognitionModule.addListener('error', (evento) => {
       escrito.current = '';
+      setParcial('');
       setEstado('apagado');
       setProblema(
         evento.error === 'no-speech' ? 'No te escuché nada' : 'El dictado se cortó'
@@ -72,11 +84,12 @@ export function useDictado(alTexto: (texto: string) => void) {
     }
 
     escrito.current = '';
+    setParcial('');
     setEstado('escuchando');
 
     modulo.ExpoSpeechRecognitionModule.start({
       lang: 'es-ES',
-      interimResults: false,
+      interimResults: true,
       continuous: true,
     });
   }, []);
@@ -84,6 +97,7 @@ export function useDictado(alTexto: (texto: string) => void) {
   return {
     disponible,
     escuchando: estado === 'escuchando',
+    parcial,
     problema,
     arrancar,
     parar,

@@ -30,7 +30,7 @@ export default function ClaseNueva() {
   const subject = periodo?.subjects.find((una) => una.id === materia) ?? null;
   const clase = subject?.clases.find((una) => una.id === id) ?? null;
 
-  const [dia, setDia] = useState(clase?.dia ?? 0);
+  const [dias, setDias] = useState<number[]>(clase ? [clase.dia] : []);
   const [inicio, setInicio] = useState(clase?.inicio ?? '');
   const [fin, setFin] = useState(clase?.fin ?? '');
   const [lugar, setLugar] = useState(clase?.lugar ?? '');
@@ -56,6 +56,11 @@ export default function ClaseNueva() {
   }
 
   const guardar = async () => {
+    if (dias.length === 0) {
+      setProblema('Marca al menos un día');
+      return;
+    }
+
     if (!horaValida(inicio) || !horaValida(fin)) {
       setProblema('Escribe las horas como 08:30');
       return;
@@ -68,13 +73,17 @@ export default function ClaseNueva() {
 
     setGuardando(true);
 
-    const nueva: Clase = {
-      id: clase?.id ?? crearId(),
-      dia,
+    const comun = {
       inicio,
       fin,
       ...(lugar.trim() ? { lugar: lugar.trim() } : {}),
     };
+
+    const nuevas: Clase[] = dias.map((dia, indice) => ({
+      id: clase && indice === 0 ? clase.id : crearId(),
+      dia,
+      ...comun,
+    }));
 
     try {
       await edit(periodo.id, {
@@ -84,8 +93,11 @@ export default function ClaseNueva() {
             : {
                 ...una,
                 clases: clase
-                  ? una.clases.map((otra) => (otra.id === clase.id ? nueva : otra))
-                  : [...una.clases, nueva],
+                  ? [
+                      ...una.clases.map((otra) => (otra.id === clase.id ? nuevas[0] : otra)),
+                      ...nuevas.slice(1),
+                    ]
+                  : [...una.clases, ...nuevas],
               }
         ),
       });
@@ -94,6 +106,16 @@ export default function ClaseNueva() {
     } finally {
       setGuardando(false);
     }
+  };
+
+  const alternarDia = (indice: number) => {
+    if (problema) setProblema(null);
+
+    setDias((actuales) =>
+      actuales.includes(indice)
+        ? actuales.filter((dia) => dia !== indice)
+        : [...actuales, indice].sort((uno, otro) => uno - otro)
+    );
   };
 
   return (
@@ -115,36 +137,46 @@ export default function ClaseNueva() {
         </Text>
 
         <Text className="mb-3 mt-6 font-medium text-muted" style={{ fontSize: 12 }}>
-          Día
+          {clase ? 'Días' : 'Días, los que hagan falta'}
         </Text>
 
         <View className="flex-row gap-1.5">
-          {DIAS_CORTOS.map((letra, indice) => (
-            <PressableFeedback
-              key={`${letra}-${indice}`}
-              onPress={() => setDia(indice)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: dia === indice }}
-              accessibilityLabel={DIAS[indice]}
-              style={{
-                flex: 1,
-                height: 46,
-                borderRadius: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: dia === indice ? accent : surfaceSecondary,
-              }}
-            >
-              <PressableFeedback.Highlight />
-              <Text
-                className="font-semibold"
-                style={{ fontSize: 14, color: dia === indice ? accentForeground : foreground }}
+          {DIAS_CORTOS.map((letra, indice) => {
+            const activo = dias.includes(indice);
+
+            return (
+              <PressableFeedback
+                key={`${letra}-${indice}`}
+                onPress={() => alternarDia(indice)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: activo }}
+                accessibilityLabel={DIAS[indice]}
+                style={{
+                  flex: 1,
+                  height: 46,
+                  borderRadius: 14,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: activo ? accent : surfaceSecondary,
+                }}
               >
-                {letra}
-              </Text>
-            </PressableFeedback>
-          ))}
+                <PressableFeedback.Highlight />
+                <Text
+                  className="font-semibold"
+                  style={{ fontSize: 14, color: activo ? accentForeground : foreground }}
+                >
+                  {letra}
+                </Text>
+              </PressableFeedback>
+            );
+          })}
         </View>
+
+        {dias.length > 1 && (
+          <Text className="mt-2 font-sans text-muted" style={{ fontSize: 12 }}>
+            {`Se crean ${dias.length} clases con la misma hora.`}
+          </Text>
+        )}
 
         <View className="mt-7 flex-row gap-3">
           <Hora

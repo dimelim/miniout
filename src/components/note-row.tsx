@@ -17,8 +17,6 @@ import { ProjectIcon } from './project-icons';
 import { RichText } from './rich-text';
 
 import type { Note, Project } from '@/lib/api';
-import { gradeLabel, gradeTone } from '@/lib/grades';
-import { EMPTY_PROFILE, type Profile } from '@/lib/profile';
 import { estadoDeEntrega } from '@/lib/schedule';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
@@ -32,7 +30,6 @@ type NoteRowProps = {
   onMenu: () => void;
   onMover?: () => void;
   proyecto?: Project | null;
-  perfil?: Profile;
   lineas?: number;
 };
 
@@ -43,25 +40,20 @@ export function NoteRow({
   onMenu,
   onMover,
   proyecto,
-  perfil = EMPTY_PROFILE,
   lineas = 4,
 }: NoteRowProps) {
-  const [accent, accentForeground, border, muted, danger, warning, success] = useThemeColor([
+  const [accent, accentForeground, border, muted, danger, warning] = useThemeColor([
     'accent',
     'accent-foreground',
     'border',
     'muted',
     'danger',
     'warning',
-    'success',
   ]);
 
   const entrega = estadoDeEntrega(note.dueAt);
   const colorEntrega =
     entrega?.tono === 'vencido' ? danger : entrega?.tono === 'hoy' ? warning : muted;
-
-  const tono = note.grade === null ? null : gradeTone(note.grade, perfil);
-  const colorNota = tono === 'bajo' ? danger : tono === 'justo' ? warning : success;
 
   const done = useSharedValue(note.done ? 1 : 0);
   const deslizado = useSharedValue(0);
@@ -191,26 +183,8 @@ export function NoteRow({
               )}
             </View>
 
-            {(note.hints.length > 0 || entrega || proyecto || note.grade !== null) && (
+            {(note.hints.length > 0 || entrega || proyecto) && (
               <View className="mt-2 flex-row flex-wrap items-center gap-1.5">
-                {note.grade !== null && (
-                  <View
-                    style={{
-                      borderRadius: 999,
-                      paddingHorizontal: 9,
-                      paddingVertical: 2,
-                      backgroundColor: colorNota,
-                    }}
-                  >
-                    <Text
-                      className="font-semibold"
-                      style={{ fontSize: 11, color: accentForeground }}
-                    >
-                      {gradeLabel(note.grade, perfil)}
-                    </Text>
-                  </View>
-                )}
-
                 {proyecto && (
                   <View
                     className="flex-row items-center gap-1.5"

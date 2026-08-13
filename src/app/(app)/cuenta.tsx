@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Button, Card, Chip, PressableFeedback } from 'heroui-native';
+import { Button, Card, Chip, PressableFeedback, useToast } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
@@ -21,10 +21,10 @@ export default function Cuenta() {
   const router = useRouter();
   const abrir = useAbrir();
   const { account, session, signIn, signOut, saveAvatar, markIntroSeen } = useAuth();
+  const { toast } = useToast();
 
   const [cerrando, setCerrando] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
-  const [aviso, setAviso] = useState<string | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, foreground, muted] = useThemeColor(['accent', 'foreground', 'muted']);
@@ -33,12 +33,11 @@ export default function Cuenta() {
     if (!session) return;
 
     setCerrando(true);
-    setAviso(null);
     setProblema(null);
 
     try {
       await signIn(await api.logoutOthers(session.accessToken));
-      setAviso('Listo, las demás sesiones se cerraron.');
+      toast.show({ variant: 'success', label: 'Listo', description: 'Las demás sesiones se cerraron.' });
     } catch (error) {
       setProblema(error instanceof ApiError ? error.message : 'No se pudo cerrar las sesiones');
     } finally {
@@ -263,7 +262,6 @@ export default function Cuenta() {
                 <Button.Label>{cerrando ? 'Cerrando' : 'Cerrar las demás'}</Button.Label>
               </Button>
 
-              {aviso && <Aviso mensaje={aviso} tono="exito" />}
               {problema && <Aviso mensaje={problema} />}
             </Card>
           </View>

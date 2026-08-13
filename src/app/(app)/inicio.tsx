@@ -11,8 +11,10 @@ import { GithubBadge } from '@/components/github-card';
 import { ChevronRightIcon, PlusIcon, SemesterIcon } from '@/components/icons';
 import { InkDrop } from '@/components/ink-drop';
 import { NoteRow } from '@/components/note-row';
+import { NuevaVersion } from '@/components/nueva-version';
 import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
+import { Semana } from '@/components/semana';
 import { useAuth } from '@/lib/auth-store';
 import { useAbrir } from '@/lib/navigate';
 import { useNotes } from '@/lib/notes-store';
@@ -126,6 +128,8 @@ export default function Inicio() {
           </View>
         </Animated.View>
 
+        <NuevaVersion />
+
         <Animated.View entering={FadeInDown.duration(240).delay(60)} className="mt-7">
           <PressableFeedback
             onPress={() => abrir('/nota')}
@@ -178,7 +182,6 @@ export default function Inicio() {
                 >
                   <NoteRow
                     note={note}
-                    perfil={perfil}
                     proyecto={buscarProyecto(note.projectId)}
                     onToggle={() => toggle(note)}
                     onOpen={() => abrir(`/nota?id=${note.id}`)}
@@ -281,6 +284,15 @@ export default function Inicio() {
           </View>
         </Seccion>
 
+        <Seccion titulo="Tu semana">
+          <Semana
+            periods={periods}
+            notes={notes}
+            onAbrirNota={(nota) => abrir(`/nota?id=${nota}`)}
+            onAbrirPeriodo={(periodo) => abrir(`/semestre?id=${periodo}`)}
+          />
+        </Seccion>
+
         <Seccion titulo="Frase del día">
           <PressableFeedback
             onPress={() => abrir('/frases')}
@@ -293,30 +305,17 @@ export default function Inicio() {
               className="font-display text-foreground"
               style={{ fontSize: 21, lineHeight: 30, letterSpacing: -0.3 }}
             >
-              {frase}
+              {frase.texto}
             </Text>
             <View className="mt-3 flex-row items-center justify-between">
               <View style={{ height: 4, width: 42, borderRadius: 999, backgroundColor: accent }} />
               <Text className="font-medium text-muted" style={{ fontSize: 12 }}>
-                {frases.source === 'propias' && frases.own.length > 0 ? 'Tuyas' : 'De Miniout'}
+                {frase.autor ?? 'De Miniout'}
               </Text>
             </View>
           </PressableFeedback>
         </Seccion>
 
-        <Seccion titulo="Pronto">
-          <Card variant="transparent" className="gap-2 border border-border p-4">
-            <View className="flex-row items-center gap-2.5">
-              <SemesterIcon color={muted} size={16} />
-              <Text className="flex-1 font-medium text-foreground" style={{ fontSize: 15 }}>
-                {palabras.importTitle}
-              </Text>
-            </View>
-            <Text className="font-sans text-muted" style={{ fontSize: 13, lineHeight: 20 }}>
-              {palabras.importHint}
-            </Text>
-          </Card>
-        </Seccion>
       </ScrollView>
     </View>
   );
