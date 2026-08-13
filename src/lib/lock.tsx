@@ -84,13 +84,14 @@ export function LockProvider({ children }: { children: ReactNode }) {
     const subscription = AppState.addEventListener('change', (estado) => {
       if (estado === 'background') {
         fondoDesde.current = Date.now();
+        if (clave) setBloqueada(true);
         return;
       }
 
       if (estado !== 'active' || !clave || fondoDesde.current === null) return;
 
-      if (Date.now() - fondoDesde.current > 20_000) {
-        setBloqueada(true);
+      if (Date.now() - fondoDesde.current <= 20_000) {
+        setBloqueada(false);
       }
 
       fondoDesde.current = null;

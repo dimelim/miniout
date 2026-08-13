@@ -2,10 +2,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, TextInput, View } from 'react-native';
 
 import { Appear } from '@/components/appear';
+import { Hoja } from '@/components/hoja';
 import { gradeLabel, gradeScale, gradeSteps, gradeTone, passMarkOf } from '@/lib/grades';
 import { usePeriods } from '@/lib/periods-store';
 import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
@@ -14,7 +14,6 @@ const MAX_BOTONES = 21;
 
 export default function Calificar() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { periodo: periodoId, materia, id } = useLocalSearchParams<{
     periodo?: string;
     materia?: string;
@@ -105,16 +104,7 @@ export default function Calificar() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 20,
-          paddingBottom: insets.bottom + 32,
-        }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+    <Hoja>
         <Appear>
           <Text
             className="font-display text-foreground"
@@ -205,7 +195,6 @@ export default function Calificar() {
             </Button>
           )}
         </Appear>
-      </ScrollView>
-    </View>
+    </Hoja>
   );
 }

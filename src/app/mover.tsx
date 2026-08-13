@@ -2,9 +2,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
 
+import { Hoja } from '@/components/hoja';
 import { CheckIcon, FolderIcon, PlusIcon } from '@/components/icons';
 import { ProjectIcon } from '@/components/project-icons';
 import { useAbrir } from '@/lib/navigate';
@@ -14,7 +14,6 @@ import { useProjects } from '@/lib/projects-store';
 export default function Mover() {
   const router = useRouter();
   const abrir = useAbrir();
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { find, edit } = useNotes();
   const { projects } = useProjects();
@@ -45,15 +44,7 @@ export default function Mover() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 20,
-          paddingBottom: insets.bottom + 32,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
+    <Hoja>
         <Text
           className="font-display text-foreground"
           style={{ fontSize: 25, letterSpacing: -0.4 }}
@@ -95,8 +86,7 @@ export default function Mover() {
           <PlusIcon color={muted} size={15} />
           <Button.Label>Proyecto nuevo</Button.Label>
         </Button>
-      </ScrollView>
-    </View>
+    </Hoja>
   );
 }
 

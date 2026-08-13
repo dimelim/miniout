@@ -212,7 +212,7 @@ export function Evaluaciones({
               <Text className="font-medium text-foreground" style={{ fontSize: 15 }}>
                 {una.nombre}
               </Text>
-              <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 12 }}>
+              <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 12, lineHeight: 17 }}>
                 {una.nota === null ? 'Sin calificar' : `Sacaste ${gradeLabel(una.nota, perfil)}`}
               </Text>
             </PressableFeedback>

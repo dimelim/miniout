@@ -193,11 +193,11 @@ export function NoteRow({
                       borderWidth: 1,
                       borderColor: proyecto.color,
                       paddingHorizontal: 8,
-                      paddingVertical: 1.5,
+                      paddingVertical: 3,
                     }}
                   >
                     <ProjectIcon name={proyecto.icon} color={muted} size={10} />
-                    <Text className="font-medium" style={{ fontSize: 11, color: muted }}>
+                    <Text className="font-medium" style={{ fontSize: 11, lineHeight: 15, color: muted }}>
                       {proyecto.name}
                     </Text>
                   </View>
@@ -210,10 +210,13 @@ export function NoteRow({
                       borderWidth: 1,
                       borderColor: colorEntrega,
                       paddingHorizontal: 8,
-                      paddingVertical: 1,
+                      paddingVertical: 3,
                     }}
                   >
-                    <Text className="font-medium" style={{ fontSize: 11, color: colorEntrega }}>
+                    <Text
+                      className="font-medium"
+                      style={{ fontSize: 11, lineHeight: 15, color: colorEntrega }}
+                    >
                       {entrega.etiqueta}
                     </Text>
                   </View>
@@ -227,10 +230,13 @@ export function NoteRow({
                       borderWidth: 1,
                       borderColor: border,
                       paddingHorizontal: 8,
-                      paddingVertical: 1,
+                      paddingVertical: 3,
                     }}
                   >
-                    <Text className="font-medium" style={{ fontSize: 11, color: muted }}>
+                    <Text
+                      className="font-medium"
+                      style={{ fontSize: 11, lineHeight: 15, color: muted }}
+                    >
                       {hint.label}
                     </Text>
                   </View>

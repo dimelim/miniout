@@ -369,6 +369,7 @@ export default function Materia() {
                             className="font-medium"
                             style={{
                               fontSize: 11,
+                              lineHeight: 15,
                               color: activo ? accentForeground : muted,
                             }}
                           >

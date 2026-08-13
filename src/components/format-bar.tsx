@@ -50,16 +50,13 @@ export function FormatBar({
   onCamara,
   onDictar,
 }: FormatBarProps) {
-  const [foreground, surface, separator, danger, surfaceTertiary, accentForeground, accent] =
-    useThemeColor([
-      'foreground',
-      'surface',
-      'separator',
-      'danger',
-      'surface-tertiary',
-      'accent-foreground',
-      'accent',
-    ]);
+  const [foreground, surface, separator, danger, link] = useThemeColor([
+    'foreground',
+    'surface',
+    'separator',
+    'danger',
+    'link',
+  ]);
 
   const teclado = useAnimatedKeyboard({
     isStatusBarTranslucentAndroid: true,
@@ -75,7 +72,7 @@ export function FormatBar({
     };
   });
 
-  const color = (tipo: MarcaTipo) => (activos.includes(tipo) ? accentForeground : foreground);
+  const color = (tipo: MarcaTipo) => (activos.includes(tipo) ? link : foreground);
 
   return (
     <Animated.View
@@ -94,7 +91,7 @@ export function FormatBar({
         <Boton
           etiqueta="Negrita"
           activo={activos.includes('negrita')}
-          fondo={accent}
+          marca={link}
           onPress={() => onMarca('negrita')}
         >
           <BoldIcon color={color('negrita')} size={17} />
@@ -103,7 +100,7 @@ export function FormatBar({
         <Boton
           etiqueta="Cursiva"
           activo={activos.includes('cursiva')}
-          fondo={accent}
+          marca={link}
           onPress={() => onMarca('cursiva')}
         >
           <ItalicIcon color={color('cursiva')} size={17} />
@@ -112,7 +109,7 @@ export function FormatBar({
         <Boton
           etiqueta="Subrayado"
           activo={activos.includes('subrayado')}
-          fondo={accent}
+          marca={link}
           onPress={() => onMarca('subrayado')}
         >
           <UnderlineIcon color={color('subrayado')} size={17} />
@@ -121,13 +118,13 @@ export function FormatBar({
         <Boton
           etiqueta="Título"
           activo={activos.includes('titulo')}
-          fondo={accent}
+          marca={link}
           onPress={() => onMarca('titulo')}
         >
           <HeadingIcon color={color('titulo')} size={17} />
         </Boton>
 
-        <Boton etiqueta="Viñeta" activo={false} fondo={surfaceTertiary} onPress={onVineta}>
+        <Boton etiqueta="Viñeta" activo={false} marca={link} onPress={onVineta}>
           <ListIcon color={foreground} size={17} />
         </Boton>
 
@@ -138,7 +135,7 @@ export function FormatBar({
             <Boton
               etiqueta="Imagen de la galería"
               activo={false}
-              fondo={surfaceTertiary}
+              marca={link}
               onPress={onImagen}
             >
               <PictureIcon color={foreground} size={17} />
@@ -147,7 +144,7 @@ export function FormatBar({
             <Boton
               etiqueta="Tomar una foto"
               activo={false}
-              fondo={surfaceTertiary}
+              marca={link}
               onPress={onCamara}
             >
               <CameraIcon color={foreground} size={17} />
@@ -159,7 +156,7 @@ export function FormatBar({
           <Boton
             etiqueta={dictando ? 'Parar el dictado' : 'Dictar'}
             activo={false}
-            fondo={surfaceTertiary}
+            marca={link}
             onPress={onDictar}
           >
             <MicIcon color={dictando ? danger : foreground} size={17} />
@@ -177,13 +174,13 @@ function Separador({ color }: { color: string }) {
 function Boton({
   etiqueta,
   activo,
-  fondo,
+  marca,
   onPress,
   children,
 }: {
   etiqueta: string;
   activo: boolean;
-  fondo: string;
+  marca: string;
   onPress: () => void;
   children: React.ReactNode;
 }) {
@@ -196,18 +193,19 @@ function Boton({
       style={{ flex: 1, height: 48, alignItems: 'center', justifyContent: 'center' }}
     >
       <PressableFeedback.Highlight />
-      <View
-        style={{
-          width: 34,
-          height: 30,
-          borderRadius: 10,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: activo ? fondo : 'transparent',
-        }}
-      >
+      <View style={{ alignItems: 'center', gap: 4 }}>
         {children}
+        <View
+          style={{
+            height: 2.5,
+            width: 14,
+            borderRadius: 999,
+            backgroundColor: marca,
+            opacity: activo ? 1 : 0,
+          }}
+        />
       </View>
     </PressableFeedback>
   );
 }
+

@@ -2,10 +2,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, TextInput, View } from 'react-native';
 
 import { Aviso } from '@/components/aviso';
+import { Hoja } from '@/components/hoja';
 import {
   crearId,
   DIAS,
@@ -18,7 +18,6 @@ import { usePeriods } from '@/lib/periods-store';
 
 export default function ClaseNueva() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { periodo: periodoId, materia, id } = useLocalSearchParams<{
     periodo?: string;
     materia?: string;
@@ -119,16 +118,7 @@ export default function ClaseNueva() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 20,
-          paddingBottom: insets.bottom + 32,
-        }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+    <Hoja>
         <Text
           className="font-display text-foreground"
           style={{ fontSize: 25, letterSpacing: -0.4 }}
@@ -232,8 +222,7 @@ export default function ClaseNueva() {
         <Button size="lg" className="mt-8" onPress={guardar} isDisabled={guardando}>
           <Button.Label>{guardando ? 'Guardando' : 'Guardar'}</Button.Label>
         </Button>
-      </ScrollView>
-    </View>
+    </Hoja>
   );
 }
 

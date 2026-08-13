@@ -2,10 +2,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
 
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { Hoja } from '@/components/hoja';
 import {
   CheckIcon,
   CopyIcon,
@@ -21,7 +21,6 @@ import { estadoDeEntrega } from '@/lib/schedule';
 
 export default function Acciones() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { find, toggle, remove } = useNotes();
   const { find: buscarProyecto } = useProjects();
@@ -50,15 +49,7 @@ export default function Acciones() {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 20,
-          paddingBottom: insets.bottom + 32,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
+    <Hoja>
         <Text
           numberOfLines={2}
           className="font-display text-foreground"
@@ -134,7 +125,6 @@ export default function Acciones() {
         <Text className="mt-6 text-center font-sans text-muted" style={{ fontSize: 12 }}>
           En la lista también puedes deslizarla a la derecha para moverla.
         </Text>
-      </ScrollView>
 
       <ConfirmDialog
         visible={borrando}
@@ -148,7 +138,7 @@ export default function Acciones() {
         }}
         onCancel={() => setBorrando(false)}
       />
-    </View>
+    </Hoja>
   );
 }
 

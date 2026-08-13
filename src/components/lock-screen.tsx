@@ -20,12 +20,22 @@ const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'borrar'];
 
 export function LockScreen() {
   const { bloqueada, isReady, abrir } = useLock();
+  const [background] = useThemeColor(['background']);
 
-  if (!isReady || !bloqueada) return null;
+  if (isReady && !bloqueada) return null;
 
   return (
-    <Modal visible transparent={false} statusBarTranslucent animationType="fade">
-      <Teclado onAbrir={abrir} />
+    <Modal visible transparent={false} statusBarTranslucent animationType="none">
+      {isReady ? (
+        <Teclado onAbrir={abrir} />
+      ) : (
+        <View
+          className="flex-1 items-center justify-center"
+          style={{ backgroundColor: background }}
+        >
+          <InkDrop size={56} />
+        </View>
+      )}
     </Modal>
   );
 }

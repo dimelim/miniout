@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
-import { PressableFeedback, Spinner } from 'heroui-native';
+import { Button, PressableFeedback, Spinner } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
@@ -20,8 +21,9 @@ import {
   readPrefs,
   type NotePrefs,
 } from '@/lib/preferences';
-import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
 import { useProjects } from '@/lib/projects-store';
+
+const EXPLICADO = 'miniout.notas.explicado.v1';
 
 export default function Notas() {
   const insets = useSafeAreaInsets();
@@ -31,7 +33,7 @@ export default function Notas() {
 
   const [busqueda, setBusqueda] = useState('');
   const [prefs, setPrefs] = useState<NotePrefs>(DEFAULT_PREFS);
-  const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
+  const [explicado, setExplicado] = useState(true);
 
   const [muted, accent, accentForeground, surfaceTertiary, foreground, background] =
     useThemeColor([
@@ -46,11 +48,16 @@ export default function Notas() {
   useFocusEffect(
     useCallback(() => {
       readPrefs().then(setPrefs);
-      readProfile().then(setPerfil);
+      AsyncStorage.getItem(EXPLICADO).then((visto) => setExplicado(visto === 'si'));
       refresh().catch(() => {});
       refrescarProyectos().catch(() => {});
     }, [refresh, refrescarProyectos])
   );
+
+  const entendido = async () => {
+    setExplicado(true);
+    await AsyncStorage.setItem(EXPLICADO, 'si');
+  };
 
   const visibles = useMemo(() => {
     const filtradas = filtrarNotas(notes, {
@@ -165,6 +172,40 @@ export default function Notas() {
             <Text className="font-medium text-muted" style={{ fontSize: 12 }}>
               {resumen}
             </Text>
+          </Appear>
+        )}
+
+        {!explicado && (
+          <Appear delay={130} className="mt-5">
+            <View className="rounded-[24px] bg-surface p-5 shadow-surface">
+              <Text
+                className="font-display text-foreground"
+                style={{ fontSize: 19, lineHeight: 26, letterSpacing: -0.3 }}
+              >
+                Para qué son las notas
+              </Text>
+              <Text
+                className="mt-2 font-sans text-muted"
+                style={{ fontSize: 14, lineHeight: 21 }}
+              >
+                Apunta rápido lo que no puede perderse: una tarea, una idea, lo que dijo el
+                profesor. Si escribes un día, se convierte en entrega. Se guardan solas y te
+                siguen a cualquier teléfono.
+              </Text>
+              <Text
+                className="mt-2 font-sans text-muted"
+                style={{ fontSize: 14, lineHeight: 21 }}
+              >
+                Lo de la universidad de verdad, con horarios y calificaciones, vive dentro de
+                cada materia en tus semestres.
+              </Text>
+
+              <View className="mt-4 flex-row">
+                <Button size="sm" variant="tertiary" onPress={entendido}>
+                  <Button.Label>Entendido</Button.Label>
+                </Button>
+              </View>
+            </View>
           </Appear>
         )}
 

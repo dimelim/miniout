@@ -8,6 +8,22 @@ export type Novedad = {
 export const NOVEDADES: Novedad[] = [
   {
     version: '1.0.2',
+    nombre: 'Pulido de la cuarta alpha',
+    fecha: '13 de agosto de 2026',
+    cambios: [
+      'La mascota abre Inicio a lo grande, con tres tarjetas que se deslizan: el saludo, tus clases de hoy y la frase.',
+      'MiniLock tapa la app desde el primer instante, también en el selector de apps.',
+      'La negrita se activa sin seleccionar: tocas el botón y lo que escribes sale así hasta que lo quites.',
+      'El indicador de formato activo es una línea fina, no un cuadro.',
+      'Las hojas se ajustan a su contenido, sin espacio muerto abajo.',
+      'El teclado ya no tapa lo que escribes en la nota.',
+      'Cada imagen elige si va encima o debajo del texto.',
+      'Las etiquetas ya no cortan las letras con rabo, como la g.',
+      'Notas explica para qué sirve la primera vez, y el editor se enfoca tocando en cualquier parte del papel.',
+    ],
+  },
+  {
+    version: '1.0.2',
     nombre: 'Cuarta alpha',
     fecha: '13 de agosto de 2026',
     cambios: [

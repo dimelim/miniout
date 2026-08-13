@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AvatarButton } from '@/components/avatar-button';
 import { GithubBadge } from '@/components/github-card';
 import { ChevronRightIcon, PlusIcon, SemesterIcon } from '@/components/icons';
-import { InkDrop } from '@/components/ink-drop';
+import { MascotaHero } from '@/components/mascota-hero';
 import { NoteRow } from '@/components/note-row';
 import { NuevaVersion } from '@/components/nueva-version';
 import { ProjectIcon } from '@/components/project-icons';
@@ -61,6 +61,15 @@ export default function Inicio() {
   const nombre = firstName(account?.displayName);
   const palabras = periodWords(perfil.stage);
   const frase = quoteOfTheDay(frases, ahora);
+  const clasesHoy = useMemo(
+    () =>
+      periods.reduce(
+        (total, periodo) =>
+          total + clasesDelDia(periodo.subjects, (ahora.getDay() + 6) % 7).length,
+        0
+      ),
+    [periods, ahora]
+  );
 
   const cargar = useCallback(async () => {
     const [guardado, misFrases] = await Promise.all([readProfile(), readQuoteSettings()]);
@@ -117,15 +126,13 @@ export default function Inicio() {
             <AvatarButton />
           </View>
 
-          <View className="mt-3 flex-row items-center justify-between gap-4">
-            <Text
-              className="flex-1 font-display text-foreground"
-              style={{ fontSize: 30, lineHeight: 36, letterSpacing: -0.6 }}
-            >
-              {nombre ? `${greeting(ahora)}, ${nombre}` : greeting(ahora)}
-            </Text>
-            <InkDrop size={44} mood={pendientes === 0 && deHoy.length > 0 ? 'happy' : 'idle'} />
-          </View>
+          <MascotaHero
+            saludo={greeting(ahora)}
+            nombre={nombre}
+            pendientes={pendientes}
+            clasesHoy={clasesHoy}
+            frase={frase}
+          />
         </Animated.View>
 
         <NuevaVersion />

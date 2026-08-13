@@ -2,9 +2,9 @@ import { useRouter } from 'expo-router';
 import { Button, PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, useState } from 'react';
-import { ScrollView, Switch, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Switch, Text, View } from 'react-native';
 
+import { Hoja } from '@/components/hoja';
 import { CheckIcon, FolderIcon } from '@/components/icons';
 import { ProjectIcon } from '@/components/project-icons';
 import {
@@ -18,7 +18,6 @@ import { useProjects } from '@/lib/projects-store';
 
 export default function Filtros() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { projects } = useProjects();
 
   const [prefs, setPrefs] = useState<NotePrefs>(DEFAULT_PREFS);
@@ -43,15 +42,7 @@ export default function Filtros() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 20,
-          paddingBottom: insets.bottom + 32,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
+    <Hoja>
         <Text
           className="font-display text-foreground"
           style={{ fontSize: 25, letterSpacing: -0.4 }}
@@ -138,8 +129,7 @@ export default function Filtros() {
             <Button.Label>Quitar los filtros</Button.Label>
           </Button>
         </View>
-      </ScrollView>
-    </View>
+    </Hoja>
   );
 }
 

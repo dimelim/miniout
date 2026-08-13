@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { Chip, PressableFeedback, Spinner, useToast } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Keyboard, ScrollView, Text, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
@@ -17,6 +17,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@/components/icons';
+import { KeyboardSpace } from '@/components/keyboard-space';
 import { NoteImage } from '@/components/note-image';
 import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
@@ -93,6 +94,7 @@ export default function Nota() {
   const original = useRef({ title: note?.title ?? '', body: inicial.current.texto });
   const cargado = useRef(!id || Boolean(note));
   const escribiendo = useRef(false);
+  const campo = useRef<TextInput>(null);
 
   const [titulo, setTitulo] = useState(note?.title ?? '');
   const [cuerpo, setCuerpo] = useState(inicial.current.texto);
@@ -461,7 +463,12 @@ export default function Nota() {
           </View>
         )}
 
-        <View className="mt-4 rounded-[24px] bg-surface px-5 py-4 shadow-surface">
+        <Pressable
+          onPress={() => campo.current?.focus()}
+          accessible={false}
+          className="mt-4 rounded-[24px] bg-surface px-5 py-4 shadow-surface"
+          style={{ minHeight: 280 }}
+        >
           <Tira imagenes={arriba} note={note} abrir={abrir} className="mb-4" />
 
           {subiendo && (
@@ -474,6 +481,7 @@ export default function Nota() {
           )}
 
           <TextInput
+            ref={campo}
             onChangeText={cambiarCuerpo}
             onBlur={guardar}
             selection={forzada ?? undefined}
@@ -540,7 +548,7 @@ export default function Nota() {
               ))}
             </View>
           )}
-        </View>
+        </Pressable>
 
         {dictado.escuchando && (
           <Text className="mt-4 text-center font-medium text-muted" style={{ fontSize: 12 }}>
@@ -550,6 +558,8 @@ export default function Nota() {
 
         {dictado.problema && <Aviso mensaje={dictado.problema} className="mt-4" />}
         {problema && <Aviso mensaje={problema} className="mt-4" />}
+
+        <KeyboardSpace bottomInset={insets.bottom} extra={56} />
       </ScrollView>
 
       <FormatBar

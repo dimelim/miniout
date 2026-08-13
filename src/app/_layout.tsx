@@ -39,6 +39,11 @@ const HOJA: NativeStackNavigationOptions = {
   gestureEnabled: true,
 };
 
+const AJUSTADA: NativeStackNavigationOptions = {
+  ...HOJA,
+  sheetAllowedDetents: 'fitToContents',
+};
+
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   SplashScreen.hideAsync().catch(() => {});
 
@@ -150,7 +155,7 @@ function Navegacion() {
       <Stack.Screen name="semestre" />
       <Stack.Screen name="nuevo-periodo" options={HOJA} />
       <Stack.Screen name="frases" options={HOJA} />
-      <Stack.Screen name="github" options={{ ...HOJA, sheetAllowedDetents: [0.58] }} />
+      <Stack.Screen name="github" options={AJUSTADA} />
       <Stack.Screen name="contrasena" options={{ ...HOJA, sheetAllowedDetents: [0.7] }} />
       <Stack.Screen name="programar" options={{ ...HOJA, sheetAllowedDetents: [0.86] }} />
       <Stack.Screen name="ajustes" />
@@ -159,13 +164,13 @@ function Navegacion() {
       <Stack.Screen name="imagen" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="proyecto-notas" />
       <Stack.Screen name="proyecto" options={{ ...HOJA, sheetAllowedDetents: [0.88] }} />
-      <Stack.Screen name="mover" options={{ ...HOJA, sheetAllowedDetents: [0.72] }} />
-      <Stack.Screen name="calificar" options={{ ...HOJA, sheetAllowedDetents: [0.8] }} />
-      <Stack.Screen name="acciones" options={{ ...HOJA, sheetAllowedDetents: [0.82] }} />
-      <Stack.Screen name="filtros" options={{ ...HOJA, sheetAllowedDetents: [0.86] }} />
+      <Stack.Screen name="mover" options={AJUSTADA} />
+      <Stack.Screen name="calificar" options={AJUSTADA} />
+      <Stack.Screen name="acciones" options={AJUSTADA} />
+      <Stack.Screen name="filtros" options={AJUSTADA} />
       <Stack.Screen name="novedades" />
       <Stack.Screen name="materia" />
-      <Stack.Screen name="clase" options={{ ...HOJA, sheetAllowedDetents: [0.72] }} />
+      <Stack.Screen name="clase" options={AJUSTADA} />
     </Stack>
   );
 }

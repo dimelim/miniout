@@ -100,7 +100,7 @@ export function Semana({ periods, notes, onAbrirNota, onAbrirPeriodo }: SemanaPr
               <PressableFeedback.Highlight />
               <Text
                 className="font-medium"
-                style={{ fontSize: 11, color: activo ? accentForeground : muted }}
+                style={{ fontSize: 11, lineHeight: 15, color: activo ? accentForeground : muted }}
               >
                 {DIAS_CORTOS[uno.indice]}
               </Text>
@@ -167,7 +167,7 @@ export function Semana({ periods, notes, onAbrirNota, onAbrirPeriodo }: SemanaPr
                 >
                   {encargo.titulo}
                 </Text>
-                <Text className="font-medium text-muted" style={{ fontSize: 11 }}>
+                <Text className="font-medium text-muted" style={{ fontSize: 11, lineHeight: 15 }}>
                   {subject.name}
                 </Text>
               </View>
@@ -190,7 +190,7 @@ export function Semana({ periods, notes, onAbrirNota, onAbrirPeriodo }: SemanaPr
                 >
                   {note.title ?? note.body.split('\n')[0]}
                 </Text>
-                <Text className="font-medium text-muted" style={{ fontSize: 11 }}>
+                <Text className="font-medium text-muted" style={{ fontSize: 11, lineHeight: 15 }}>
                   nota
                 </Text>
               </PressableFeedback>
