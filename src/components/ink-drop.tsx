@@ -11,7 +11,9 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
+
+import { useMascota, type Accesorio } from '@/lib/mascota';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 
@@ -27,14 +29,21 @@ type InkDropProps = {
   size?: number;
   mood?: 'idle' | 'happy' | 'trabajando';
   hat?: boolean;
+  color?: string;
+  accesorio?: Accesorio;
 };
 
-export function InkDrop({ size = 44, mood = 'idle', hat = false }: InkDropProps) {
+export function InkDrop({ size = 44, mood = 'idle', hat, color, accesorio }: InkDropProps) {
   const [accent, background, foreground] = useThemeColor([
     'accent',
     'background',
     'foreground',
   ]);
+
+  const { mascota } = useMascota();
+
+  const cuerpoColor = color ?? mascota.color ?? accent;
+  const adorno: Accesorio = hat ? 'casco' : (accesorio ?? mascota.accesorio);
 
   const breath = useSharedValue(0);
   const blink = useSharedValue(1);
@@ -119,12 +128,16 @@ export function InkDrop({ size = 44, mood = 'idle', hat = false }: InkDropProps)
             borderRadius: size / 2,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: accent,
+            backgroundColor: cuerpoColor,
           }}
         >
           <Animated.View
             style={[
-              { flexDirection: 'row', gap: size * 0.17, marginTop: hat ? size * 0.06 : 0 },
+              {
+                flexDirection: 'row',
+                gap: size * 0.17,
+                marginTop: adorno === 'casco' ? size * 0.06 : 0,
+              },
               eyes,
             ]}
           >
@@ -133,7 +146,9 @@ export function InkDrop({ size = 44, mood = 'idle', hat = false }: InkDropProps)
           </Animated.View>
         </View>
 
-        {hat && <Casco size={size} tinta={foreground} />}
+        {adorno === 'casco' && <Casco size={size} tinta={foreground} />}
+        {adorno === 'gafas' && <Gafas size={size} tinta={foreground} />}
+        {adorno === 'antena' && <Antena size={size} tinta={foreground} bola={cuerpoColor} />}
       </Animated.View>
     </Pressable>
   );
@@ -149,6 +164,36 @@ function Casco({ size, tinta }: { size: number; tinta: string }) {
     >
       <Path d="M21 37a31 36 0 0 1 62 0z" fill={tinta} />
       <Rect x="0" y="36" width="104" height="10" rx="5" fill={tinta} />
+    </Svg>
+  );
+}
+
+function Gafas({ size, tinta }: { size: number; tinta: string }) {
+  return (
+    <Svg
+      width={size * 0.86}
+      height={size * 0.34}
+      viewBox="0 0 86 34"
+      style={{ position: 'absolute', top: size * 0.26, left: size * 0.07 }}
+      pointerEvents="none"
+    >
+      <Circle cx="21" cy="17" r="14" stroke={tinta} strokeWidth="5" fill="none" />
+      <Circle cx="65" cy="17" r="14" stroke={tinta} strokeWidth="5" fill="none" />
+      <Rect x="33" y="14" width="20" height="5" rx="2.5" fill={tinta} />
+    </Svg>
+  );
+}
+
+function Antena({ size, tinta, bola }: { size: number; tinta: string; bola: string }) {
+  return (
+    <Svg
+      width={size * 0.3}
+      height={size * 0.4}
+      viewBox="0 0 30 40"
+      style={{ position: 'absolute', top: -size * 0.3, left: size * 0.35 }}
+    >
+      <Rect x="12.5" y="10" width="5" height="30" rx="2.5" fill={tinta} />
+      <Circle cx="15" cy="8" r="8" fill={bola} stroke={tinta} strokeWidth="4" />
     </Svg>
   );
 }

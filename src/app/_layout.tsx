@@ -22,6 +22,7 @@ import { LockScreen } from '@/components/lock-screen';
 import { Updater } from '@/components/updater';
 import { AuthProvider } from '@/lib/auth-store';
 import { LockProvider } from '@/lib/lock';
+import { MascotaProvider } from '@/lib/mascota';
 import { NotesProvider } from '@/lib/notes-store';
 import { PeriodsProvider } from '@/lib/periods-store';
 import { ProjectsProvider } from '@/lib/projects-store';
@@ -107,6 +108,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
+        <MascotaProvider>
         <AuthProvider>
           <NotesProvider>
             <ProjectsProvider>
@@ -121,6 +123,7 @@ export default function RootLayout() {
             </ProjectsProvider>
           </NotesProvider>
         </AuthProvider>
+        </MascotaProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>
   );

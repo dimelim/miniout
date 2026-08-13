@@ -103,12 +103,7 @@ export function Evaluaciones({
     <View>
       {subject.evaluaciones.length === 0 ? (
         <View className="rounded-[22px] bg-surface p-4 shadow-surface">
-          <Text className="font-sans text-muted" style={{ fontSize: 14, lineHeight: 21 }}>
-            Elige cómo te evalúan y Miniout lleva la cuenta: te dice cuánto llevas y cuánto
-            necesitas en lo que falta.
-          </Text>
-
-          <View className="mt-3 gap-2">
+          <View className="gap-2">
             {REPARTOS.map((reparto) => (
               <PressableFeedback
                 key={reparto.id}

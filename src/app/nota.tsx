@@ -466,8 +466,8 @@ export default function Nota() {
         <Pressable
           onPress={() => campo.current?.focus()}
           accessible={false}
-          className="mt-4 rounded-[24px] bg-surface px-5 py-4 shadow-surface"
-          style={{ minHeight: 280 }}
+          className="mt-5"
+          style={{ minHeight: 340 }}
         >
           <Tira imagenes={arriba} note={note} abrir={abrir} className="mb-4" />
 
@@ -507,9 +507,9 @@ export default function Nota() {
             className="font-sans text-foreground"
             style={{
               fontSize: CUERPO,
-              lineHeight: CUERPO * 1.6,
+              lineHeight: CUERPO * 1.65,
               padding: 0,
-              minHeight: 200,
+              minHeight: 260,
               textAlignVertical: 'top',
               textDecorationLine: note?.done ? 'line-through' : 'none',
             }}

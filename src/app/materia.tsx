@@ -10,12 +10,14 @@ import { Appear } from '@/components/appear';
 import { BackButton } from '@/components/back-button';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Evaluaciones } from '@/components/evaluaciones';
+import { Guia } from '@/components/guia';
 import { CheckIcon, ClockIcon, CloseIcon, PlusIcon, TrashIcon } from '@/components/icons';
 import { KeyboardSpace } from '@/components/keyboard-space';
 import { RuledPaper } from '@/components/ruled-paper';
 import { SendButton } from '@/components/send-button';
 import { formatDayLabel } from '@/lib/dates';
-import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
+import { gradeLabel, notaHastaAhora } from '@/lib/grades';
+import { useMascota } from '@/lib/mascota';
 import { useAbrir } from '@/lib/navigate';
 import {
   crearId,
@@ -27,6 +29,7 @@ import {
   type Subject,
 } from '@/lib/periods';
 import { usePeriods } from '@/lib/periods-store';
+import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
 import { ATAJOS, conDias } from '@/lib/schedule';
 
 export default function Materia() {
@@ -35,6 +38,7 @@ export default function Materia() {
   const insets = useSafeAreaInsets();
   const { periodo: periodoId, id } = useLocalSearchParams<{ periodo?: string; id?: string }>();
   const { find, edit } = usePeriods();
+  const { mascota } = useMascota();
 
   const periodo = find(periodoId);
   const subject = periodo?.subjects.find((una) => una.id === id) ?? null;
@@ -42,6 +46,8 @@ export default function Materia() {
   const [nombre, setNombre] = useState(subject?.name ?? '');
   const [encargo, setEncargo] = useState('');
   const [apunte, setApunte] = useState('');
+  const [anadiendoEncargo, setAnadiendoEncargo] = useState(false);
+  const [anadiendoApunte, setAnadiendoApunte] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
 
@@ -68,6 +74,22 @@ export default function Materia() {
         : [],
     [subject]
   );
+
+  const proxima = useMemo(() => {
+    if (clases.length === 0) return null;
+
+    const hoy = (new Date().getDay() + 6) % 7;
+    const ordenadas = [...clases].sort((una, otra) => {
+      const distanciaUna = (una.dia - hoy + 7) % 7;
+      const distanciaOtra = (otra.dia - hoy + 7) % 7;
+
+      return distanciaUna === distanciaOtra
+        ? una.inicio.localeCompare(otra.inicio)
+        : distanciaUna - distanciaOtra;
+    });
+
+    return ordenadas[0];
+  }, [clases]);
 
   if (!periodo || !subject) {
     return (
@@ -102,6 +124,7 @@ export default function Materia() {
     if (!limpio) return;
 
     setEncargo('');
+    setAnadiendoEncargo(false);
     Keyboard.dismiss();
 
     await cambiar((una) => ({
@@ -118,20 +141,27 @@ export default function Materia() {
     if (!limpio) return;
 
     setApunte('');
+    setAnadiendoApunte(false);
     Keyboard.dismiss();
 
     await cambiar((una) => ({
       ...una,
       apuntes: [
         ...una.apuntes,
-        {
-          id: crearId(),
-          fecha: new Date().toISOString(),
-          texto: limpio.slice(0, MAX_APUNTE),
-        },
+        { id: crearId(), fecha: new Date().toISOString(), texto: limpio.slice(0, MAX_APUNTE) },
       ],
     }));
   };
+
+  const nota = notaHastaAhora(subject.evaluaciones);
+  const resumen = [
+    nota === null ? null : `llevas ${gradeLabel(nota, perfil)}`,
+    proxima ? `próxima clase ${DIAS[proxima.dia].toLowerCase()} a las ${proxima.inicio}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const yo = mascota.nombre || 'tu gota';
 
   return (
     <View className="flex-1 bg-background">
@@ -187,12 +217,24 @@ export default function Materia() {
           <View
             style={{ height: 2, width: 46, borderRadius: 999, backgroundColor: periodo.color }}
           />
+
+          {resumen.length > 0 && (
+            <Text className="mt-2 font-sans text-muted" style={{ fontSize: 13, lineHeight: 19 }}>
+              {resumen.charAt(0).toUpperCase() + resumen.slice(1)}
+            </Text>
+          )}
         </Appear>
 
         <Appear delay={60} className="mt-8">
-          <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
-            Cómo te va
-          </Text>
+          <Titulo texto="Cómo te va" />
+
+          {subject.evaluaciones.length === 0 && (
+            <View className="mb-3">
+              <Guia
+                texto={`Soy ${yo}. Dime cómo te califican en esta materia y te voy diciendo qué necesitas para pasar.`}
+              />
+            </View>
+          )}
 
           <Evaluaciones
             subject={subject}
@@ -206,9 +248,13 @@ export default function Materia() {
         </Appear>
 
         <Appear delay={110} className="mt-8">
-          <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
-            Horario
-          </Text>
+          <Titulo texto="Horario" />
+
+          {clases.length === 0 && (
+            <View className="mb-3">
+              <Guia texto="Ponle día y hora, y te la muestro en Inicio cuando toque." />
+            </View>
+          )}
 
           <Animated.View layout={LinearTransition.duration(200)} className="gap-2">
             {clases.map((clase) => (
@@ -267,24 +313,22 @@ export default function Materia() {
             ))}
           </Animated.View>
 
-          <PressableFeedback
+          <Anadir
+            etiqueta={clases.length === 0 ? 'Ponle horario' : 'Otra clase'}
+            icono={<ClockIcon color={muted} size={15} />}
             onPress={() => abrir(`/clase?periodo=${periodo.id}&materia=${subject.id}`)}
-            accessibilityRole="button"
-            accessibilityLabel="Añadir una clase"
-            className="mt-2 flex-row items-center justify-center gap-2 rounded-[18px] border border-border py-3"
-          >
-            <PressableFeedback.Highlight />
-            <ClockIcon color={muted} size={15} />
-            <Text className="font-medium text-muted" style={{ fontSize: 14 }}>
-              {clases.length === 0 ? 'Ponle horario' : 'Otra clase'}
-            </Text>
-          </PressableFeedback>
+            border={border}
+          />
         </Appear>
 
         <Appear delay={150} className="mt-8">
-          <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
-            Lo que te mandaron
-          </Text>
+          <Titulo texto="Lo que te mandaron" />
+
+          {subject.encargos.length === 0 && !anadiendoEncargo && (
+            <View className="mb-3">
+              <Guia texto="Trabajos, consultas, exposiciones. Los tacho contigo cuando los entregues." />
+            </View>
+          )}
 
           <Animated.View layout={LinearTransition.duration(200)} className="gap-2">
             {subject.encargos.map((uno) => (
@@ -332,53 +376,57 @@ export default function Materia() {
                     {uno.titulo}
                   </Text>
 
-                  <View className="mt-2 flex-row flex-wrap gap-1.5">
-                    {ATAJOS.map((atajo) => {
-                      const fecha = conDias(atajo.dias, new Date()).toISOString().slice(0, 10);
-                      const activo = uno.fecha?.slice(0, 10) === fecha;
+                  {!uno.hecho && (
+                    <View className="mt-2 flex-row flex-wrap gap-1.5">
+                      {ATAJOS.map((atajo) => {
+                        const fecha = conDias(atajo.dias, new Date())
+                          .toISOString()
+                          .slice(0, 10);
+                        const activo = uno.fecha?.slice(0, 10) === fecha;
 
-                      return (
-                        <PressableFeedback
-                          key={atajo.id}
-                          onPress={() =>
-                            cambiar((una) => ({
-                              ...una,
-                              encargos: una.encargos.map((otro) =>
-                                otro.id === uno.id
-                                  ? {
-                                      ...otro,
-                                      fecha: activo
-                                        ? null
-                                        : conDias(atajo.dias, new Date()).toISOString(),
-                                    }
-                                  : otro
-                              ),
-                            }))
-                          }
-                          accessibilityRole="radio"
-                          accessibilityState={{ selected: activo }}
-                          accessibilityLabel={`Entregar ${atajo.etiqueta}`}
-                          style={{
-                            borderRadius: 999,
-                            paddingHorizontal: 10,
-                            paddingVertical: 5,
-                            backgroundColor: activo ? accent : surfaceSecondary,
-                          }}
-                        >
-                          <Text
-                            className="font-medium"
+                        return (
+                          <PressableFeedback
+                            key={atajo.id}
+                            onPress={() =>
+                              cambiar((una) => ({
+                                ...una,
+                                encargos: una.encargos.map((otro) =>
+                                  otro.id === uno.id
+                                    ? {
+                                        ...otro,
+                                        fecha: activo
+                                          ? null
+                                          : conDias(atajo.dias, new Date()).toISOString(),
+                                      }
+                                    : otro
+                                ),
+                              }))
+                            }
+                            accessibilityRole="radio"
+                            accessibilityState={{ selected: activo }}
+                            accessibilityLabel={`Entregar ${atajo.etiqueta}`}
                             style={{
-                              fontSize: 11,
-                              lineHeight: 15,
-                              color: activo ? accentForeground : muted,
+                              borderRadius: 999,
+                              paddingHorizontal: 10,
+                              paddingVertical: 5,
+                              backgroundColor: activo ? accent : surfaceSecondary,
                             }}
                           >
-                            {atajo.etiqueta}
-                          </Text>
-                        </PressableFeedback>
-                      );
-                    })}
-                  </View>
+                            <Text
+                              className="font-medium"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: 15,
+                                color: activo ? accentForeground : muted,
+                              }}
+                            >
+                              {atajo.etiqueta}
+                            </Text>
+                          </PressableFeedback>
+                        );
+                      })}
+                    </View>
+                  )}
                 </View>
 
                 <PressableFeedback
@@ -400,34 +448,44 @@ export default function Materia() {
             ))}
           </Animated.View>
 
-          <Campo
-            valor={encargo}
-            onChange={setEncargo}
-            onEnviar={agregarEncargo}
-            marcador="Trabajo, consulta, lo que sea"
-            color={periodo.color}
-            muted={muted}
-            border={border}
-            fondo={surfaceSecondary}
-            background={background}
-            maximo={MAX_ENCARGO}
-          />
+          {anadiendoEncargo ? (
+            <Campo
+              valor={encargo}
+              onChange={setEncargo}
+              onEnviar={agregarEncargo}
+              marcador="Taller 3, exposición, consulta"
+              color={periodo.color}
+              muted={muted}
+              border={border}
+              fondo={surfaceSecondary}
+              background={background}
+              maximo={MAX_ENCARGO}
+            />
+          ) : (
+            <Anadir
+              etiqueta="Apuntar algo que te mandaron"
+              icono={<PlusIcon color={muted} size={14} />}
+              onPress={() => setAnadiendoEncargo(true)}
+              border={border}
+            />
+          )}
         </Appear>
 
         <Appear delay={190} className="mt-8">
-          <Text className="mb-1 font-display text-foreground" style={{ fontSize: 20 }}>
-            Cómo fue cada día
-          </Text>
-          <Text className="mb-3 font-sans text-muted" style={{ fontSize: 13, lineHeight: 20 }}>
-            Lo que se vio en clase, lo que dijo el profesor, lo que hay que repasar.
-          </Text>
+          <Titulo texto="Diario de clase" />
+
+          {apuntes.length === 0 && !anadiendoApunte && (
+            <View className="mb-3">
+              <Guia texto="Al salir de clase, cuéntame qué vieron en una línea. Cuando llegue el parcial, esto vale oro." />
+            </View>
+          )}
 
           <Animated.View layout={LinearTransition.duration(200)} className="gap-2">
             {apuntes.map((uno) => (
               <View key={uno.id} className="rounded-[18px] bg-surface p-4 shadow-surface">
                 <View className="flex-row items-start gap-3">
                   <View className="flex-1">
-                    <Text className="font-medium text-muted" style={{ fontSize: 11 }}>
+                    <Text className="font-medium text-muted" style={{ fontSize: 11, lineHeight: 15 }}>
                       {formatDayLabel(new Date(uno.fecha))}
                     </Text>
                     <Text
@@ -447,7 +505,7 @@ export default function Materia() {
                     }
                     hitSlop={10}
                     accessibilityRole="button"
-                    accessibilityLabel="Quitar el comentario"
+                    accessibilityLabel="Quitar el apunte"
                     style={{ padding: 6, borderRadius: 999 }}
                   >
                     <PressableFeedback.Highlight />
@@ -458,18 +516,27 @@ export default function Materia() {
             ))}
           </Animated.View>
 
-          <Campo
-            valor={apunte}
-            onChange={setApunte}
-            onEnviar={agregarApunte}
-            marcador="Hoy vimos..."
-            color={periodo.color}
-            muted={muted}
-            border={border}
-            fondo={surfaceSecondary}
-            background={background}
-            maximo={MAX_APUNTE}
-          />
+          {anadiendoApunte ? (
+            <Campo
+              valor={apunte}
+              onChange={setApunte}
+              onEnviar={agregarApunte}
+              marcador="Hoy vimos..."
+              color={periodo.color}
+              muted={muted}
+              border={border}
+              fondo={surfaceSecondary}
+              background={background}
+              maximo={MAX_APUNTE}
+            />
+          ) : (
+            <Anadir
+              etiqueta="Contar cómo fue hoy"
+              icono={<PlusIcon color={muted} size={14} />}
+              onPress={() => setAnadiendoApunte(true)}
+              border={border}
+            />
+          )}
         </Appear>
 
         <KeyboardSpace bottomInset={insets.bottom} />
@@ -478,7 +545,7 @@ export default function Materia() {
       <ConfirmDialog
         visible={borrando}
         titulo={`Borrar ${subject.name}`}
-        mensaje="Se van su horario, sus entregas y sus comentarios."
+        mensaje="Se van su horario, sus entregas y su diario."
         confirmar="Borrar la materia"
         onConfirm={async () => {
           setBorrando(false);
@@ -490,6 +557,42 @@ export default function Materia() {
         onCancel={() => setBorrando(false)}
       />
     </View>
+  );
+}
+
+function Titulo({ texto }: { texto: string }) {
+  return (
+    <Text className="mb-3 font-display text-foreground" style={{ fontSize: 20 }}>
+      {texto}
+    </Text>
+  );
+}
+
+function Anadir({
+  etiqueta,
+  icono,
+  onPress,
+  border,
+}: {
+  etiqueta: string;
+  icono: React.ReactNode;
+  onPress: () => void;
+  border: string;
+}) {
+  return (
+    <PressableFeedback
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={etiqueta}
+      className="mt-2 flex-row items-center justify-center gap-2 rounded-[18px] py-3"
+      style={{ borderWidth: 1, borderColor: border }}
+    >
+      <PressableFeedback.Highlight />
+      {icono}
+      <Text className="font-medium text-muted" style={{ fontSize: 14 }}>
+        {etiqueta}
+      </Text>
+    </PressableFeedback>
   );
 }
 
@@ -531,6 +634,7 @@ function Campo({
         maxLength={maximo}
         returnKeyType="done"
         onSubmitEditing={onEnviar}
+        autoFocus
         accessibilityLabel={marcador}
         className="flex-1 font-sans text-foreground"
         style={{ fontSize: 15, paddingVertical: 10, paddingHorizontal: 0 }}

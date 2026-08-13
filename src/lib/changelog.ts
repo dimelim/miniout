@@ -8,6 +8,18 @@ export type Novedad = {
 export const NOVEDADES: Novedad[] = [
   {
     version: '1.0.2',
+    nombre: 'La mascota es tuya',
+    fecha: '13 de agosto de 2026',
+    cambios: [
+      'Pestaña nueva: Mascota. Ponle nombre, elige su color y qué lleva puesto: casco, gafas o antena. El cambio se ve en toda la app.',
+      'La mascota te guía: en las materias vacías te explica cada sección con sus palabras.',
+      'La nota es a pantalla completa, escribes sobre el papel rayado sin tarjeta de por medio.',
+      'La materia se reorganizó: arriba cómo vas y tu próxima clase, y los campos de añadir solo aparecen cuando los pides.',
+      'El diario de clase se llama así, y te dice para qué sirve.',
+    ],
+  },
+  {
+    version: '1.0.2',
     nombre: 'Pulido de la cuarta alpha',
     fecha: '13 de agosto de 2026',
     cambios: [

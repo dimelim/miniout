@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 
-import { FolderIcon, InicioIcon, NoteIcon, PersonIcon } from '@/components/icons';
+import { FolderIcon, InicioIcon, NoteIcon, PersonIcon, SmileIcon } from '@/components/icons';
 import { TabBar } from '@/components/tab-bar';
 
 export default function AppLayout() {
@@ -25,6 +25,13 @@ export default function AppLayout() {
         options={{
           title: 'Proyectos',
           tabBarIcon: ({ color }) => <FolderIcon color={color} size={20} />,
+        }}
+      />
+      <Tabs.Screen
+        name="mascota"
+        options={{
+          title: 'Mascota',
+          tabBarIcon: ({ color }) => <SmileIcon color={color} size={20} />,
         }}
       />
       <Tabs.Screen

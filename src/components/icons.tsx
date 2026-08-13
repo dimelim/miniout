@@ -111,6 +111,9 @@ const CALENDAR =
 const UNDERLINE =
   'M5 2.75a.75.75 0 0 0-1.5 0V7a4.5 4.5 0 0 0 9 0V2.75a.75.75 0 0 0-1.5 0V7a3 3 0 0 1-6 0zm-.75 9.75a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5z';
 
+const SMILE =
+  'M13.5 8a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0M15 8A7 7 0 1 1 1 8a7 7 0 0 1 14 0M6.67 9.665a.75.75 0 0 0-1.34.67c.403.809 1.452 1.415 2.67 1.415s2.267-.606 2.67-1.415a.75.75 0 1 0-1.34-.67c-.097.191-.548.585-1.33.585s-1.233-.394-1.33-.585M10 8a.75.75 0 0 1-.75-.75v-1a.75.75 0 0 1 1.5 0v1A.75.75 0 0 1 10 8m-4.75-.75a.75.75 0 0 0 1.5 0v-1a.75.75 0 0 0-1.5 0z';
+
 const SLIDERS =
   'M1.25 3.25A.75.75 0 0 1 2 2.5h12A.75.75 0 0 1 14 4H2a.75.75 0 0 1-.75-.75m0 4.75A.75.75 0 0 1 2 7.25h12a.75.75 0 0 1 0 1.5H2A.75.75 0 0 1 1.25 8M2 12a.75.75 0 0 0 0 1.5h12a.75.75 0 0 0 0-1.5z';
 
@@ -278,6 +281,10 @@ export function UnderlineIcon({ color, size = 16 }: IconProps) {
 
 export function FiltersIcon({ color, size = 16 }: IconProps) {
   return <GravityIcon d={SLIDERS} color={color} size={size} />;
+}
+
+export function SmileIcon({ color, size = 16 }: IconProps) {
+  return <GravityIcon d={SMILE} color={color} size={size} />;
 }
 
 export function GoogleIcon({ size = 18 }: { size?: number }) {
