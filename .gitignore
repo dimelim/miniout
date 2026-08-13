@@ -37,6 +37,9 @@ yarn-error.*
 *.pem
 *.key
 
+# imagenes subidas a la api
+api/media/
+
 # typescript
 *.tsbuildinfo
 

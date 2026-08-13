@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Button, Card, Chip, PressableFeedback, Spinner } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useMemo, useState } from 'react';
@@ -14,7 +14,9 @@ import { NoteRow } from '@/components/note-row';
 import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
 import { useAuth } from '@/lib/auth-store';
+import { useAbrir } from '@/lib/navigate';
 import { useNotes } from '@/lib/notes-store';
+import { useProjects } from '@/lib/projects-store';
 import { formatLongDate, isSameDay } from '@/lib/dates';
 import { EMPTY_PROFILE, periodWords, readProfile, type Profile } from '@/lib/profile';
 import {
@@ -41,10 +43,11 @@ function firstName(displayName: string | null | undefined) {
 
 export default function Inicio() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { account, session } = useAuth();
+  const abrir = useAbrir();
+  const { account } = useAuth();
 
   const { notes, isLoading, refresh, toggle } = useNotes();
+  const { find: buscarProyecto, refresh: refrescarProyectos } = useProjects();
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [frases, setFrases] = useState<QuoteSettings>(DEFAULT_QUOTES);
@@ -68,7 +71,8 @@ export default function Inicio() {
     setFrases(misFrases);
 
     await refresh().catch(() => {});
-  }, [refresh]);
+    await refrescarProyectos().catch(() => {});
+  }, [refresh, refrescarProyectos]);
 
   useFocusEffect(
     useCallback(() => {
@@ -127,7 +131,7 @@ export default function Inicio() {
 
         <Animated.View entering={FadeInDown.duration(240).delay(60)} className="mt-7">
           <PressableFeedback
-            onPress={() => router.push('/nota')}
+            onPress={() => abrir('/nota')}
             accessibilityRole="button"
             accessibilityLabel="Escribir una nota"
             className="rounded-[24px] bg-surface p-5 shadow-surface"
@@ -177,25 +181,16 @@ export default function Inicio() {
                 >
                   <NoteRow
                     note={note}
+                    perfil={perfil}
+                    proyecto={buscarProyecto(note.projectId)}
                     onToggle={() => toggle(note)}
-                    onOpen={() => router.push(`/nota?id=${note.id}`)}
+                    onOpen={() => abrir(`/nota?id=${note.id}`)}
+                    onMenu={() => abrir(`/acciones?id=${note.id}`)}
+                    onMover={() => abrir(`/mover?id=${note.id}`)}
                   />
                 </View>
               ))}
             </Animated.View>
-          )}
-
-          {notes.length > 0 && (
-            <Button
-              variant="tertiary"
-              size="md"
-              className="mt-3"
-              onPress={() => router.push('/notas')}
-            >
-              <Button.Label>
-                {notes.length === 1 ? 'Ver la nota' : `Ver las ${notes.length} notas`}
-              </Button.Label>
-            </Button>
           )}
         </Seccion>
 
@@ -204,7 +199,7 @@ export default function Inicio() {
             {semesters.map((semester) => (
               <PressableFeedback
                 key={semester.id}
-                onPress={() => router.push(`/semestre?id=${semester.id}`)}
+                onPress={() => abrir(`/semestre?id=${semester.id}`)}
                 accessibilityRole="button"
                 accessibilityLabel={`Abrir ${semester.name}`}
                 className="rounded-[24px] bg-surface p-4 shadow-surface"
@@ -262,7 +257,7 @@ export default function Inicio() {
             <Button
               variant="tertiary"
               size="md"
-              onPress={() => router.push('/nuevo-periodo')}
+              onPress={() => abrir('/nuevo-periodo')}
               accessibilityLabel={palabras.one}
             >
               <PlusIcon color={muted} size={15} />
@@ -273,7 +268,7 @@ export default function Inicio() {
 
         <Seccion titulo="Frase del día">
           <PressableFeedback
-            onPress={() => router.push('/frases')}
+            onPress={() => abrir('/frases')}
             accessibilityRole="button"
             accessibilityLabel="Cambiar las frases"
             className="rounded-[24px] bg-surface-secondary p-5"

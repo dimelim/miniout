@@ -8,18 +8,17 @@ import {
   type ReactNode,
 } from 'react';
 
-import { api, type Note } from './api';
+import { api, type Note, type NotePatch } from './api';
 import { useAuth } from './auth-store';
-import { detectHints, type Hint } from './hints';
+import { detectHints } from './hints';
 
 type NotesValue = {
   notes: Note[];
   isLoading: boolean;
   refresh: () => Promise<void>;
-  create: (body: string, hints?: Hint[]) => Promise<Note>;
-  edit: (id: string, body: string) => Promise<void>;
+  create: (input: NotePatch & { body: string }) => Promise<Note>;
+  edit: (id: string, patch: NotePatch) => Promise<Note>;
   toggle: (note: Note) => Promise<void>;
-  schedule: (id: string, dueAt: string | null) => Promise<void>;
   remove: (id: string) => Promise<void>;
   find: (id: string | undefined) => Note | null;
 };
@@ -51,12 +50,12 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const create = useCallback(
-    async (body: string, hints?: Hint[]) => {
+    async (input: NotePatch & { body: string }) => {
       if (!session) throw new Error('No hay sesión');
 
       const note = await api.createNote(session.accessToken, {
-        body,
-        hints: hints ?? detectHints(body),
+        ...input,
+        hints: input.hints ?? detectHints(input.body),
       });
 
       setNotes((current) => [note, ...current]);
@@ -66,15 +65,16 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   );
 
   const edit = useCallback(
-    async (id: string, body: string) => {
+    async (id: string, patch: NotePatch) => {
       if (!session) throw new Error('No hay sesión');
 
       const updated = await api.updateNote(session.accessToken, id, {
-        body,
-        hints: detectHints(body),
+        ...patch,
+        hints: patch.body === undefined ? patch.hints : detectHints(patch.body),
       });
 
       setNotes((current) => current.map((note) => (note.id === id ? updated : note)));
+      return updated;
     },
     [session]
   );
@@ -95,16 +95,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
           current.map((item) => (item.id === note.id ? { ...item, done: note.done } : item))
         );
       }
-    },
-    [session]
-  );
-
-  const schedule = useCallback(
-    async (id: string, dueAt: string | null) => {
-      if (!session) throw new Error('No hay sesión');
-
-      const updated = await api.updateNote(session.accessToken, id, { dueAt });
-      setNotes((current) => current.map((note) => (note.id === id ? updated : note)));
     },
     [session]
   );
@@ -132,8 +122,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ notes, isLoading, refresh, create, edit, toggle, schedule, remove, find }),
-    [notes, isLoading, refresh, create, edit, toggle, schedule, remove, find]
+    () => ({ notes, isLoading, refresh, create, edit, toggle, remove, find }),
+    [notes, isLoading, refresh, create, edit, toggle, remove, find]
   );
 
   return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;

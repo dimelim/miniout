@@ -17,7 +17,7 @@ export default function Programar() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { find, schedule } = useNotes();
+  const { find, edit } = useNotes();
 
   const note = find(id);
   const hoy = new Date();
@@ -38,7 +38,7 @@ export default function Programar() {
   const guardar = async (fecha: Date | null) => {
     if (!note) return;
 
-    await schedule(note.id, fecha ? fecha.toISOString() : null);
+    await edit(note.id, { dueAt: fecha ? fecha.toISOString() : null });
     router.back();
   };
 

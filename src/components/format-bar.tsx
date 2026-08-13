@@ -1,6 +1,6 @@
 import { PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
   useAnimatedKeyboard,
   useAnimatedStyle,
@@ -8,7 +8,16 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
-import { CheckIcon } from './icons';
+import {
+  BoldIcon,
+  CameraIcon,
+  ChecklistIcon,
+  HeadingIcon,
+  ItalicIcon,
+  ListIcon,
+  MicIcon,
+  PictureIcon,
+} from './icons';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 
@@ -19,6 +28,12 @@ type FormatBarProps = {
   selection: Seleccion;
   onChange: (value: string, selection: Seleccion) => void;
   bottomInset: number;
+  conAdjuntos: boolean;
+  conDictado: boolean;
+  dictando: boolean;
+  onImagen: () => void;
+  onCamara: () => void;
+  onDictar: () => void;
 };
 
 function envolver(value: string, selection: Seleccion, marca: string) {
@@ -56,12 +71,23 @@ function prefijar(value: string, selection: Seleccion, prefijo: string) {
   return { texto, seleccion: { start: cursor, end: cursor } };
 }
 
-export function FormatBar({ value, selection, onChange, bottomInset }: FormatBarProps) {
-  const [foreground, muted, surface, border] = useThemeColor([
+export function FormatBar({
+  value,
+  selection,
+  onChange,
+  bottomInset,
+  conAdjuntos,
+  conDictado,
+  dictando,
+  onImagen,
+  onCamara,
+  onDictar,
+}: FormatBarProps) {
+  const [foreground, surface, separator, danger] = useThemeColor([
     'foreground',
-    'muted',
     'surface',
-    'border',
+    'separator',
+    'danger',
   ]);
 
   const teclado = useAnimatedKeyboard({
@@ -89,87 +115,76 @@ export function FormatBar({ value, selection, onChange, bottomInset }: FormatBar
       style={[{ position: 'absolute', left: 0, right: 0, bottom: bottomInset }, barra]}
     >
       <View
-        className="flex-row items-center justify-around px-2 py-2"
+        className="flex-row items-stretch"
         style={{
           backgroundColor: surface,
           borderTopWidth: 1,
-          borderTopColor: border,
-          paddingBottom: 10,
+          borderTopColor: separator,
+          paddingBottom: 8,
         }}
       >
-        <Boton
-          etiqueta="Negrita"
-          onPress={() => aplicar(() => envolver(value, selection, '**'))}
-        >
-          <Text className="font-display-strong" style={{ fontSize: 16, color: foreground }}>
-            B
-          </Text>
+        <Boton etiqueta="Negrita" onPress={() => aplicar(() => envolver(value, selection, '**'))}>
+          <BoldIcon color={foreground} size={17} />
         </Boton>
 
-        <Boton
-          etiqueta="Cursiva"
-          onPress={() => aplicar(() => envolver(value, selection, '_'))}
-        >
-          <Text
-            className="font-display"
-            style={{ fontSize: 16, fontStyle: 'italic', color: foreground }}
-          >
-            i
-          </Text>
+        <Boton etiqueta="Cursiva" onPress={() => aplicar(() => envolver(value, selection, '_'))}>
+          <ItalicIcon color={foreground} size={17} />
         </Boton>
 
-        <Separador color={border} />
+        <Boton etiqueta="Titulo" onPress={() => aplicar(() => prefijar(value, selection, '# '))}>
+          <HeadingIcon color={foreground} size={17} />
+        </Boton>
 
-        <Boton
-          etiqueta="Lista"
-          onPress={() => aplicar(() => prefijar(value, selection, '- '))}
-        >
-          <View className="flex-row items-center gap-1">
-            <View
-              style={{ width: 4, height: 4, borderRadius: 999, backgroundColor: foreground }}
-            />
-            <View
-              style={{ width: 11, height: 2, borderRadius: 999, backgroundColor: muted }}
-            />
-          </View>
+        <Boton etiqueta="Lista" onPress={() => aplicar(() => prefijar(value, selection, '- '))}>
+          <ListIcon color={foreground} size={17} />
         </Boton>
 
         <Boton
           etiqueta="Casilla"
           onPress={() => aplicar(() => prefijar(value, selection, '- [ ] '))}
         >
-          <View
-            style={{
-              width: 14,
-              height: 14,
-              borderRadius: 4,
-              borderWidth: 1.5,
-              borderColor: foreground,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <CheckIcon color={muted} size={9} />
-          </View>
+          <ChecklistIcon color={foreground} size={17} />
         </Boton>
 
-        <Separador color={border} />
+        {(conAdjuntos || conDictado) && <Separador color={separator} />}
 
-        <Boton
-          etiqueta="Titulo"
-          onPress={() => aplicar(() => prefijar(value, selection, '# '))}
-        >
-          <Text className="font-display" style={{ fontSize: 15, color: foreground }}>
-            H
-          </Text>
-        </Boton>
+        {conAdjuntos && (
+          <>
+            <Boton etiqueta="Imagen de la galería" onPress={onImagen}>
+              <PictureIcon color={foreground} size={17} />
+            </Boton>
+
+            <Boton etiqueta="Tomar una foto" onPress={onCamara}>
+              <CameraIcon color={foreground} size={17} />
+            </Boton>
+          </>
+        )}
+
+        {conDictado && (
+          <Boton etiqueta={dictando ? 'Parar el dictado' : 'Dictar'} onPress={onDictar}>
+            <MicIcon color={dictando ? danger : foreground} size={17} />
+            {dictando && (
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: 7,
+                  width: 14,
+                  height: 2,
+                  borderRadius: 999,
+                  backgroundColor: danger,
+                }}
+              />
+            )}
+          </Boton>
+        )}
+
       </View>
     </Animated.View>
   );
 }
 
 function Separador({ color }: { color: string }) {
-  return <View style={{ width: 1, height: 20, backgroundColor: color, opacity: 0.7 }} />;
+  return <View style={{ width: 1, marginVertical: 12, backgroundColor: color }} />;
 }
 
 function Boton({
@@ -187,9 +202,8 @@ function Boton({
       accessibilityRole="button"
       accessibilityLabel={etiqueta}
       style={{
-        width: 38,
-        height: 38,
-        borderRadius: 999,
+        flex: 1,
+        height: 46,
         alignItems: 'center',
         justifyContent: 'center',
       }}

@@ -29,11 +29,26 @@ mencione un dia pasa a tener fecha.
   ni para crear una tarea.
 - Escribe "parcial de calculo el viernes" y Miniout te ofrece la materia y el
   dia como chips. Tu decides si se quedan.
+- Una nota puede llevar titulo, fecha de entrega, calificacion e imagenes, y
+  todo eso es opcional.
+- El editor es a pantalla completa y su barra de formato ocupa todo el ancho:
+  negrita, cursiva, titulos, listas y casillas.
+- Las imagenes salen de la galeria o de la camara. Al abrir una la mueves, la
+  acercas con dos dedos, la giras y la quitas.
+- El dictado escribe lo que dices dentro de la nota, con el reconocedor de voz
+  que ya trae el telefono.
+- Las calificaciones usan tu escala, con el 0 a 20 incluido, y llevan un badge
+  que cambia de color si estas por debajo de lo que necesitas para pasar.
+  Tambien puedes ordenar y filtrar por ellas.
+- Los proyectos son cajones: Universidad, Compras, Personal. Desliza una nota a
+  la derecha para moverla, o usa los tres puntos. Manten pulsado un proyecto
+  para cambiarlo de sitio.
 - El alta pregunta cuatro cosas una sola vez: como llamarte, colegio o
   universidad, tu escala de notas y con cuanto pasas. La app se adapta, asi que
   los semestres pasan a llamarse periodos si estas en el colegio.
 - Los semestres guardan materias, cada uno con su icono y su color, y una nota
   que mencione una materia cuenta para ella.
+- MiniLock pone un codigo de cuatro digitos delante de tus notas.
 - Una frase al dia, las nuestras o las que escribas tu.
 - Tu cuenta te sigue: correo, Google o Discord, con la foto del metodo que
   usaste.
@@ -54,7 +69,8 @@ Expo SDK 57 con expo-router, React Native 0.86 y React 19.
 [heroui-native](https://github.com/heroui-inc/heroui-native) pone los
 componentes bajo Apache-2.0, tematizados con los tokens propios de Miniout, y
 [uniwind](https://uniwind.dev) trae las clases de Tailwind v4 a React Native.
-Las notas persisten en local con AsyncStorage.
+Las notas, los proyectos y las imagenes viven en la api, cifrados con
+AES-256-GCM. Las preferencias se quedan en el telefono con AsyncStorage.
 
 ## Arrancar
 
@@ -78,11 +94,11 @@ npm run icons     # regenera los iconos de la app desde la marca
 
 ```
 src/
-  app/            rutas de expo-router: onboarding, acceso, alta, inicio, cuenta
+  app/            rutas de expo-router: onboarding, acceso, alta, pestanas, editor
   components/     la marca, la firma, la gota de tinta y las piezas comunes
-  lib/            fechas, deteccion de pistas, semestres, perfil y cliente de api
+  lib/            fechas, pistas, notas, proyectos, imagenes y cliente de api
   global.css      los tokens de diseno que tematizan heroui-native
-api/              el servicio que da cuentas y sincronizacion
+api/              el servicio que da cuentas, sincronizacion e imagenes
 scripts/          generacion de iconos y despliegue de la api
 ```
 

@@ -46,7 +46,21 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Miniout usa tus fotos para meterlas en una nota.",
+          "cameraPermission": "Miniout usa la cámara para tomar una foto y meterla en una nota."
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Miniout usa el micrófono para escribir lo que dictas.",
+          "speechRecognitionPermission": "Miniout convierte tu voz en texto para escribir la nota."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

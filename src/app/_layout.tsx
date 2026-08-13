@@ -23,6 +23,7 @@ import { Updater } from '@/components/updater';
 import { AuthProvider } from '@/lib/auth-store';
 import { LockProvider } from '@/lib/lock';
 import { NotesProvider } from '@/lib/notes-store';
+import { ProjectsProvider } from '@/lib/projects-store';
 
 import '../global.css';
 
@@ -102,12 +103,14 @@ export default function RootLayout() {
       <HeroUINativeProvider>
         <AuthProvider>
           <NotesProvider>
-            <LockProvider>
-            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-            <Navegacion />
-              <Updater />
-              <LockScreen />
-            </LockProvider>
+            <ProjectsProvider>
+              <LockProvider>
+                <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+                <Navegacion />
+                <Updater />
+                <LockScreen />
+              </LockProvider>
+            </ProjectsProvider>
           </NotesProvider>
         </AuthProvider>
       </HeroUINativeProvider>
@@ -149,6 +152,13 @@ function Navegacion() {
       <Stack.Screen name="programar" options={{ ...HOJA, sheetAllowedDetents: [0.86] }} />
       <Stack.Screen name="ajustes" />
       <Stack.Screen name="minilock" options={{ ...HOJA, sheetAllowedDetents: [0.88] }} />
+      <Stack.Screen name="nota" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="imagen" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="proyecto-notas" />
+      <Stack.Screen name="proyecto" options={{ ...HOJA, sheetAllowedDetents: [0.88] }} />
+      <Stack.Screen name="mover" options={{ ...HOJA, sheetAllowedDetents: [0.72] }} />
+      <Stack.Screen name="calificar" options={{ ...HOJA, sheetAllowedDetents: [0.8] }} />
+      <Stack.Screen name="acciones" options={{ ...HOJA, sheetAllowedDetents: [0.78] }} />
     </Stack>
   );
 }

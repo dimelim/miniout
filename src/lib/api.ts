@@ -2,15 +2,50 @@ import type { Hint } from './hints';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
+export type NoteImage = {
+  name: string;
+  width: number;
+  height: number;
+  scale?: number;
+  rotation?: number;
+  offsetX?: number;
+  offsetY?: number;
+};
+
 export type Note = {
   id: string;
+  title: string | null;
   body: string;
   hints: Hint[];
+  media: NoteImage[];
+  grade: number | null;
+  projectId: string | null;
   done: boolean;
   dueAt: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+};
+
+export type Project = {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NotePatch = {
+  title?: string | null;
+  body?: string;
+  hints?: Hint[];
+  media?: NoteImage[];
+  grade?: number | null;
+  projectId?: string | null;
+  done?: boolean;
+  dueAt?: string | null;
 };
 
 export type Session = {
@@ -174,19 +209,55 @@ export const api = {
     return request<{ notes: Note[]; syncedAt: string }>('/notes', { accessToken });
   },
 
-  createNote(accessToken: string, input: { body: string; hints: Hint[] }) {
+  createNote(accessToken: string, input: NotePatch & { body: string }) {
     return request<Note>('/notes', { method: 'POST', body: input, accessToken });
   },
 
-  updateNote(
-    accessToken: string,
-    id: string,
-    input: { done?: boolean; body?: string; hints?: Hint[]; dueAt?: string | null }
-  ) {
+  updateNote(accessToken: string, id: string, input: NotePatch) {
     return request<Note>(`/notes/${id}`, { method: 'PATCH', body: input, accessToken });
   },
 
   removeNote(accessToken: string, id: string) {
     return request<{ ok: true }>(`/notes/${id}`, { method: 'DELETE', accessToken });
   },
+
+  projects(accessToken: string) {
+    return request<{ projects: Project[] }>('/projects', { accessToken });
+  },
+
+  createProject(accessToken: string, input: { name: string; icon: string; color: string }) {
+    return request<Project>('/projects', { method: 'POST', body: input, accessToken });
+  },
+
+  updateProject(
+    accessToken: string,
+    id: string,
+    input: { name?: string; icon?: string; color?: string }
+  ) {
+    return request<Project>(`/projects/${id}`, { method: 'PATCH', body: input, accessToken });
+  },
+
+  orderProjects(accessToken: string, ids: string[]) {
+    return request<{ projects: Project[] }>('/projects/order', {
+      method: 'POST',
+      body: { ids },
+      accessToken,
+    });
+  },
+
+  removeProject(accessToken: string, id: string) {
+    return request<{ ok: true }>(`/projects/${id}`, { method: 'DELETE', accessToken });
+  },
+
+  removeImage(accessToken: string, name: string) {
+    return request<{ ok: true }>(`/media/${name}`, { method: 'DELETE', accessToken });
+  },
 };
+
+export function imageUrl(name: string) {
+  return `${BASE_URL}/media/${name}`;
+}
+
+export function uploadUrl(ext: string) {
+  return `${BASE_URL}/media?ext=${ext}`;
+}

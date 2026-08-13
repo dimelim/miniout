@@ -1,63 +1,60 @@
 import { Tabs } from 'expo-router';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, type ComponentProps } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, {
   Easing,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
-  withSequence,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
-const SPRING = { damping: 15, stiffness: 240, mass: 0.6 };
+const SPRING = { damping: 16, stiffness: 220, mass: 0.6 };
 
-const ALTO = 58;
+const ALTO = 56;
+const PASTILLA = { ancho: 54, alto: 30 };
 
 type ItemProps = {
   label: string;
   isFocused: boolean;
   restColor: string;
   activeColor: string;
+  pastilla: string;
   onPress: () => void;
   renderIcon: (color: string) => React.ReactNode;
 };
 
-function Item({ label, isFocused, restColor, activeColor, onPress, renderIcon }: ItemProps) {
+function Item({
+  label,
+  isFocused,
+  restColor,
+  activeColor,
+  pastilla,
+  onPress,
+  renderIcon,
+}: ItemProps) {
   const progress = useSharedValue(isFocused ? 1 : 0);
   const pressed = useSharedValue(0);
-  const salto = useSharedValue(0);
 
   useEffect(() => {
     progress.value = withSpring(isFocused ? 1 : 0, SPRING);
-
-    if (isFocused) {
-      salto.value = withSequence(
-        withTiming(1, { duration: 120, easing: EASE }),
-        withSpring(0, SPRING)
-      );
-    }
-  }, [isFocused, progress, salto]);
+  }, [isFocused, progress]);
 
   const contenido = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - pressed.value * 0.07 }],
+    transform: [{ scale: 1 - pressed.value * 0.06 }],
   }));
 
-  const icono = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: -salto.value * 3 - progress.value * 2 },
-      { scale: 1 + salto.value * 0.1 },
-    ],
+  const fondo = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ scaleX: 0.7 + progress.value * 0.3 }],
   }));
 
   const etiqueta = useAnimatedStyle(() => ({
     color: interpolateColor(progress.value, [0, 1], [restColor, activeColor]),
-    opacity: 0.55 + progress.value * 0.45,
-    transform: [{ translateY: -progress.value * 1 }],
   }));
 
   return (
@@ -74,8 +71,29 @@ function Item({ label, isFocused, restColor, activeColor, onPress, renderIcon }:
       accessibilityLabel={label}
       style={{ flex: 1, height: ALTO, alignItems: 'center', justifyContent: 'center' }}
     >
-      <Animated.View style={[{ alignItems: 'center', gap: 3 }, contenido]}>
-        <Animated.View style={icono}>{renderIcon(isFocused ? activeColor : restColor)}</Animated.View>
+      <Animated.View style={[{ alignItems: 'center', gap: 4 }, contenido]}>
+        <View
+          style={{
+            width: PASTILLA.ancho,
+            height: PASTILLA.alto,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                width: PASTILLA.ancho,
+                height: PASTILLA.alto,
+                borderRadius: 999,
+                backgroundColor: pastilla,
+              },
+              fondo,
+            ]}
+          />
+          {renderIcon(isFocused ? activeColor : restColor)}
+        </View>
 
         <Animated.Text
           className="font-medium"
@@ -83,7 +101,6 @@ function Item({ label, isFocused, restColor, activeColor, onPress, renderIcon }:
         >
           {label}
         </Animated.Text>
-
       </Animated.View>
     </Pressable>
   );
@@ -91,14 +108,15 @@ function Item({ label, isFocused, restColor, activeColor, onPress, renderIcon }:
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
-export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) {
+export function TabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
 
-  const [surface, separator, muted, accent] = useThemeColor([
+  const [surface, separator, muted, foreground, surfaceTertiary] = useThemeColor([
     'surface',
     'separator',
     'muted',
-    'accent',
+    'foreground',
+    'surface-tertiary',
   ]);
 
   return (
@@ -114,7 +132,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
         borderTopColor: separator,
       }}
     >
-      <View className="flex-row items-center px-2">
+      <View className="flex-row items-center px-1">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -138,10 +156,11 @@ export function FloatingTabBar({ state, descriptors, navigation }: TabBarProps) 
               label={label}
               isFocused={isFocused}
               restColor={muted}
-              activeColor={accent}
+              activeColor={foreground}
+              pastilla={surfaceTertiary}
               onPress={onPress}
               renderIcon={(color) =>
-                options.tabBarIcon?.({ focused: isFocused, color, size: 22 }) ?? null
+                options.tabBarIcon?.({ focused: isFocused, color, size: 21 }) ?? null
               }
             />
           );

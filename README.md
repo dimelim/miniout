@@ -29,11 +29,24 @@ mentions a day becomes something due.
   none to create a task.
 - Write "parcial de calculo el viernes" and Miniout offers the subject and the
   day as chips. You decide whether they stay.
+- A note can carry a title, a due date, a grade and pictures, and every one of
+  them is optional.
+- The editor is full screen with a formatting bar that spans the whole width:
+  bold, italic, headings, bullets and checkboxes.
+- Pictures come from the gallery or the camera. Open one and you can drag it,
+  pinch it, spin it and throw it away.
+- Dictation writes what you say straight into the note, using the speech
+  recognizer that already lives on the phone.
+- Grades use your own scale, 0 to 20 included, with a badge that turns color
+  when you are below the passing mark. You can sort and filter by them.
+- Projects are drawers: Universidad, Compras, Personal. Swipe a note to the
+  right to move it, or use the three dots. Hold a project to reorder it.
 - Setup asks four questions once: what to call you, school or university, your
   grading scale and the passing mark. The app renames things to match, so a
   semester becomes a term if you are still in school.
 - Semesters hold subjects, each with its own icon and color, and a note that
   mentions a subject counts towards it.
+- MiniLock puts a four digit code in front of your notes.
 - A phrase a day, either ours or the ones you write.
 - Your account travels with you: email, Google or Discord, with the profile
   photo from whichever you used.
@@ -53,7 +66,8 @@ Expo SDK 57 with expo-router, React Native 0.86 and React 19.
 [heroui-native](https://github.com/heroui-inc/heroui-native) provides the
 components under Apache-2.0, themed with Miniout's own tokens, and
 [uniwind](https://uniwind.dev) brings Tailwind v4 class names to React Native.
-Notes persist locally through AsyncStorage.
+Notes, projects and pictures live in the API, encrypted at rest with
+AES-256-GCM. Preferences stay on the device through AsyncStorage.
 
 ## Getting started
 
@@ -77,11 +91,11 @@ npm run icons     # rebuilds the app icons from the mark
 
 ```
 src/
-  app/            expo-router routes: onboarding, sign in, setup, home, account
+  app/            expo-router routes: onboarding, sign in, setup, tabs, editor
   components/     the mark, the signature, the ink drop and the shared pieces
-  lib/            dates, hint detection, semesters, profile and the api client
+  lib/            dates, hint detection, grades, projects, images and the client
   global.css      the design tokens that theme heroui-native
-api/              the service that backs accounts and sync
+api/              the service that backs accounts, sync and picture storage
 scripts/          icon generation and the api deploy
 ```
 

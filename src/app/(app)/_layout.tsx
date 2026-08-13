@@ -1,19 +1,30 @@
 import { Tabs } from 'expo-router';
 
-import { FloatingTabBar } from '@/components/floating-tab-bar';
-import { InicioIcon, PersonIcon } from '@/components/icons';
+import { ChecklistIcon, FolderIcon, InicioIcon, PersonIcon } from '@/components/icons';
+import { TabBar } from '@/components/tab-bar';
 
 export default function AppLayout() {
   return (
-    <Tabs
-      tabBar={(props) => <FloatingTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
-    >
+    <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tabs.Screen
         name="inicio"
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color }) => <InicioIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notas"
+        options={{
+          title: 'Notas',
+          tabBarIcon: ({ color }) => <ChecklistIcon color={color} size={20} />,
+        }}
+      />
+      <Tabs.Screen
+        name="proyectos"
+        options={{
+          title: 'Proyectos',
+          tabBarIcon: ({ color }) => <FolderIcon color={color} size={20} />,
         }}
       />
       <Tabs.Screen
