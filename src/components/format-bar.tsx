@@ -11,84 +11,55 @@ import Animated, {
 import {
   BoldIcon,
   CameraIcon,
-  ChecklistIcon,
   HeadingIcon,
   ItalicIcon,
   ListIcon,
   MicIcon,
   PictureIcon,
+  UnderlineIcon,
 } from './icons';
+
+import type { MarcaTipo } from '@/lib/format';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 
 export type Seleccion = { start: number; end: number };
 
 type FormatBarProps = {
-  value: string;
-  selection: Seleccion;
-  onChange: (value: string, selection: Seleccion) => void;
   bottomInset: number;
+  activos: MarcaTipo[];
   conAdjuntos: boolean;
   conDictado: boolean;
   dictando: boolean;
+  onMarca: (tipo: MarcaTipo) => void;
+  onVineta: () => void;
   onImagen: () => void;
   onCamara: () => void;
   onDictar: () => void;
 };
 
-function envolver(value: string, selection: Seleccion, marca: string) {
-  const antes = value.slice(0, selection.start);
-  const dentro = value.slice(selection.start, selection.end);
-  const despues = value.slice(selection.end);
-
-  if (!dentro) {
-    const texto = `${antes}${marca}${marca}${despues}`;
-    const cursor = selection.start + marca.length;
-    return { texto, seleccion: { start: cursor, end: cursor } };
-  }
-
-  return {
-    texto: `${antes}${marca}${dentro}${marca}${despues}`,
-    seleccion: {
-      start: selection.start + marca.length,
-      end: selection.end + marca.length,
-    },
-  };
-}
-
-function prefijar(value: string, selection: Seleccion, prefijo: string) {
-  const inicioLinea = value.lastIndexOf('\n', Math.max(0, selection.start - 1)) + 1;
-  const yaEsta = value.slice(inicioLinea).startsWith(prefijo);
-
-  if (yaEsta) {
-    const texto = value.slice(0, inicioLinea) + value.slice(inicioLinea + prefijo.length);
-    const cursor = Math.max(inicioLinea, selection.start - prefijo.length);
-    return { texto, seleccion: { start: cursor, end: cursor } };
-  }
-
-  const texto = value.slice(0, inicioLinea) + prefijo + value.slice(inicioLinea);
-  const cursor = selection.start + prefijo.length;
-  return { texto, seleccion: { start: cursor, end: cursor } };
-}
-
 export function FormatBar({
-  value,
-  selection,
-  onChange,
   bottomInset,
+  activos,
   conAdjuntos,
   conDictado,
   dictando,
+  onMarca,
+  onVineta,
   onImagen,
   onCamara,
   onDictar,
 }: FormatBarProps) {
-  const [foreground, surface, separator, danger] = useThemeColor([
-    'foreground',
-    'surface',
-    'separator',
-    'danger',
-  ]);
+  const [foreground, surface, separator, danger, surfaceTertiary, accentForeground, accent] =
+    useThemeColor([
+      'foreground',
+      'surface',
+      'separator',
+      'danger',
+      'surface-tertiary',
+      'accent-foreground',
+      'accent',
+    ]);
 
   const teclado = useAnimatedKeyboard({
     isStatusBarTranslucentAndroid: true,
@@ -104,10 +75,7 @@ export function FormatBar({
     };
   });
 
-  const aplicar = (accion: () => { texto: string; seleccion: Seleccion }) => {
-    const { texto, seleccion } = accion();
-    onChange(texto, seleccion);
-  };
+  const color = (tipo: MarcaTipo) => (activos.includes(tipo) ? accentForeground : foreground);
 
   return (
     <Animated.View
@@ -123,61 +91,80 @@ export function FormatBar({
           paddingBottom: 8,
         }}
       >
-        <Boton etiqueta="Negrita" onPress={() => aplicar(() => envolver(value, selection, '**'))}>
-          <BoldIcon color={foreground} size={17} />
-        </Boton>
-
-        <Boton etiqueta="Cursiva" onPress={() => aplicar(() => envolver(value, selection, '_'))}>
-          <ItalicIcon color={foreground} size={17} />
-        </Boton>
-
-        <Boton etiqueta="Titulo" onPress={() => aplicar(() => prefijar(value, selection, '# '))}>
-          <HeadingIcon color={foreground} size={17} />
-        </Boton>
-
-        <Boton etiqueta="Lista" onPress={() => aplicar(() => prefijar(value, selection, '- '))}>
-          <ListIcon color={foreground} size={17} />
+        <Boton
+          etiqueta="Negrita"
+          activo={activos.includes('negrita')}
+          fondo={accent}
+          onPress={() => onMarca('negrita')}
+        >
+          <BoldIcon color={color('negrita')} size={17} />
         </Boton>
 
         <Boton
-          etiqueta="Casilla"
-          onPress={() => aplicar(() => prefijar(value, selection, '- [ ] '))}
+          etiqueta="Cursiva"
+          activo={activos.includes('cursiva')}
+          fondo={accent}
+          onPress={() => onMarca('cursiva')}
         >
-          <ChecklistIcon color={foreground} size={17} />
+          <ItalicIcon color={color('cursiva')} size={17} />
+        </Boton>
+
+        <Boton
+          etiqueta="Subrayado"
+          activo={activos.includes('subrayado')}
+          fondo={accent}
+          onPress={() => onMarca('subrayado')}
+        >
+          <UnderlineIcon color={color('subrayado')} size={17} />
+        </Boton>
+
+        <Boton
+          etiqueta="Título"
+          activo={activos.includes('titulo')}
+          fondo={accent}
+          onPress={() => onMarca('titulo')}
+        >
+          <HeadingIcon color={color('titulo')} size={17} />
+        </Boton>
+
+        <Boton etiqueta="Viñeta" activo={false} fondo={surfaceTertiary} onPress={onVineta}>
+          <ListIcon color={foreground} size={17} />
         </Boton>
 
         {(conAdjuntos || conDictado) && <Separador color={separator} />}
 
         {conAdjuntos && (
           <>
-            <Boton etiqueta="Imagen de la galería" onPress={onImagen}>
+            <Boton
+              etiqueta="Imagen de la galería"
+              activo={false}
+              fondo={surfaceTertiary}
+              onPress={onImagen}
+            >
               <PictureIcon color={foreground} size={17} />
             </Boton>
 
-            <Boton etiqueta="Tomar una foto" onPress={onCamara}>
+            <Boton
+              etiqueta="Tomar una foto"
+              activo={false}
+              fondo={surfaceTertiary}
+              onPress={onCamara}
+            >
               <CameraIcon color={foreground} size={17} />
             </Boton>
           </>
         )}
 
         {conDictado && (
-          <Boton etiqueta={dictando ? 'Parar el dictado' : 'Dictar'} onPress={onDictar}>
+          <Boton
+            etiqueta={dictando ? 'Parar el dictado' : 'Dictar'}
+            activo={false}
+            fondo={surfaceTertiary}
+            onPress={onDictar}
+          >
             <MicIcon color={dictando ? danger : foreground} size={17} />
-            {dictando && (
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: 7,
-                  width: 14,
-                  height: 2,
-                  borderRadius: 999,
-                  backgroundColor: danger,
-                }}
-              />
-            )}
           </Boton>
         )}
-
       </View>
     </Animated.View>
   );
@@ -189,10 +176,14 @@ function Separador({ color }: { color: string }) {
 
 function Boton({
   etiqueta,
+  activo,
+  fondo,
   onPress,
   children,
 }: {
   etiqueta: string;
+  activo: boolean;
+  fondo: string;
   onPress: () => void;
   children: React.ReactNode;
 }) {
@@ -200,16 +191,23 @@ function Boton({
     <PressableFeedback
       onPress={onPress}
       accessibilityRole="button"
+      accessibilityState={{ selected: activo }}
       accessibilityLabel={etiqueta}
-      style={{
-        flex: 1,
-        height: 46,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      style={{ flex: 1, height: 48, alignItems: 'center', justifyContent: 'center' }}
     >
       <PressableFeedback.Highlight />
-      {children}
+      <View
+        style={{
+          width: 34,
+          height: 30,
+          borderRadius: 10,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: activo ? fondo : 'transparent',
+        }}
+      >
+        {children}
+      </View>
     </PressableFeedback>
   );
 }

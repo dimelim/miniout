@@ -6,7 +6,7 @@ import { removeMedia } from '../media.js';
 const MAX_BODY_LENGTH = 8000;
 const MAX_TITLE_LENGTH = 120;
 
-const COLUMNS = `id, title, body, hints, media, grade, project_id, done, due_at,
+const COLUMNS = `id, title, body, hints, format, media, grade, project_id, done, due_at,
   created_at, updated_at, deleted_at`;
 
 const hintSchema = {
@@ -17,6 +17,17 @@ const hintSchema = {
     kind: { type: 'string', enum: ['subject', 'date'] },
     label: { type: 'string', maxLength: 60 },
     offsetDays: { type: 'integer', minimum: -3650, maximum: 3650 },
+  },
+};
+
+const marcaSchema = {
+  type: 'object',
+  required: ['tipo', 'desde', 'hasta'],
+  additionalProperties: false,
+  properties: {
+    tipo: { type: 'string', enum: ['negrita', 'cursiva', 'subrayado', 'titulo'] },
+    desde: { type: 'integer', minimum: 0, maximum: MAX_BODY_LENGTH },
+    hasta: { type: 'integer', minimum: 0, maximum: MAX_BODY_LENGTH },
   },
 };
 
@@ -41,6 +52,7 @@ function toNote(row) {
     title: row.title === null ? null : decrypt(row.title),
     body: decrypt(row.body),
     hints: decryptJson(row.hints),
+    format: row.format === null ? [] : decryptJson(row.format),
     media: row.media === null ? [] : decryptJson(row.media),
     grade: row.grade === null ? null : Number(row.grade),
     projectId: row.project_id,
@@ -96,6 +108,7 @@ export async function noteRoutes(app) {
             title: { type: ['string', 'null'], maxLength: MAX_TITLE_LENGTH },
             body: { type: 'string', maxLength: MAX_BODY_LENGTH },
             hints: { type: 'array', maxItems: 8, items: hintSchema },
+            format: { type: 'array', maxItems: 300, items: marcaSchema },
             media: { type: 'array', maxItems: 20, items: mediaSchema },
             grade: { type: ['number', 'null'], minimum: 0, maximum: 1000 },
             projectId: { type: ['string', 'null'], maxLength: 26 },
@@ -112,13 +125,15 @@ export async function noteRoutes(app) {
 
       await query(
         `INSERT INTO notes
-           (id, user_id, title, body, hints, media, grade, project_id, due_at, created_at)
+           (id, user_id, title, body, hints, format, media, grade, project_id, due_at, created_at)
          VALUES
-           (:id, :userId, :title, :body, :hints, :media, :grade, :projectId, :dueAt, :createdAt)
+           (:id, :userId, :title, :body, :hints, :format, :media, :grade, :projectId, :dueAt,
+            :createdAt)
          ON DUPLICATE KEY UPDATE
            title = VALUES(title),
            body = VALUES(body),
            hints = VALUES(hints),
+           format = VALUES(format),
            media = VALUES(media),
            grade = VALUES(grade),
            project_id = VALUES(project_id),
@@ -129,6 +144,7 @@ export async function noteRoutes(app) {
           title: request.body.title ? encrypt(request.body.title) : null,
           body: encrypt(request.body.body),
           hints: encryptJson(request.body.hints ?? []),
+          format: encryptJson(request.body.format ?? []),
           media: encryptJson(request.body.media ?? []),
           grade: request.body.grade ?? null,
           projectId: request.body.projectId ?? null,
@@ -163,6 +179,7 @@ export async function noteRoutes(app) {
             title: { type: ['string', 'null'], maxLength: MAX_TITLE_LENGTH },
             body: { type: 'string', maxLength: MAX_BODY_LENGTH },
             hints: { type: 'array', maxItems: 8, items: hintSchema },
+            format: { type: 'array', maxItems: 300, items: marcaSchema },
             media: { type: 'array', maxItems: 20, items: mediaSchema },
             grade: { type: ['number', 'null'], minimum: 0, maximum: 1000 },
             projectId: { type: ['string', 'null'], maxLength: 26 },
@@ -194,6 +211,10 @@ export async function noteRoutes(app) {
       if (request.body.hints !== undefined) {
         fields.push('hints = :hints');
         params.hints = encryptJson(request.body.hints);
+      }
+      if (request.body.format !== undefined) {
+        fields.push('format = :format');
+        params.format = encryptJson(request.body.format);
       }
       if (request.body.media !== undefined) {
         fields.push('media = :media');

@@ -1,10 +1,12 @@
 type ImagePickerModule = typeof import('expo-image-picker');
 type FileSystemModule = typeof import('expo-file-system');
 type SpeechModule = typeof import('expo-speech-recognition');
+type ClipboardModule = typeof import('expo-clipboard');
 
 let picker: ImagePickerModule | null | undefined;
 let files: FileSystemModule | null | undefined;
 let speech: SpeechModule | null | undefined;
+let clip: ClipboardModule | null | undefined;
 
 export function imagePicker() {
   if (picker === undefined) {
@@ -40,6 +42,35 @@ export function speechRecognition() {
   }
 
   return speech;
+}
+
+export function clipboard() {
+  if (clip === undefined) {
+    try {
+      clip = require('expo-clipboard') as ClipboardModule;
+    } catch {
+      clip = null;
+    }
+  }
+
+  return clip;
+}
+
+export async function copiar(texto: string) {
+  const modulo = clipboard();
+
+  if (!modulo) return false;
+
+  try {
+    await modulo.setStringAsync(texto);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function puedeCopiar() {
+  return clipboard() !== null;
 }
 
 export function puedeUsarImagenes() {

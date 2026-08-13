@@ -9,9 +9,11 @@ import { Appear } from '@/components/appear';
 import { Aviso } from '@/components/aviso';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FormatBar, type Seleccion } from '@/components/format-bar';
+import { Formateado } from '@/components/formatted';
 import {
-  CheckIcon,
+  ChecklistIcon,
   ChevronLeftIcon,
+  CopyIcon,
   GradeIcon,
   PlusIcon,
   TrashIcon,
@@ -23,34 +25,53 @@ import { ApiError, type Note, type NoteImage as Imagen } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
 import { formatDayLabel, formatRelative } from '@/lib/dates';
 import { useDictado } from '@/lib/dictation';
+import {
+  alternar,
+  desdeMarkdown,
+  desplazar,
+  diferencia,
+  limitesDeLinea,
+  tieneMarcasViejas,
+  tieneTodo,
+  VINETA,
+  type Marca,
+  type MarcaTipo,
+} from '@/lib/format';
 import { gradeLabel, gradeTone } from '@/lib/grades';
 import { detectHints } from '@/lib/hints';
 import { elegirImagen, subirImagen, type Origen } from '@/lib/images';
 import { useAbrir } from '@/lib/navigate';
-import { puedeUsarImagenes } from '@/lib/native';
+import { copiar, puedeCopiar, puedeUsarImagenes } from '@/lib/native';
 import { useNotes } from '@/lib/notes-store';
 import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
 import { useProjects } from '@/lib/projects-store';
 import { estadoDeEntrega } from '@/lib/schedule';
 
-const LISTA = /^(\s*)(- \[[ x]\] |- )(.*)$/;
 const MINIATURA = 132;
+const CUERPO = 17;
 
-function continuarLista(anterior: string, siguiente: string) {
+function contenidoInicial(note: Note | null) {
+  if (!note) return { texto: '', marcas: [] as Marca[] };
+  if (note.format.length > 0) return { texto: note.body, marcas: note.format };
+  if (tieneMarcasViejas(note.body)) return desdeMarkdown(note.body);
+
+  return { texto: note.body, marcas: [] as Marca[] };
+}
+
+function continuarVineta(anterior: string, siguiente: string) {
   if (siguiente.length <= anterior.length || !siguiente.startsWith(anterior)) return null;
   if (!siguiente.slice(anterior.length).startsWith('\n')) return null;
 
   const lineas = anterior.split('\n');
   const ultima = lineas[lineas.length - 1];
-  const marca = ultima.match(LISTA);
 
-  if (!marca) return null;
+  if (!ultima.startsWith(VINETA)) return null;
 
-  if (!marca[3].trim()) {
+  if (!ultima.slice(VINETA.length).trim()) {
     return `${lineas.slice(0, -1).join('\n')}${lineas.length > 1 ? '\n' : ''}`;
   }
 
-  return `${siguiente}${marca[1]}${marca[2].replace('[x]', '[ ]')}`;
+  return `${siguiente}${VINETA}`;
 }
 
 export default function Nota() {
@@ -65,16 +86,20 @@ export default function Nota() {
   const [creada, setCreada] = useState<Note | null>(null);
   const note = find(id) ?? creada;
 
-  const original = useRef({ title: note?.title ?? '', body: note?.body ?? '' });
+  const inicial = useRef(contenidoInicial(note));
+  const original = useRef({ title: note?.title ?? '', body: inicial.current.texto });
+  const cargado = useRef(!id || Boolean(note));
 
   const [titulo, setTitulo] = useState(note?.title ?? '');
-  const [cuerpo, setCuerpo] = useState(note?.body ?? '');
+  const [cuerpo, setCuerpo] = useState(inicial.current.texto);
+  const [marcas, setMarcas] = useState<Marca[]>(inicial.current.marcas);
   const [seleccion, setSeleccion] = useState<Seleccion>({ start: 0, end: 0 });
   const [forzada, setForzada] = useState<Seleccion | null>(null);
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [preguntando, setPreguntando] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, accentForeground, muted, border, danger, warning, success, foreground] =
@@ -95,6 +120,7 @@ export default function Nota() {
 
   const dictado = useDictado(dictar);
   const conAdjuntos = useMemo(() => puedeUsarImagenes(), []);
+  const conCopia = useMemo(() => puedeCopiar(), []);
 
   const pistas = useMemo(() => detectHints(cuerpo), [cuerpo]);
   const cambiado =
@@ -103,40 +129,93 @@ export default function Nota() {
   const entrega = estadoDeEntrega(note?.dueAt ?? null);
   const proyecto = buscarProyecto(note?.projectId);
 
+  const activos = useMemo(() => {
+    const desde = seleccion.start === seleccion.end ? seleccion.start - 1 : seleccion.start;
+    const hasta = seleccion.end;
+
+    return (['negrita', 'cursiva', 'subrayado', 'titulo'] as MarcaTipo[]).filter((tipo) =>
+      tieneTodo(marcas, tipo, Math.max(0, desde), Math.max(1, hasta))
+    );
+  }, [marcas, seleccion]);
+
   useEffect(() => {
     readProfile().then(setPerfil);
   }, []);
 
   useEffect(() => {
-    if (!note) return;
-    original.current = { title: note.title ?? '', body: note.body };
+    if (!note || cargado.current) return;
+
+    const contenido = contenidoInicial(note);
+
+    setTitulo(note.title ?? '');
+    setCuerpo(contenido.texto);
+    setMarcas(contenido.marcas);
+    original.current = { title: note.title ?? '', body: contenido.texto };
+    cargado.current = true;
   }, [note]);
+
+  const cambiarCuerpo = (texto: string) => {
+    const continuado = continuarVineta(cuerpo, texto);
+    const definitivo = continuado ?? texto;
+
+    setMarcas((actuales) => desplazar(actuales, diferencia(cuerpo, definitivo)));
+    setCuerpo(definitivo);
+
+    if (continuado) {
+      const cursor = continuado.length;
+      setForzada({ start: cursor, end: cursor });
+    }
+  };
+
+  const aplicarMarca = (tipo: MarcaTipo) => {
+    const rango =
+      tipo === 'titulo'
+        ? limitesDeLinea(cuerpo, seleccion.start)
+        : { desde: seleccion.start, hasta: seleccion.end };
+
+    if (rango.hasta <= rango.desde) return;
+
+    setMarcas((actuales) => alternar(actuales, tipo, rango.desde, rango.hasta));
+  };
+
+  const ponerVineta = () => {
+    const { desde } = limitesDeLinea(cuerpo, seleccion.start);
+    const yaEsta = cuerpo.slice(desde).startsWith(VINETA);
+
+    const texto = yaEsta
+      ? cuerpo.slice(0, desde) + cuerpo.slice(desde + VINETA.length)
+      : cuerpo.slice(0, desde) + VINETA + cuerpo.slice(desde);
+
+    setMarcas((actuales) => desplazar(actuales, diferencia(cuerpo, texto)));
+    setCuerpo(texto);
+
+    const cursor = yaEsta
+      ? Math.max(desde, seleccion.start - VINETA.length)
+      : seleccion.start + VINETA.length;
+
+    setForzada({ start: cursor, end: cursor });
+  };
 
   const guardar = useCallback(async () => {
     const limpioCuerpo = cuerpo.trim();
     const limpioTitulo = titulo.trim();
 
     if (!limpioCuerpo && !limpioTitulo) return null;
-    if (
-      limpioCuerpo === original.current.body.trim() &&
-      limpioTitulo === original.current.title.trim()
-    ) {
-      return note;
-    }
 
     setGuardando(true);
     setProblema(null);
 
     try {
-      const patch = { title: limpioTitulo || null, body: limpioCuerpo };
+      const patch = { title: limpioTitulo || null, body: cuerpo, format: marcas };
       const guardada = note ? await edit(note.id, patch) : await create(patch);
 
       if (!note) {
+        cargado.current = true;
         setCreada(guardada);
         router.setParams({ id: guardada.id });
       }
 
-      original.current = { title: limpioTitulo, body: limpioCuerpo };
+      original.current = { title: limpioTitulo, body: cuerpo };
 
       return guardada;
     } catch (error) {
@@ -145,7 +224,7 @@ export default function Nota() {
     } finally {
       setGuardando(false);
     }
-  }, [create, cuerpo, edit, note, titulo]);
+  }, [create, cuerpo, edit, marcas, note, router, titulo]);
 
   const borrar = async () => {
     setPreguntando(false);
@@ -167,6 +246,12 @@ export default function Nota() {
     await guardar();
     Keyboard.dismiss();
     router.back();
+  };
+
+  const copiarNota = async () => {
+    const texto = titulo.trim() ? `${titulo.trim()}\n\n${cuerpo}` : cuerpo;
+
+    setAviso((await copiar(texto)) ? 'Copiada' : null);
   };
 
   const adjuntar = async (origen: Origen) => {
@@ -198,8 +283,17 @@ export default function Nota() {
   if (!note && id) {
     return (
       <View className="flex-1 bg-background">
-        <View className="px-6" style={{ paddingTop: insets.top + 12 }}>
-          <Volver onPress={() => router.back()} color={foreground} />
+        <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 22 }}>
+          <PressableFeedback
+            onPress={() => router.back()}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Volver"
+            style={{ alignSelf: 'flex-start', borderRadius: 999, padding: 8 }}
+          >
+            <PressableFeedback.Highlight />
+            <ChevronLeftIcon color={foreground} size={20} />
+          </PressableFeedback>
         </View>
         <View className="flex-1 items-center justify-center px-10">
           <Text className="text-center font-sans text-muted" style={{ fontSize: 15 }}>
@@ -213,7 +307,8 @@ export default function Nota() {
   const colorEntrega =
     entrega?.tono === 'vencido' ? danger : entrega?.tono === 'hoy' ? warning : muted;
 
-  const tono = note?.grade !== null && note?.grade !== undefined ? gradeTone(note.grade, perfil) : null;
+  const tono =
+    note?.grade !== null && note?.grade !== undefined ? gradeTone(note.grade, perfil) : null;
   const colorNota = tono === 'bajo' ? danger : tono === 'justo' ? warning : success;
 
   return (
@@ -248,45 +343,19 @@ export default function Nota() {
 
         {note && (
           <View className="flex-row items-center gap-2">
-            <PressableFeedback
-              onPress={() => setPreguntando(true)}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Borrar la nota"
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 999,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 1,
-                borderColor: border,
-              }}
-            >
-              <PressableFeedback.Highlight />
-              <TrashIcon color={danger} size={16} />
-            </PressableFeedback>
+            {conCopia && (
+              <Redondo etiqueta="Copiar la nota" borde={border} onPress={copiarNota}>
+                <CopyIcon color={muted} size={16} />
+              </Redondo>
+            )}
 
-            <PressableFeedback
-              onPress={() => toggle(note)}
-              hitSlop={8}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: note.done }}
-              accessibilityLabel={note.done ? 'Marcar como pendiente' : 'Marcar como hecha'}
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 999,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 1,
-                borderColor: note.done ? accent : border,
-                backgroundColor: note.done ? accent : 'transparent',
-              }}
+            <Redondo
+              etiqueta="Borrar la nota"
+              borde={border}
+              onPress={() => setPreguntando(true)}
             >
-              <PressableFeedback.Highlight />
-              <CheckIcon color={note.done ? accentForeground : muted} size={15} />
-            </PressableFeedback>
+              <TrashIcon color={danger} size={16} />
+            </Redondo>
           </View>
         )}
       </View>
@@ -325,13 +394,21 @@ export default function Nota() {
         {note && (
           <View className="mt-4 flex-row flex-wrap items-center gap-2">
             <Etiqueta
+              onPress={() => toggle(note)}
+              etiqueta={note.done ? 'Hecha' : 'Pendiente'}
+              color={note.done ? accent : border}
+              texto={note.done ? foreground : muted}
+              icono={<ChecklistIcon color={note.done ? accent : muted} size={13} />}
+            />
+
+            <Etiqueta
               onPress={() => abrir(`/mover?id=${note.id}`)}
               etiqueta={proyecto ? proyecto.name : 'Sin proyecto'}
               color={proyecto ? proyecto.color : border}
               texto={proyecto ? foreground : muted}
               icono={
                 proyecto ? (
-                  <ProjectIcon name={proyecto.icon} color={proyecto.color} size={13} />
+                  <ProjectIcon name={proyecto.icon} color={muted} size={13} />
                 ) : (
                   <PlusIcon color={muted} size={12} />
                 )
@@ -357,11 +434,7 @@ export default function Nota() {
 
         <View className="mt-4 rounded-[24px] bg-surface px-5 py-4 shadow-surface">
           <TextInput
-            value={cuerpo}
-            onChangeText={(texto) => {
-              const continuado = continuarLista(cuerpo, texto);
-              setCuerpo(continuado ?? texto);
-            }}
+            onChangeText={cambiarCuerpo}
             onBlur={guardar}
             selection={forzada ?? undefined}
             onSelectionChange={(event) => {
@@ -378,14 +451,16 @@ export default function Nota() {
             accessibilityLabel="Cuerpo de la nota"
             className="font-sans text-foreground"
             style={{
-              fontSize: 17,
-              lineHeight: 28,
+              fontSize: CUERPO,
+              lineHeight: CUERPO * 1.6,
               padding: 0,
               minHeight: 200,
               textAlignVertical: 'top',
               textDecorationLine: note?.done ? 'line-through' : 'none',
             }}
-          />
+          >
+            <Formateado texto={cuerpo} marcas={marcas} size={CUERPO} />
+          </TextInput>
 
           {(note?.media.length ?? 0) > 0 && (
             <ScrollView
@@ -431,24 +506,22 @@ export default function Nota() {
           </Text>
         )}
 
+        {aviso && <Aviso mensaje={aviso} tono="exito" className="mt-4" />}
         {dictado.problema && <Aviso mensaje={dictado.problema} className="mt-4" />}
         {problema && <Aviso mensaje={problema} className="mt-4" />}
       </ScrollView>
 
       <FormatBar
-        value={cuerpo}
-        selection={seleccion}
         bottomInset={insets.bottom}
+        activos={activos}
         conAdjuntos={conAdjuntos}
         conDictado={dictado.disponible}
         dictando={dictado.escuchando}
+        onMarca={aplicarMarca}
+        onVineta={ponerVineta}
         onImagen={() => adjuntar('galeria')}
         onCamara={() => adjuntar('camara')}
         onDictar={() => (dictado.escuchando ? dictado.parar() : dictado.arrancar())}
-        onChange={(texto, sel) => {
-          setCuerpo(texto);
-          setForzada(sel);
-        }}
       />
 
       <ConfirmDialog
@@ -463,17 +536,35 @@ export default function Nota() {
   );
 }
 
-function Volver({ onPress, color }: { onPress: () => void; color: string }) {
+function Redondo({
+  etiqueta,
+  borde,
+  onPress,
+  children,
+}: {
+  etiqueta: string;
+  borde: string;
+  onPress: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <PressableFeedback
       onPress={onPress}
-      hitSlop={10}
+      hitSlop={8}
       accessibilityRole="button"
-      accessibilityLabel="Volver"
-      style={{ alignSelf: 'flex-start', borderRadius: 999, padding: 8 }}
+      accessibilityLabel={etiqueta}
+      style={{
+        width: 38,
+        height: 38,
+        borderRadius: 999,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: borde,
+      }}
     >
       <PressableFeedback.Highlight />
-      <ChevronLeftIcon color={color} size={20} />
+      {children}
     </PressableFeedback>
   );
 }

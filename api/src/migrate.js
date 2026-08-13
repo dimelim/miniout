@@ -21,6 +21,7 @@ const COLUMNS = [
   { table: 'notes', column: 'due_at', definition: 'DATETIME NULL' },
   { table: 'notes', column: 'title', definition: 'VARCHAR(500) NULL' },
   { table: 'notes', column: 'media', definition: 'TEXT NULL' },
+  { table: 'notes', column: 'format', definition: 'TEXT NULL' },
   { table: 'notes', column: 'grade', definition: 'DECIMAL(6,2) NULL' },
   { table: 'notes', column: 'project_id', definition: 'CHAR(26) NULL' },
 ];

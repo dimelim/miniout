@@ -7,6 +7,7 @@ import { config } from './config.js';
 import { authRoutes } from './routes/auth.js';
 import { mediaRoutes } from './routes/media.js';
 import { noteRoutes } from './routes/notes.js';
+import { periodRoutes } from './routes/periods.js';
 import { projectRoutes } from './routes/projects.js';
 import { verifyAccessToken } from './tokens.js';
 
@@ -84,6 +85,7 @@ app.setNotFoundHandler(async (_request, reply) => {
 await app.register(authRoutes);
 await app.register(noteRoutes);
 await app.register(projectRoutes);
+await app.register(periodRoutes);
 await app.register(mediaRoutes);
 
 app.get('/health', async () => ({ ok: true }));

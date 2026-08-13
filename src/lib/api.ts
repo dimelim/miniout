@@ -1,4 +1,6 @@
+import type { Marca } from './format';
 import type { Hint } from './hints';
+import type { Subject } from './periods';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
@@ -17,6 +19,7 @@ export type Note = {
   title: string | null;
   body: string;
   hints: Hint[];
+  format: Marca[];
   media: NoteImage[];
   grade: number | null;
   projectId: string | null;
@@ -37,10 +40,13 @@ export type Project = {
   updatedAt: string;
 };
 
+export type Period = Project & { subjects: Subject[] };
+
 export type NotePatch = {
   title?: string | null;
   body?: string;
   hints?: Hint[];
+  format?: Marca[];
   media?: NoteImage[];
   grade?: number | null;
   projectId?: string | null;
@@ -247,6 +253,29 @@ export const api = {
 
   removeProject(accessToken: string, id: string) {
     return request<{ ok: true }>(`/projects/${id}`, { method: 'DELETE', accessToken });
+  },
+
+  periods(accessToken: string) {
+    return request<{ periods: Period[] }>('/periods', { accessToken });
+  },
+
+  createPeriod(
+    accessToken: string,
+    input: { name: string; icon: string; color: string; subjects?: Subject[] }
+  ) {
+    return request<Period>('/periods', { method: 'POST', body: input, accessToken });
+  },
+
+  updatePeriod(
+    accessToken: string,
+    id: string,
+    input: { name?: string; icon?: string; color?: string; subjects?: Subject[] }
+  ) {
+    return request<Period>(`/periods/${id}`, { method: 'PATCH', body: input, accessToken });
+  },
+
+  removePeriod(accessToken: string, id: string) {
+    return request<{ ok: true }>(`/periods/${id}`, { method: 'DELETE', accessToken });
   },
 
   removeImage(accessToken: string, name: string) {

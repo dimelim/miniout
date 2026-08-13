@@ -7,14 +7,19 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { GradeIcon, PlusIcon, SearchIcon, SortIcon } from '@/components/icons';
+import { FiltersIcon, PlusIcon, SearchIcon } from '@/components/icons';
 import { NoteRow } from '@/components/note-row';
-import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
 import { useAbrir } from '@/lib/navigate';
 import { filtrarNotas, ordenarNotas } from '@/lib/note-list';
 import { useNotes } from '@/lib/notes-store';
-import { DEFAULT_PREFS, ORDERS, readPrefs, savePrefs, type NotePrefs } from '@/lib/preferences';
+import {
+  DEFAULT_PREFS,
+  filtrosActivos,
+  ORDERS,
+  readPrefs,
+  type NotePrefs,
+} from '@/lib/preferences';
 import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
 import { useProjects } from '@/lib/projects-store';
 
@@ -22,14 +27,11 @@ export default function Notas() {
   const insets = useSafeAreaInsets();
   const abrir = useAbrir();
   const { notes, isLoading, toggle, refresh } = useNotes();
-  const { projects, find: buscarProyecto, refresh: refrescarProyectos } = useProjects();
+  const { find: buscarProyecto, refresh: refrescarProyectos } = useProjects();
 
   const [busqueda, setBusqueda] = useState('');
   const [prefs, setPrefs] = useState<NotePrefs>(DEFAULT_PREFS);
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
-  const [proyecto, setProyecto] = useState<string | null>(null);
-  const [soloConNota, setSoloConNota] = useState(false);
-  const [abriendoOrden, setAbriendoOrden] = useState(false);
 
   const [muted, accent, accentForeground, surfaceTertiary, foreground, background] =
     useThemeColor([
@@ -54,19 +56,26 @@ export default function Notas() {
     const filtradas = filtrarNotas(notes, {
       busqueda,
       hideDone: prefs.hideDone,
-      soloConNota,
-      projectId: proyecto === null ? undefined : proyecto,
+      soloConNota: prefs.soloConNota,
+      projectId: prefs.projectId === null ? undefined : prefs.projectId,
     });
 
     return ordenarNotas(filtradas, prefs.order);
-  }, [notes, busqueda, prefs, proyecto, soloConNota]);
+  }, [notes, busqueda, prefs]);
 
-  const cambiarOrden = async (order: NotePrefs['order']) => {
-    const siguiente = { ...prefs, order };
-    setPrefs(siguiente);
-    setAbriendoOrden(false);
-    await savePrefs(siguiente);
-  };
+  const activos = filtrosActivos(prefs);
+  const proyectoFiltrado = buscarProyecto(prefs.projectId);
+
+  const resumen = [
+    proyectoFiltrado?.name,
+    prefs.soloConNota ? 'calificadas' : null,
+    prefs.hideDone ? 'sin las hechas' : null,
+    prefs.order === DEFAULT_PREFS.order
+      ? null
+      : ORDERS.find((orden) => orden.id === prefs.order)?.label.toLowerCase(),
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <View className="flex-1 bg-background">
@@ -114,9 +123,9 @@ export default function Notas() {
           </View>
         </Appear>
 
-        <Appear delay={70} className="mt-5">
+        <Appear delay={70} className="mt-5 flex-row items-center gap-2">
           <View
-            className="flex-row items-center gap-2.5 rounded-[16px] px-4"
+            className="flex-1 flex-row items-center gap-2.5 rounded-[16px] px-4"
             style={{ backgroundColor: surfaceTertiary }}
           >
             <SearchIcon color={muted} size={16} />
@@ -132,113 +141,47 @@ export default function Notas() {
               style={{ fontSize: 15, paddingVertical: 12, paddingHorizontal: 0 }}
             />
           </View>
-        </Appear>
 
-        <Appear delay={110} className="mt-3">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingRight: 8 }}
-          >
-            <Filtro
-              activo={proyecto === null && !soloConNota}
-              etiqueta="Todas"
-              onPress={() => {
-                setProyecto(null);
-                setSoloConNota(false);
-              }}
-              accent={accent}
-              accentForeground={accentForeground}
-              fondo={surfaceTertiary}
-              texto={foreground}
-            />
-
-            <Filtro
-              activo={soloConNota}
-              etiqueta="Con calificación"
-              onPress={() => setSoloConNota((valor) => !valor)}
-              accent={accent}
-              accentForeground={accentForeground}
-              fondo={surfaceTertiary}
-              texto={foreground}
-              icono={
-                <GradeIcon color={soloConNota ? accentForeground : muted} size={13} />
-              }
-            />
-
-            {projects.map((item) => (
-              <Filtro
-                key={item.id}
-                activo={proyecto === item.id}
-                etiqueta={item.name}
-                onPress={() => setProyecto(proyecto === item.id ? null : item.id)}
-                accent={accent}
-                accentForeground={accentForeground}
-                fondo={surfaceTertiary}
-                texto={foreground}
-                icono={
-                  <ProjectIcon
-                    name={item.icon}
-                    color={proyecto === item.id ? accentForeground : muted}
-                    size={13}
-                  />
-                }
-              />
-            ))}
-          </ScrollView>
-        </Appear>
-
-        <Appear delay={150} className="mt-4">
           <PressableFeedback
-            onPress={() => setAbriendoOrden((valor) => !valor)}
+            onPress={() => abrir('/filtros')}
             accessibilityRole="button"
-            accessibilityLabel="Cambiar el orden"
+            accessibilityLabel={
+              activos === 0 ? 'Filtrar y ordenar' : `Filtros, ${activos} puestos`
+            }
             style={{
-              alignSelf: 'flex-start',
-              flexDirection: 'row',
+              width: 48,
+              height: 48,
+              borderRadius: 16,
               alignItems: 'center',
-              gap: 7,
-              borderRadius: 999,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              backgroundColor: surfaceTertiary,
+              justifyContent: 'center',
+              backgroundColor: activos > 0 ? accent : surfaceTertiary,
             }}
           >
             <PressableFeedback.Highlight />
-            <SortIcon color={muted} size={14} />
-            <Text className="font-medium" style={{ fontSize: 13, color: foreground }}>
-              {ORDERS.find((orden) => orden.id === prefs.order)?.label ?? 'Lo último'}
-            </Text>
+            <FiltersIcon color={activos > 0 ? accentForeground : foreground} size={17} />
           </PressableFeedback>
-
-          {abriendoOrden && (
-            <View className="mt-2 flex-row flex-wrap gap-2">
-              {ORDERS.map((orden) => (
-                <Filtro
-                  key={orden.id}
-                  activo={prefs.order === orden.id}
-                  etiqueta={orden.label}
-                  onPress={() => cambiarOrden(orden.id)}
-                  accent={accent}
-                  accentForeground={accentForeground}
-                  fondo={surfaceTertiary}
-                  texto={foreground}
-                />
-              ))}
-            </View>
-          )}
         </Appear>
+
+        {activos > 0 && (
+          <Appear delay={110} className="mt-3">
+            <Text className="font-medium text-muted" style={{ fontSize: 12 }}>
+              {resumen}
+            </Text>
+          </Appear>
+        )}
 
         {isLoading ? (
           <View className="items-center py-10">
             <Spinner size="sm" />
           </View>
         ) : visibles.length === 0 ? (
-          <Appear delay={190} className="mt-10">
+          <Appear delay={150} className="mt-10">
             <Text className="font-sans text-muted" style={{ fontSize: 15, lineHeight: 23 }}>
               {busqueda
                 ? `No hay nada con "${busqueda.trim()}".`
-                : 'Aquí no hay nada todavía. Toca el más y escribe.'}
+                : activos > 0
+                  ? 'Ninguna nota pasa esos filtros. Tócalos para cambiarlos.'
+                  : 'Aquí no hay nada todavía. Toca el más y escribe.'}
             </Text>
           </Appear>
         ) : (
@@ -266,52 +209,5 @@ export default function Notas() {
         )}
       </ScrollView>
     </View>
-  );
-}
-
-function Filtro({
-  activo,
-  etiqueta,
-  onPress,
-  accent,
-  accentForeground,
-  fondo,
-  texto,
-  icono,
-}: {
-  activo: boolean;
-  etiqueta: string;
-  onPress: () => void;
-  accent: string;
-  accentForeground: string;
-  fondo: string;
-  texto: string;
-  icono?: React.ReactNode;
-}) {
-  return (
-    <PressableFeedback
-      onPress={onPress}
-      accessibilityRole="radio"
-      accessibilityState={{ selected: activo }}
-      accessibilityLabel={etiqueta}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 7,
-        borderRadius: 999,
-        paddingHorizontal: 14,
-        paddingVertical: 9,
-        backgroundColor: activo ? accent : fondo,
-      }}
-    >
-      <PressableFeedback.Highlight />
-      {icono}
-      <Text
-        className="font-medium"
-        style={{ fontSize: 13, color: activo ? accentForeground : texto }}
-      >
-        {etiqueta}
-      </Text>
-    </PressableFeedback>
   );
 }

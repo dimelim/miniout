@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import {
   CheckIcon,
+  CopyIcon,
   FolderIcon,
   GradeIcon,
   PencilIcon,
@@ -15,6 +16,7 @@ import {
   TrashIcon,
 } from '@/components/icons';
 import { gradeLabel } from '@/lib/grades';
+import { copiar, puedeCopiar } from '@/lib/native';
 import { useNotes } from '@/lib/notes-store';
 import { EMPTY_PROFILE, readProfile, type Profile } from '@/lib/profile';
 import { useProjects } from '@/lib/projects-store';
@@ -29,6 +31,7 @@ export default function Acciones() {
 
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [borrando, setBorrando] = useState(false);
+  const [copiada, setCopiada] = useState(false);
 
   const [foreground, danger, surfaceSecondary] = useThemeColor([
     'foreground',
@@ -112,6 +115,20 @@ export default function Acciones() {
             color={foreground}
             onPress={() => router.replace(`/calificar?id=${note.id}`)}
           />
+
+          {puedeCopiar() && (
+            <Accion
+              etiqueta="Copiarla"
+              detalle={copiada ? 'Ya está en el portapapeles' : 'Se copia el título y el texto'}
+              icono={<CopyIcon color={foreground} size={17} />}
+              fondo={surfaceSecondary}
+              color={foreground}
+              onPress={async () => {
+                const texto = note.title ? `${note.title}\n\n${note.body}` : note.body;
+                setCopiada(await copiar(texto));
+              }}
+            />
+          )}
 
           <Accion
             etiqueta={note.done ? 'Dejarla pendiente' : 'Marcarla hecha'}

@@ -11,6 +11,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.12",
     "expo-blur": "~57.0.2",
+    "expo-clipboard": "~57.0.1",
     "expo-constants": "~57.0.10",
     "expo-dev-client": "~57.0.11",
     "expo-device": "~57.0.1",

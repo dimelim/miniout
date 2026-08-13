@@ -16,8 +16,10 @@ import { RuledPaper } from '@/components/ruled-paper';
 import { useAuth } from '@/lib/auth-store';
 import { useAbrir } from '@/lib/navigate';
 import { useNotes } from '@/lib/notes-store';
+import { usePeriods } from '@/lib/periods-store';
 import { useProjects } from '@/lib/projects-store';
 import { formatLongDate, isSameDay } from '@/lib/dates';
+import { clasesDelDia } from '@/lib/periods';
 import { EMPTY_PROFILE, periodWords, readProfile, type Profile } from '@/lib/profile';
 import {
   DEFAULT_QUOTES,
@@ -25,7 +27,6 @@ import {
   readQuoteSettings,
   type QuoteSettings,
 } from '@/lib/quotes';
-import { readSemesters, type Semester } from '@/lib/semesters';
 
 const MAX_CHIPS = 4;
 
@@ -48,7 +49,7 @@ export default function Inicio() {
 
   const { notes, isLoading, refresh, toggle } = useNotes();
   const { find: buscarProyecto, refresh: refrescarProyectos } = useProjects();
-  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const { periods, refresh: refrescarPeriodos } = usePeriods();
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [frases, setFrases] = useState<QuoteSettings>(DEFAULT_QUOTES);
 
@@ -60,19 +61,15 @@ export default function Inicio() {
   const frase = quoteOfTheDay(frases, ahora);
 
   const cargar = useCallback(async () => {
-    const [locales, guardado, misFrases] = await Promise.all([
-      readSemesters(),
-      readProfile(),
-      readQuoteSettings(),
-    ]);
+    const [guardado, misFrases] = await Promise.all([readProfile(), readQuoteSettings()]);
 
-    setSemesters(locales);
     setPerfil(guardado);
     setFrases(misFrases);
 
     await refresh().catch(() => {});
     await refrescarProyectos().catch(() => {});
-  }, [refresh, refrescarProyectos]);
+    await refrescarPeriodos().catch(() => {});
+  }, [refresh, refrescarPeriodos, refrescarProyectos]);
 
   useFocusEffect(
     useCallback(() => {
@@ -196,63 +193,81 @@ export default function Inicio() {
 
         <Seccion titulo={palabras.plural}>
           <View className="gap-2.5">
-            {semesters.map((semester) => (
-              <PressableFeedback
-                key={semester.id}
-                onPress={() => abrir(`/semestre?id=${semester.id}`)}
-                accessibilityRole="button"
-                accessibilityLabel={`Abrir ${semester.name}`}
-                className="rounded-[24px] bg-surface p-4 shadow-surface"
-              >
-                <PressableFeedback.Highlight />
+            {periods.map((periodo) => {
+              const hoy = clasesDelDia(periodo.subjects, (new Date().getDay() + 6) % 7);
 
-                <View className="flex-row items-center gap-3">
-                  <View
-                    style={{
-                      width: 42,
-                      height: 42,
-                      borderRadius: 14,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: semester.color,
-                    }}
-                  >
-                    <ProjectIcon name={semester.icon} color={background} size={21} />
-                  </View>
+              return (
+                <PressableFeedback
+                  key={periodo.id}
+                  onPress={() => abrir(`/semestre?id=${periodo.id}`)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Abrir ${periodo.name}`}
+                  className="rounded-[24px] bg-surface p-4 shadow-surface"
+                >
+                  <PressableFeedback.Highlight />
 
-                  <View className="flex-1">
-                    <Text
-                      className="font-display text-foreground"
-                      style={{ fontSize: 20, letterSpacing: -0.3 }}
+                  <View className="flex-row items-center gap-3">
+                    <View
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 14,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: periodo.color,
+                      }}
                     >
-                      {semester.name}
-                    </Text>
-                    <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 13 }}>
-                      {semester.subjects.length === 0
-                        ? 'Sin materias todavía'
-                        : `${semester.subjects.length} ${semester.subjects.length === 1 ? 'materia' : 'materias'}`}
-                    </Text>
+                      <ProjectIcon name={periodo.icon} color={background} size={21} />
+                    </View>
+
+                    <View className="flex-1">
+                      <Text
+                        className="font-display text-foreground"
+                        style={{ fontSize: 20, letterSpacing: -0.3 }}
+                      >
+                        {periodo.name}
+                      </Text>
+                      <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 13 }}>
+                        {periodo.subjects.length === 0
+                          ? 'Sin materias todavía'
+                          : hoy.length > 0
+                            ? hoy.length === 1
+                              ? '1 clase hoy'
+                              : `${hoy.length} clases hoy`
+                            : `${periodo.subjects.length} ${periodo.subjects.length === 1 ? 'materia' : 'materias'}`}
+                      </Text>
+                    </View>
+
+                    <ChevronRightIcon color={muted} size={16} />
                   </View>
 
-                  <ChevronRightIcon color={muted} size={16} />
-                </View>
-
-                {semester.subjects.length > 0 && (
-                  <View className="mt-3 flex-row flex-wrap gap-1.5">
-                    {semester.subjects.slice(0, MAX_CHIPS).map((subject) => (
-                      <Chip key={subject.id} size="sm" variant="secondary">
-                        <Chip.Label>{subject.name}</Chip.Label>
-                      </Chip>
-                    ))}
-                    {semester.subjects.length > MAX_CHIPS && (
-                      <Chip size="sm" variant="tertiary">
-                        <Chip.Label>{`+${semester.subjects.length - MAX_CHIPS}`}</Chip.Label>
-                      </Chip>
-                    )}
-                  </View>
-                )}
-              </PressableFeedback>
-            ))}
+                  {hoy.length > 0 ? (
+                    <View className="mt-3 flex-row flex-wrap gap-1.5">
+                      {hoy.slice(0, MAX_CHIPS).map(({ subject, clase }) => (
+                        <Chip key={clase.id} size="sm" variant="secondary">
+                          <Chip.Label>{`${clase.inicio} ${subject.name}`}</Chip.Label>
+                        </Chip>
+                      ))}
+                    </View>
+                  ) : (
+                    periodo.subjects.length > 0 && (
+                      <View className="mt-3 flex-row flex-wrap gap-1.5">
+                        {periodo.subjects.slice(0, MAX_CHIPS).map((subject) => (
+                          <Chip key={subject.id} size="sm" variant="secondary">
+                            <Chip.Label>{subject.name}</Chip.Label>
+                          </Chip>
+                        ))}
+                        {periodo.subjects.length > MAX_CHIPS && (
+                          <Chip size="sm" variant="tertiary">
+                            <Chip.Label>{`+${periodo.subjects.length - MAX_CHIPS}`}</Chip.Label>
+                          </Chip>
+                        )}
+                      </View>
+                    )
+                  )}
+                </PressableFeedback>
+              );
+            })}
 
             <Button
               variant="tertiary"

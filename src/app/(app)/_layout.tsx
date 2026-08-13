@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 
-import { ChecklistIcon, FolderIcon, InicioIcon, PersonIcon } from '@/components/icons';
+import { FolderIcon, InicioIcon, NoteIcon, PersonIcon } from '@/components/icons';
 import { TabBar } from '@/components/tab-bar';
 
 export default function AppLayout() {
@@ -17,7 +17,7 @@ export default function AppLayout() {
         name="notas"
         options={{
           title: 'Notas',
-          tabBarIcon: ({ color }) => <ChecklistIcon color={color} size={20} />,
+          tabBarIcon: ({ color }) => <NoteIcon color={color} size={20} />,
         }}
       />
       <Tabs.Screen

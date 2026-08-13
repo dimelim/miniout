@@ -1,0 +1,47 @@
+export type Novedad = {
+  version: string;
+  nombre: string;
+  fecha: string;
+  cambios: string[];
+};
+
+export const NOVEDADES: Novedad[] = [
+  {
+    version: '1.0.2',
+    nombre: 'Cuarta alpha',
+    fecha: '13 de agosto de 2026',
+    cambios: [
+      'La negrita, la cursiva, el subrayado y los títulos se ven al momento, sin asteriscos ni signos raros.',
+      'Las viñetas se ponen solas al pulsar Enter y se quitan si dejas la línea vacía.',
+      'Botón para copiar la nota entera, desde el editor y desde el menú de tres puntos.',
+      'Los filtros y el orden viven en una sola pantalla, con un botón que avisa de cuántos tienes puestos.',
+      'El check del editor se cambió por una etiqueta de Hecha o Pendiente, que se entiende mejor.',
+      'Los periodos guardan materias con horario, comentarios por día y trabajos asignados.',
+      'Esta pantalla, para saber qué cambió en cada versión.',
+    ],
+  },
+  {
+    version: '1.0.1',
+    nombre: 'Tercera alpha',
+    fecha: '13 de agosto de 2026',
+    cambios: [
+      'Título propio en las notas.',
+      'Imágenes de la galería o de la cámara, con mover, acercar, girar y borrar.',
+      'Dictado: el micrófono escribe lo que dices.',
+      'Calificaciones con tu escala y color según lo cerca que estés de pasar.',
+      'Proyectos con icono y color, y notas que se mueven deslizando.',
+      'Cuatro pestañas abajo y barra de formato de borde a borde.',
+    ],
+  },
+  {
+    version: '1.0.0',
+    nombre: 'Segunda alpha',
+    fecha: '12 de agosto de 2026',
+    cambios: [
+      'Primera versión instalable sin servidor de desarrollo.',
+      'Alta en cinco pasos y semestres con materias.',
+      'MiniLock: código de cuatro dígitos para abrir la app.',
+      'Actualizaciones por aire.',
+    ],
+  },
+];

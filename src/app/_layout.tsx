@@ -23,6 +23,7 @@ import { Updater } from '@/components/updater';
 import { AuthProvider } from '@/lib/auth-store';
 import { LockProvider } from '@/lib/lock';
 import { NotesProvider } from '@/lib/notes-store';
+import { PeriodsProvider } from '@/lib/periods-store';
 import { ProjectsProvider } from '@/lib/projects-store';
 
 import '../global.css';
@@ -104,12 +105,14 @@ export default function RootLayout() {
         <AuthProvider>
           <NotesProvider>
             <ProjectsProvider>
+              <PeriodsProvider>
               <LockProvider>
                 <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
                 <Navegacion />
                 <Updater />
                 <LockScreen />
               </LockProvider>
+              </PeriodsProvider>
             </ProjectsProvider>
           </NotesProvider>
         </AuthProvider>
@@ -158,7 +161,11 @@ function Navegacion() {
       <Stack.Screen name="proyecto" options={{ ...HOJA, sheetAllowedDetents: [0.88] }} />
       <Stack.Screen name="mover" options={{ ...HOJA, sheetAllowedDetents: [0.72] }} />
       <Stack.Screen name="calificar" options={{ ...HOJA, sheetAllowedDetents: [0.8] }} />
-      <Stack.Screen name="acciones" options={{ ...HOJA, sheetAllowedDetents: [0.78] }} />
+      <Stack.Screen name="acciones" options={{ ...HOJA, sheetAllowedDetents: [0.82] }} />
+      <Stack.Screen name="filtros" options={{ ...HOJA, sheetAllowedDetents: [0.86] }} />
+      <Stack.Screen name="novedades" />
+      <Stack.Screen name="materia" />
+      <Stack.Screen name="clase" options={{ ...HOJA, sheetAllowedDetents: [0.72] }} />
     </Stack>
   );
 }

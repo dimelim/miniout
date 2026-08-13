@@ -177,7 +177,12 @@ export function NoteRow({
                 )}
 
                 {note.body.trim().length > 0 && (
-                  <RichText value={note.body} size={15} lineas={note.title ? 2 : lineas} />
+                  <RichText
+                    value={note.body}
+                    marcas={note.format}
+                    size={15}
+                    lineas={note.title ? 2 : lineas}
+                  />
                 )}
               </View>
 

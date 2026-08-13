@@ -275,6 +275,13 @@ export default function Cuenta() {
           </Text>
 
           <View className="gap-2.5">
+            <Fila
+              titulo="Qué hay de nuevo"
+              descripcion="Lo que cambió en cada versión de Miniout."
+              onPress={() => abrir('/novedades')}
+              muted={muted}
+            />
+
             <PressableFeedback
               onPress={() => abrir('/github')}
               accessibilityRole="button"
