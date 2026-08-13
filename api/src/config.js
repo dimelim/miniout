@@ -58,6 +58,7 @@ export const config = {
 
   apiBaseUrl: optional('API_BASE_URL', 'http://localhost:8787').replace(/\/+$/, ''),
   appRedirect: optional('APP_REDIRECT', 'miniout://auth'),
+  mediaDir: optional('MEDIA_DIR', 'media'),
 
   oauth: {
     google: {

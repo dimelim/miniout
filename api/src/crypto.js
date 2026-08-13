@@ -44,6 +44,24 @@ export function decrypt(value) {
   }
 }
 
+export function encryptBuffer(buffer) {
+  const iv = randomBytes(IV_BYTES);
+  const cipher = createCipheriv(ALGORITMO, config.dataKey, iv);
+  const cifrado = Buffer.concat([cipher.update(buffer), cipher.final()]);
+
+  return Buffer.concat([iv, cipher.getAuthTag(), cifrado]);
+}
+
+export function decryptBuffer(buffer) {
+  const iv = buffer.subarray(0, IV_BYTES);
+  const tag = buffer.subarray(IV_BYTES, IV_BYTES + 16);
+  const decipher = createDecipheriv(ALGORITMO, config.dataKey, iv);
+
+  decipher.setAuthTag(tag);
+
+  return Buffer.concat([decipher.update(buffer.subarray(IV_BYTES + 16)), decipher.final()]);
+}
+
 export function encryptJson(value) {
   return encrypt(JSON.stringify(value ?? []));
 }

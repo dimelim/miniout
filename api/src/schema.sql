@@ -46,16 +46,35 @@ CREATE TABLE IF NOT EXISTS handoffs (
   CONSTRAINT handoffs_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS projects (
+  id CHAR(26) NOT NULL PRIMARY KEY,
+  user_id CHAR(26) NOT NULL,
+  name VARCHAR(500) NOT NULL,
+  icon VARCHAR(40) NOT NULL,
+  color VARCHAR(20) NOT NULL,
+  position INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at DATETIME NULL,
+  KEY projects_user_position (user_id, position),
+  CONSTRAINT projects_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS notes (
   id CHAR(26) NOT NULL PRIMARY KEY,
   user_id CHAR(26) NOT NULL,
+  title VARCHAR(500) NULL,
   body TEXT NOT NULL,
   hints TEXT NOT NULL,
+  media TEXT NULL,
+  grade DECIMAL(6,2) NULL,
+  project_id CHAR(26) NULL,
   done TINYINT(1) NOT NULL DEFAULT 0,
   due_at DATETIME NULL,
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at DATETIME NULL,
   KEY notes_user_updated (user_id, updated_at),
+  KEY notes_project (project_id),
   CONSTRAINT notes_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

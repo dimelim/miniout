@@ -5,7 +5,9 @@ import Fastify from 'fastify';
 
 import { config } from './config.js';
 import { authRoutes } from './routes/auth.js';
+import { mediaRoutes } from './routes/media.js';
 import { noteRoutes } from './routes/notes.js';
+import { projectRoutes } from './routes/projects.js';
 import { verifyAccessToken } from './tokens.js';
 
 const app = Fastify({
@@ -42,6 +44,12 @@ await app.register(rateLimit, {
   keyGenerator: (request) => request.ip,
 });
 
+app.addContentTypeParser(
+  'application/octet-stream',
+  { parseAs: 'buffer' },
+  (_request, body, done) => done(null, body)
+);
+
 app.decorate('authenticate', async (request, reply) => {
   const header = request.headers.authorization ?? '';
 
@@ -75,6 +83,8 @@ app.setNotFoundHandler(async (_request, reply) => {
 
 await app.register(authRoutes);
 await app.register(noteRoutes);
+await app.register(projectRoutes);
+await app.register(mediaRoutes);
 
 app.get('/health', async () => ({ ok: true }));
 

@@ -19,7 +19,13 @@ const COLUMNS = [
   { table: 'users', column: 'avatar_url', definition: 'VARCHAR(500) NULL' },
   { table: 'identities', column: 'avatar_url', definition: 'VARCHAR(500) NULL' },
   { table: 'notes', column: 'due_at', definition: 'DATETIME NULL' },
+  { table: 'notes', column: 'title', definition: 'VARCHAR(500) NULL' },
+  { table: 'notes', column: 'media', definition: 'TEXT NULL' },
+  { table: 'notes', column: 'grade', definition: 'DECIMAL(6,2) NULL' },
+  { table: 'notes', column: 'project_id', definition: 'CHAR(26) NULL' },
 ];
+
+const INDEXES = [{ table: 'notes', name: 'notes_project', columns: 'project_id' }];
 
 const TYPES = [
   { table: 'notes', column: 'hints', type: 'text', definition: 'TEXT NOT NULL' },
@@ -38,6 +44,21 @@ async function ensureColumns() {
 
     await pool.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
     console.log(`ok ${table}.${column}`);
+  }
+}
+
+async function ensureIndexes() {
+  for (const { table, name, columns } of INDEXES) {
+    const [rows] = await pool.query(
+      `SELECT 1 FROM information_schema.statistics
+       WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?`,
+      [table, name]
+    );
+
+    if (rows.length > 0) continue;
+
+    await pool.query(`ALTER TABLE ${table} ADD INDEX ${name} (${columns})`);
+    console.log(`ok indice ${table}.${name}`);
   }
 }
 
@@ -103,6 +124,7 @@ async function main() {
   }
 
   await ensureColumns();
+  await ensureIndexes();
   await ensureTypes();
   await cifrarPendientes();
 
