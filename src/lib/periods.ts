@@ -82,6 +82,10 @@ export function normalizarHora(valor: string) {
 
   if (limpio.length <= 2) return limpio;
 
+  if (limpio.length === 3 && Number(limpio[0]) > 2) {
+    return `0${limpio[0]}:${limpio.slice(1)}`;
+  }
+
   return `${limpio.slice(0, 2)}:${limpio.slice(2)}`;
 }
 
