@@ -131,7 +131,11 @@ export default function Nota() {
       const patch = { title: limpioTitulo || null, body: limpioCuerpo };
       const guardada = note ? await edit(note.id, patch) : await create(patch);
 
-      if (!note) setCreada(guardada);
+      if (!note) {
+        setCreada(guardada);
+        router.setParams({ id: guardada.id });
+      }
+
       original.current = { title: limpioTitulo, body: limpioCuerpo };
 
       return guardada;
@@ -183,7 +187,7 @@ export default function Nota() {
       }
 
       const imagen = await subirImagen(asset, session.accessToken);
-      await edit(destino.id, { media: [...destino.media, imagen] });
+      setCreada(await edit(destino.id, { media: [...destino.media, imagen] }));
     } catch (error) {
       setProblema(error instanceof Error ? error.message : 'No se pudo subir la imagen');
     } finally {
