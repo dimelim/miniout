@@ -101,10 +101,10 @@ scripts/          icon generation and the api deploy
 
 ## Design
 
-The full design system lives at `shielus.lat/design-system-miniout`. The short
-version is a warm neutral scale with a single amber accent that behaves like a
-highlighter, Newsreader for headings and Figtree for everything else. Colors are
-edited in `src/global.css` and nowhere else.
+Colors are a palette of my own choosing: a warm neutral scale with a single
+amber accent that behaves like a highlighter, Newsreader for headings and
+Figtree for everything else. Colors are edited in `src/global.css` and nowhere
+else.
 
 One thing worth knowing before you touch a color. The base amber sits at 2.59:1
 against the light canvas, so it never carries text in light mode. Links and

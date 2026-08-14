@@ -104,10 +104,10 @@ scripts/          generacion de iconos y despliegue de la api
 
 ## Diseno
 
-El design system completo esta en `shielus.lat/design-system-miniout`. La
-version corta es una escala neutra calida con un solo acento ambar que se
-comporta como resaltador, Newsreader para titulos y Figtree para todo lo demas.
-Los colores se editan en `src/global.css` y en ningun otro sitio.
+Los colores son una paleta elegida por mi: una escala neutra calida con un
+solo acento ambar que se comporta como resaltador, Newsreader para titulos y
+Figtree para todo lo demas. Los colores se editan en `src/global.css` y en
+ningun otro sitio.
 
 Hay algo que conviene saber antes de tocar un color. El ambar base da 2.59:1
 contra el papel claro, asi que nunca lleva texto en modo claro. Los links y el
