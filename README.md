@@ -127,6 +127,14 @@ Issues and pull requests are welcome. Two rules specific to this repo.
 - No em dashes and no emojis anywhere, whether in code, interface, docs or
   commit messages.
 
+## Star History
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=dimelim/miniout&type=Date&theme=dark" />
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=dimelim/miniout&type=Date" />
+  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=dimelim/miniout&type=Date" />
+</picture>
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).
