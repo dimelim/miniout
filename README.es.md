@@ -130,14 +130,6 @@ Los issues y pull requests son bienvenidos. Dos reglas propias de este repo.
 - Nunca guion largo y nunca emojis, ni en codigo, ni en interfaz, ni en docs, ni
   en mensajes de commit.
 
-## Historial de estrellas
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=dimelim/miniout&type=Date&theme=dark" />
-  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=dimelim/miniout&type=Date" />
-  <img alt="Grafico del historial de estrellas" src="https://api.star-history.com/svg?repos=dimelim/miniout&type=Date" />
-</picture>
-
 ## Licencia
 
 Apache-2.0. Ver [LICENSE](LICENSE).
