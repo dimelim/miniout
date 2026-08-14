@@ -51,6 +51,14 @@ mentions a day becomes something due.
 - Your account travels with you: email, Google or Discord, with the profile
   photo from whichever you used.
 
+## Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/inicio.png" width="30%" alt="Home screen">
+  <img src="assets/screenshots/dia.png" width="30%" alt="Day view">
+  <img src="assets/screenshots/mascota.png" width="30%" alt="Mascot screen">
+</p>
+
 ## Status
 
 Alpha. The tags [v1.0.0-alpha.1](https://github.com/dimelim/miniout/releases)

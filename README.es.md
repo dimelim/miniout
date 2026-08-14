@@ -53,6 +53,14 @@ mencione un dia pasa a tener fecha.
 - Tu cuenta te sigue: correo, Google o Discord, con la foto del metodo que
   usaste.
 
+## Capturas
+
+<p align="center">
+  <img src="assets/screenshots/inicio.png" width="30%" alt="Pantalla de inicio">
+  <img src="assets/screenshots/dia.png" width="30%" alt="Vista del dia">
+  <img src="assets/screenshots/mascota.png" width="30%" alt="Pantalla de la mascota">
+</p>
+
 ## Estado
 
 En alpha. Las etiquetas desde
