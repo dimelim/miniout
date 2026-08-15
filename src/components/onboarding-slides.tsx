@@ -10,8 +10,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { Appear } from './appear';
 import { DiaDemo } from './dia-demo';
 import { HintChip } from './hint-chip';
+import { LockIcon } from './icons';
 import { InkDrop } from './ink-drop';
 import { Mark } from './mark';
 import { SignatureMark } from './signature-mark';
@@ -21,13 +23,35 @@ export type SlideProps = { isActive: boolean };
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 
+const PASOS: {
+  accesorio: 'ninguno' | 'casco' | 'gafas' | 'antena';
+  color: string | null;
+  candado?: boolean;
+}[] = [
+  { accesorio: 'ninguno', color: null },
+  { accesorio: 'ninguno', color: null, candado: true },
+  { accesorio: 'gafas', color: '#6b6fc4' },
+  { accesorio: 'casco', color: '#4f9068' },
+  { accesorio: 'antena', color: '#c2553c' },
+];
+
+const PROMESAS = [
+  'Toda tu información está encriptada',
+  'Tus notas se guardan cifradas',
+  'Nada viaja en claro por internet',
+  'Tu código de MiniLock no sale del teléfono',
+];
+
 export function MascotaSlide({ isActive }: SlideProps) {
   const { width } = useWindowDimensions();
-  const [accesorio, setAccesorio] = useState<'ninguno' | 'casco' | 'gafas' | 'antena'>('ninguno');
-  const [color, setColor] = useState<string | null>(null);
+  const [paso, setPaso] = useState(0);
+  const [promesa, setPromesa] = useState(0);
+
+  const [link, separator] = useThemeColor(['link', 'separator']);
 
   const paseo = useSharedValue(0);
   const recorrido = Math.max(60, width - 56 - 96);
+  const actual = PASOS[paso % PASOS.length];
 
   useEffect(() => {
     if (!isActive) return;
@@ -44,20 +68,15 @@ export function MascotaSlide({ isActive }: SlideProps) {
   useEffect(() => {
     if (!isActive) return;
 
-    const orden: ('ninguno' | 'gafas' | 'casco' | 'antena')[] = [
-      'ninguno',
-      'gafas',
-      'casco',
-      'antena',
-    ];
-    const tintas = [null, '#6b6fc4', '#4f9068', '#c2553c'];
-    let paso = 0;
+    const timer = setInterval(() => setPaso((uno) => uno + 1), 1600);
 
-    const timer = setInterval(() => {
-      paso += 1;
-      setAccesorio(orden[paso % orden.length]);
-      setColor(tintas[paso % tintas.length]);
-    }, 1300);
+    return () => clearInterval(timer);
+  }, [isActive]);
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    const timer = setInterval(() => setPromesa((una) => una + 1), 2800);
 
     return () => clearInterval(timer);
   }, [isActive]);
@@ -73,7 +92,13 @@ export function MascotaSlide({ isActive }: SlideProps) {
     <View className="flex-1 justify-center gap-8">
       <View style={{ height: 110, justifyContent: 'center' }}>
         <Animated.View style={camina}>
-          <InkDrop size={96} mood="happy" color={color ?? undefined} accesorio={accesorio} />
+          <InkDrop
+            size={96}
+            mood="happy"
+            color={actual.color ?? undefined}
+            accesorio={actual.accesorio}
+            candado={actual.candado}
+          />
         </Animated.View>
       </View>
 
@@ -88,6 +113,24 @@ export function MascotaSlide({ isActive }: SlideProps) {
           Vive en tu inicio, te dice qué te falta y te cuida las notas con un código si
           quieres. Le pones nombre, color y hasta gafas.
         </Text>
+
+        <View
+          className="mt-3 flex-row items-center gap-2.5 rounded-[16px] px-3.5"
+          style={{ borderWidth: 1, borderColor: separator, height: 52 }}
+        >
+          <LockIcon color={link} size={15} />
+
+          <View className="flex-1">
+            <Appear key={promesa} rise={7}>
+              <Text
+                className="font-medium"
+                style={{ fontSize: 14, lineHeight: 19, color: link }}
+              >
+                {PROMESAS[promesa % PROMESAS.length]}
+              </Text>
+            </Appear>
+          </View>
+        </View>
       </View>
     </View>
   );

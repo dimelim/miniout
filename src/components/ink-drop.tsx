@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -10,8 +11,12 @@ import Animated, {
   withSequence,
   withSpring,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+const TRANCA = { damping: 13, stiffness: 260, mass: 0.6 };
 
 import { useMascota, type Accesorio } from '@/lib/mascota';
 
@@ -32,6 +37,7 @@ type InkDropProps = {
   color?: string;
   accesorio?: Accesorio;
   quieta?: boolean;
+  candado?: boolean;
 };
 
 export function InkDrop({
@@ -41,6 +47,7 @@ export function InkDrop({
   color,
   accesorio,
   quieta,
+  candado,
 }: InkDropProps) {
   const [accent, background, foreground] = useThemeColor([
     'accent',
@@ -59,6 +66,8 @@ export function InkDrop({
   const press = useSharedValue(0);
   const joy = useSharedValue(mood === 'happy' ? 1 : 0);
   const work = useSharedValue(0);
+  const cierre = useSharedValue(0);
+  const tranca = useSharedValue(0);
 
   const trabajando = mood === 'trabajando';
 
@@ -97,6 +106,25 @@ export function InkDrop({
 
     work.value = withRepeat(withTiming(1, { duration: WORK_MS, easing: EASE }), -1, true);
   }, [trabajando, work]);
+
+  useEffect(() => {
+    if (!candado) {
+      cierre.value = 0;
+      tranca.value = 0;
+      return;
+    }
+
+    cierre.value = withDelay(320, withSpring(1, SPRING));
+    tranca.value = withDelay(640, withSpring(1, TRANCA));
+  }, [candado, cierre, tranca]);
+
+  const sello = useAnimatedStyle(() => ({
+    opacity: cierre.value,
+    transform: [
+      { translateY: (1 - cierre.value) * -size * 0.12 },
+      { scale: 0.5 + cierre.value * 0.5 },
+    ],
+  }));
 
   const saludar = () => {
     press.value = withSequence(withTiming(1, { duration: 90, easing: EASE }), withSpring(0, SPRING));
@@ -173,6 +201,18 @@ export function InkDrop({
           </Animated.View>
         </View>
 
+        {candado && (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              { position: 'absolute', top: holgura, left: 0, width: size, height: size },
+              sello,
+            ]}
+          >
+            <Candado size={size} tinta={foreground} fondo={background} tranca={tranca} />
+          </Animated.View>
+        )}
+
         {adorno === 'casco' && <Casco size={size} tinta={foreground} arriba={holgura} />}
         {adorno === 'gafas' && <Gafas size={size} tinta={foreground} arriba={holgura} />}
         {adorno === 'antena' && (
@@ -188,6 +228,39 @@ function Quieta({ style, children }: { style?: ViewStyle; children: ReactNode })
     <View pointerEvents="none" style={style}>
       {children}
     </View>
+  );
+}
+
+function Candado({
+  size,
+  tinta,
+  fondo,
+  tranca,
+}: {
+  size: number;
+  tinta: string;
+  fondo: string;
+  tranca: SharedValue<number>;
+}) {
+  const arco = useAnimatedProps(() => {
+    const alto = (7.5 - tranca.value * 4).toFixed(2);
+
+    return { d: `M71.5 75.5v-${alto}a4.5 4.5 0 0 1 9 0v${alto}` };
+  });
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Circle cx="76" cy="76" r="19" fill={fondo} />
+      <Circle cx="76" cy="76" r="16" fill={tinta} />
+      <AnimatedPath
+        animatedProps={arco}
+        stroke={fondo}
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Rect x="68.5" y="75.5" width="15" height="10.5" rx="3" fill={fondo} />
+    </Svg>
   );
 }
 

@@ -123,6 +123,9 @@ const PENCIL =
 const CHEVRON_DOWN =
   'M2.97 5.47a.75.75 0 0 1 1.06 0L8 9.44l3.97-3.97a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 0-1.06';
 
+const LOCK =
+  'M10.5 6V5a2.5 2.5 0 0 0-5 0v1zM4 5v1a3 3 0 0 0-3 3v3a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3V5a4 4 0 0 0-8 0m6.5 2.5H12A1.5 1.5 0 0 1 13.5 9v3a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 12V9A1.5 1.5 0 0 1 4 7.5zm-1.75 2a.75.75 0 0 0-1.5 0v2a.75.75 0 0 0 1.5 0z';
+
 const TEXT_LINES =
   'M2.75 2a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5zm0 7a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5zm0 3.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5zM2 6.25a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 2 6.25';
 
@@ -201,6 +204,10 @@ export function EllipsisIcon({ color, size = 16 }: IconProps) {
 
 export function PictureIcon({ color, size = 16 }: IconProps) {
   return <GravityIcon d={PICTURE} color={color} size={size} />;
+}
+
+export function LockIcon({ color, size = 16 }: IconProps) {
+  return <GravityIcon d={LOCK} color={color} size={size} />;
 }
 
 export function NoteGlyph({ color, size = 16 }: IconProps) {
