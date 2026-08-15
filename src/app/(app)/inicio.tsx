@@ -195,7 +195,6 @@ export default function Inicio() {
               >
                 <Lista
                   notas={paraHoy}
-                  muted={muted}
                   buscarProyecto={buscarProyecto}
                   toggle={toggle}
                   abrir={abrir}
@@ -207,7 +206,6 @@ export default function Inicio() {
               <Seccion titulo="Escrito hoy" meta="sin fecha">
                 <Lista
                   notas={escritoHoy}
-                  muted={muted}
                   buscarProyecto={buscarProyecto}
                   toggle={toggle}
                   abrir={abrir}
@@ -346,36 +344,27 @@ export default function Inicio() {
 
 function Lista({
   notas,
-  muted,
   buscarProyecto,
   toggle,
   abrir,
 }: {
   notas: Note[];
-  muted: string;
   buscarProyecto: (id: string | null | undefined) => Project | null;
   toggle: (note: Note) => void;
   abrir: (href: Href) => void;
 }) {
   return (
     <Animated.View layout={LinearTransition.duration(220)}>
-      {notas.map((note, posicion) => (
-        <View
+      {notas.map((note) => (
+        <NoteRow
           key={note.id}
-          style={{
-            borderTopWidth: posicion === 0 ? 0 : 1,
-            borderTopColor: muted + '22',
-          }}
-        >
-          <NoteRow
-            note={note}
-            proyecto={buscarProyecto(note.projectId)}
-            onToggle={() => toggle(note)}
-            onOpen={() => abrir(`/nota?id=${note.id}`)}
-            onMenu={() => abrir(`/acciones?id=${note.id}`)}
-            onMover={() => abrir(`/mover?id=${note.id}`)}
-          />
-        </View>
+          note={note}
+          proyecto={buscarProyecto(note.projectId)}
+          onToggle={() => toggle(note)}
+          onOpen={() => abrir(`/nota?id=${note.id}`)}
+          onMenu={() => abrir(`/acciones?id=${note.id}`)}
+          onMover={() => abrir(`/mover?id=${note.id}`)}
+        />
       ))}
     </Animated.View>
   );

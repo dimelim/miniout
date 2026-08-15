@@ -257,23 +257,16 @@ export default function Notas() {
                   </View>
                 )}
 
-                {grupo.notas.map((note, posicion) => (
-                  <View
+                {grupo.notas.map((note) => (
+                  <NoteRow
                     key={note.id}
-                    style={{
-                      borderTopWidth: posicion === 0 ? 0 : 1,
-                      borderTopColor: muted + '22',
-                    }}
-                  >
-                    <NoteRow
-                      note={note}
-                      proyecto={buscarProyecto(note.projectId)}
-                      onToggle={() => toggle(note)}
-                      onOpen={() => abrir(`/nota?id=${note.id}`)}
-                      onMenu={() => abrir(`/acciones?id=${note.id}`)}
-                      onMover={() => abrir(`/mover?id=${note.id}`)}
-                    />
-                  </View>
+                    note={note}
+                    proyecto={buscarProyecto(note.projectId)}
+                    onToggle={() => toggle(note)}
+                    onOpen={() => abrir(`/nota?id=${note.id}`)}
+                    onMenu={() => abrir(`/acciones?id=${note.id}`)}
+                    onMover={() => abrir(`/mover?id=${note.id}`)}
+                  />
                 ))}
               </View>
             ))}

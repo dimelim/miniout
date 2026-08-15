@@ -201,7 +201,7 @@ export default function MascotaTab() {
                 >
                   <PressableFeedback.Highlight />
                   <View style={{ height: 56, justifyContent: 'flex-end' }}>
-                    <InkDrop size={40} accesorio={uno.id} />
+                    <InkDrop size={40} accesorio={uno.id} quieta />
                   </View>
                   <Text
                     className="mt-2 font-medium"

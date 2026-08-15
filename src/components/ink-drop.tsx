@@ -1,6 +1,6 @@
 import { useThemeColor } from 'heroui-native/hooks';
-import { useEffect } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, type ReactNode } from 'react';
+import { Pressable, View, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -31,9 +31,17 @@ type InkDropProps = {
   hat?: boolean;
   color?: string;
   accesorio?: Accesorio;
+  quieta?: boolean;
 };
 
-export function InkDrop({ size = 44, mood = 'idle', hat, color, accesorio }: InkDropProps) {
+export function InkDrop({
+  size = 44,
+  mood = 'idle',
+  hat,
+  color,
+  accesorio,
+  quieta,
+}: InkDropProps) {
   const [accent, background, foreground] = useThemeColor([
     'accent',
     'background',
@@ -120,8 +128,10 @@ export function InkDrop({ size = 44, mood = 'idle', hat, color, accesorio }: Ink
 
   const holgura = adorno === 'antena' ? size * 0.34 : adorno === 'casco' ? size * 0.3 : 0;
 
+  const Envoltura = quieta ? Quieta : Pressable;
+
   return (
-    <Pressable
+    <Envoltura
       onPress={saludar}
       accessible={false}
       hitSlop={10}
@@ -169,7 +179,15 @@ export function InkDrop({ size = 44, mood = 'idle', hat, color, accesorio }: Ink
           <Antena size={size} tinta={foreground} bola={cuerpoColor} arriba={holgura} />
         )}
       </Animated.View>
-    </Pressable>
+    </Envoltura>
+  );
+}
+
+function Quieta({ style, children }: { style?: ViewStyle; children: ReactNode }) {
+  return (
+    <View pointerEvents="none" style={style}>
+      {children}
+    </View>
   );
 }
 

@@ -100,7 +100,7 @@ export function NoteRow({
     });
 
   return (
-    <View className="py-3">
+    <View className="py-4">
       {onMover && (
         <Animated.View
           style={[
