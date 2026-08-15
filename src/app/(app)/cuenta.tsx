@@ -27,7 +27,12 @@ export default function Cuenta() {
   const [saliendo, setSaliendo] = useState(false);
   const [problema, setProblema] = useState<string | null>(null);
 
-  const [accent, foreground, muted] = useThemeColor(['accent', 'foreground', 'muted']);
+  const [accent, foreground, muted, danger] = useThemeColor([
+    'accent',
+    'foreground',
+    'muted',
+    'danger',
+  ]);
 
   const cerrarOtras = async () => {
     if (!session) return;
@@ -297,6 +302,14 @@ export default function Cuenta() {
             <Button variant="tertiary" size="md" onPress={() => setSaliendo(true)}>
               <Button.Label>Cerrar sesión</Button.Label>
             </Button>
+
+            <Fila
+              titulo="Borrar la cuenta"
+              descripcion="Se van tus notas, tus proyectos y tus semestres. No se puede deshacer."
+              onPress={() => abrir('/borrar-cuenta')}
+              muted={muted}
+              color={danger}
+            />
           </View>
         </Appear>
       </ScrollView>
@@ -370,11 +383,13 @@ function Fila({
   descripcion,
   onPress,
   muted,
+  color,
 }: {
   titulo: string;
   descripcion: string;
   onPress: () => void;
   muted: string;
+  color?: string;
 }) {
   return (
     <PressableFeedback
@@ -386,7 +401,7 @@ function Fila({
       <PressableFeedback.Highlight />
       <View className="flex-row items-center gap-3">
         <View className="flex-1">
-          <Text className="font-medium text-foreground" style={{ fontSize: 16 }}>
+          <Text className="font-medium text-foreground" style={{ fontSize: 16, color }}>
             {titulo}
           </Text>
           <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 13, lineHeight: 19 }}>

@@ -6,8 +6,8 @@ import { removeMedia } from '../media.js';
 const MAX_BODY_LENGTH = 8000;
 const MAX_TITLE_LENGTH = 120;
 
-const COLUMNS = `id, title, body, hints, format, media, grade, project_id, done, due_at,
-  created_at, updated_at, deleted_at`;
+const COLUMNS = `id, title, body, hints, format, media, drawings, grade, project_id, done,
+  due_at, created_at, updated_at, deleted_at`;
 
 const hintSchema = {
   type: 'object',
@@ -37,13 +37,39 @@ const mediaSchema = {
   additionalProperties: false,
   properties: {
     name: { type: 'string', maxLength: 40 },
-    arriba: { type: 'boolean' },
+    at: { type: 'integer', minimum: 0, maximum: MAX_BODY_LENGTH },
     width: { type: 'integer', minimum: 0, maximum: 20000 },
     height: { type: 'integer', minimum: 0, maximum: 20000 },
     scale: { type: 'number', minimum: 0.1, maximum: 8 },
     rotation: { type: 'number', minimum: -360, maximum: 360 },
     offsetX: { type: 'number', minimum: -20000, maximum: 20000 },
     offsetY: { type: 'number', minimum: -20000, maximum: 20000 },
+  },
+};
+
+const drawingSchema = {
+  type: 'object',
+  required: ['id', 'width', 'height', 'strokes'],
+  additionalProperties: false,
+  properties: {
+    id: { type: 'string', maxLength: 26 },
+    at: { type: 'integer', minimum: 0, maximum: MAX_BODY_LENGTH },
+    width: { type: 'number', minimum: 1, maximum: 4000 },
+    height: { type: 'number', minimum: 1, maximum: 4000 },
+    strokes: {
+      type: 'array',
+      maxItems: 200,
+      items: {
+        type: 'object',
+        required: ['d'],
+        additionalProperties: false,
+        properties: {
+          d: { type: 'string', maxLength: 6000 },
+          color: { type: 'string', enum: ['tinta', 'ambar'] },
+          width: { type: 'number', minimum: 0.5, maximum: 24 },
+        },
+      },
+    },
   },
 };
 
@@ -55,6 +81,7 @@ function toNote(row) {
     hints: decryptJson(row.hints),
     format: row.format === null ? [] : decryptJson(row.format),
     media: row.media === null ? [] : decryptJson(row.media),
+    drawings: row.drawings === null ? [] : decryptJson(row.drawings),
     grade: row.grade === null ? null : Number(row.grade),
     projectId: row.project_id,
     done: Boolean(row.done),
@@ -111,6 +138,7 @@ export async function noteRoutes(app) {
             hints: { type: 'array', maxItems: 8, items: hintSchema },
             format: { type: 'array', maxItems: 300, items: marcaSchema },
             media: { type: 'array', maxItems: 20, items: mediaSchema },
+            drawings: { type: 'array', maxItems: 6, items: drawingSchema },
             grade: { type: ['number', 'null'], minimum: 0, maximum: 1000 },
             projectId: { type: ['string', 'null'], maxLength: 26 },
             createdAt: { type: 'string', maxLength: 40 },
@@ -126,16 +154,18 @@ export async function noteRoutes(app) {
 
       await query(
         `INSERT INTO notes
-           (id, user_id, title, body, hints, format, media, grade, project_id, due_at, created_at)
+           (id, user_id, title, body, hints, format, media, drawings, grade, project_id, due_at,
+            created_at)
          VALUES
-           (:id, :userId, :title, :body, :hints, :format, :media, :grade, :projectId, :dueAt,
-            :createdAt)
+           (:id, :userId, :title, :body, :hints, :format, :media, :drawings, :grade, :projectId,
+            :dueAt, :createdAt)
          ON DUPLICATE KEY UPDATE
            title = VALUES(title),
            body = VALUES(body),
            hints = VALUES(hints),
            format = VALUES(format),
            media = VALUES(media),
+           drawings = VALUES(drawings),
            grade = VALUES(grade),
            project_id = VALUES(project_id),
            due_at = VALUES(due_at)`,
@@ -147,6 +177,7 @@ export async function noteRoutes(app) {
           hints: encryptJson(request.body.hints ?? []),
           format: encryptJson(request.body.format ?? []),
           media: encryptJson(request.body.media ?? []),
+          drawings: encryptJson(request.body.drawings ?? []),
           grade: request.body.grade ?? null,
           projectId: request.body.projectId ?? null,
           dueAt: dueAt && !Number.isNaN(dueAt.getTime()) ? dueAt : null,
@@ -182,6 +213,7 @@ export async function noteRoutes(app) {
             hints: { type: 'array', maxItems: 8, items: hintSchema },
             format: { type: 'array', maxItems: 300, items: marcaSchema },
             media: { type: 'array', maxItems: 20, items: mediaSchema },
+            drawings: { type: 'array', maxItems: 6, items: drawingSchema },
             grade: { type: ['number', 'null'], minimum: 0, maximum: 1000 },
             projectId: { type: ['string', 'null'], maxLength: 26 },
             done: { type: 'boolean' },
@@ -220,6 +252,10 @@ export async function noteRoutes(app) {
       if (request.body.media !== undefined) {
         fields.push('media = :media');
         params.media = encryptJson(request.body.media);
+      }
+      if (request.body.drawings !== undefined) {
+        fields.push('drawings = :drawings');
+        params.drawings = encryptJson(request.body.drawings);
       }
       if (request.body.grade !== undefined) {
         fields.push('grade = :grade');

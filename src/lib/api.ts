@@ -6,13 +6,29 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export type NoteImage = {
   name: string;
-  arriba?: boolean;
+  at: number;
   width: number;
   height: number;
   scale?: number;
   rotation?: number;
   offsetX?: number;
   offsetY?: number;
+};
+
+export type TintaTrazo = 'tinta' | 'ambar';
+
+export type Trazo = {
+  d: string;
+  color: TintaTrazo;
+  width: number;
+};
+
+export type NoteDrawing = {
+  id: string;
+  at: number;
+  width: number;
+  height: number;
+  strokes: Trazo[];
 };
 
 export type Note = {
@@ -22,6 +38,7 @@ export type Note = {
   hints: Hint[];
   format: Marca[];
   media: NoteImage[];
+  drawings: NoteDrawing[];
   grade: number | null;
   projectId: string | null;
   done: boolean;
@@ -49,6 +66,7 @@ export type NotePatch = {
   hints?: Hint[];
   format?: Marca[];
   media?: NoteImage[];
+  drawings?: NoteDrawing[];
   grade?: number | null;
   projectId?: string | null;
   done?: boolean;
@@ -281,6 +299,10 @@ export const api = {
 
   removeImage(accessToken: string, name: string) {
     return request<{ ok: true }>(`/media/${name}`, { method: 'DELETE', accessToken });
+  },
+
+  removeAccount(accessToken: string, input: { password?: string; email?: string }) {
+    return request<void>('/me', { method: 'DELETE', body: input, accessToken });
   },
 };
 

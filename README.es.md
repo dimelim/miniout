@@ -33,8 +33,11 @@ mencione un dia pasa a tener fecha.
   todo eso es opcional.
 - El editor es a pantalla completa y su barra de formato ocupa todo el ancho:
   negrita, cursiva, titulos, listas y casillas.
-- Las imagenes salen de la galeria o de la camara. Al abrir una la mueves, la
-  acercas con dos dedos, la giras y la quitas.
+- Las imagenes salen de la galeria o de la camara y se meten donde tengas el
+  cursor, asi que puedes escribir encima y debajo de cada una. Al abrir una la
+  mueves, la acercas con dos dedos, la giras y la quitas.
+- Firma o dibuja con el dedo: tinta o ambar, tres grosores y deshacer. El trazo
+  se guarda en vectores dentro de la nota y se vuelve a abrir para seguir.
 - El dictado escribe lo que dices dentro de la nota, con el reconocedor de voz
   que ya trae el telefono.
 - Las calificaciones usan tu escala, con el 0 a 20 incluido, y llevan un badge
@@ -51,7 +54,7 @@ mencione un dia pasa a tener fecha.
 - MiniLock pone un codigo de cuatro digitos delante de tus notas.
 - Una frase al dia, las nuestras o las que escribas tu.
 - Tu cuenta te sigue: correo, Google o Discord, con la foto del metodo que
-  usaste.
+  usaste. Y si te quieres ir, se borra entera desde Cuenta.
 
 ## Capturas
 

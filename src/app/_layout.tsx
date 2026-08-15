@@ -165,6 +165,8 @@ function Navegacion() {
       <Stack.Screen name="minilock" options={{ ...HOJA, sheetAllowedDetents: [0.88] }} />
       <Stack.Screen name="nota" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="imagen" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="firma" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="borrar-cuenta" />
       <Stack.Screen name="proyecto-notas" />
       <Stack.Screen name="proyecto" options={{ ...HOJA, sheetAllowedDetents: [0.88] }} />
       <Stack.Screen name="mover" options={AJUSTADA} />

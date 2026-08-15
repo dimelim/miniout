@@ -43,7 +43,7 @@ export async function elegirImagen(origen: Origen) {
 export async function subirImagen(
   asset: ImagePickerAsset,
   accessToken: string
-): Promise<NoteImage> {
+): Promise<Omit<NoteImage, 'at'>> {
   const files = fileSystem();
   if (!files) throw new Error('Este Miniout no puede subir imágenes todavía');
 

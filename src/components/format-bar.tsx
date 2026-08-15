@@ -11,6 +11,7 @@ import Animated, {
 import {
   BoldIcon,
   CameraIcon,
+  FirmaIcon,
   HeadingIcon,
   ItalicIcon,
   ListIcon,
@@ -35,6 +36,7 @@ type FormatBarProps = {
   onVineta: () => void;
   onImagen: () => void;
   onCamara: () => void;
+  onFirma: () => void;
   onDictar: () => void;
 };
 
@@ -48,6 +50,7 @@ export function FormatBar({
   onVineta,
   onImagen,
   onCamara,
+  onFirma,
   onDictar,
 }: FormatBarProps) {
   const [foreground, surface, separator, danger, link] = useThemeColor([
@@ -128,7 +131,11 @@ export function FormatBar({
           <ListIcon color={foreground} size={17} />
         </Boton>
 
-        {(conAdjuntos || conDictado) && <Separador color={separator} />}
+        <Separador color={separator} />
+
+        <Boton etiqueta="Firmar a mano" activo={false} marca={link} onPress={onFirma}>
+          <FirmaIcon color={foreground} size={17} />
+        </Boton>
 
         {conAdjuntos && (
           <>

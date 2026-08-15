@@ -4,6 +4,8 @@ export type Marca = { tipo: MarcaTipo; desde: number; hasta: number };
 
 export type Trozo = { texto: string; tipos: MarcaTipo[] };
 
+export type Cambio = { desde: number; borrados: number; insertados: number };
+
 export const VINETA = '• ';
 
 const TIPOS: MarcaTipo[] = ['negrita', 'cursiva', 'subrayado', 'titulo'];
@@ -88,7 +90,7 @@ export function limitesDeLinea(texto: string, posicion: number) {
   return { desde, hasta: salto === -1 ? texto.length : salto };
 }
 
-export function diferencia(viejo: string, nuevo: string) {
+export function diferencia(viejo: string, nuevo: string): Cambio {
   let inicio = 0;
   const menor = Math.min(viejo.length, nuevo.length);
 
@@ -110,28 +112,33 @@ export function diferencia(viejo: string, nuevo: string) {
   };
 }
 
-export function desplazar(
-  marcas: Marca[],
-  cambio: { desde: number; borrados: number; insertados: number }
-) {
-  const { desde, borrados, insertados } = cambio;
-  const hasta = desde + borrados;
-  const delta = insertados - borrados;
+export function moverPosicion(posicion: number, cambio: Cambio) {
+  const hasta = cambio.desde + cambio.borrados;
 
-  const mover = (posicion: number) => {
-    if (posicion <= desde) return posicion;
-    if (posicion >= hasta) return posicion + delta;
+  if (posicion <= cambio.desde) return posicion;
+  if (posicion >= hasta) return posicion + cambio.insertados - cambio.borrados;
 
-    return desde + Math.min(insertados, posicion - desde);
-  };
+  return cambio.desde + Math.min(cambio.insertados, posicion - cambio.desde);
+}
 
+export function desplazar(marcas: Marca[], cambio: Cambio) {
   return normalizar(
     marcas.map((marca) => ({
       tipo: marca.tipo,
-      desde: mover(marca.desde),
-      hasta: mover(marca.hasta),
+      desde: moverPosicion(marca.desde, cambio),
+      hasta: moverPosicion(marca.hasta, cambio),
     }))
   );
+}
+
+export function recortar(marcas: Marca[], desde: number, hasta: number): Marca[] {
+  return marcas
+    .filter((marca) => marca.hasta > desde && marca.desde < hasta)
+    .map((marca) => ({
+      tipo: marca.tipo,
+      desde: Math.max(desde, marca.desde) - desde,
+      hasta: Math.min(hasta, marca.hasta) - desde,
+    }));
 }
 
 export function trozos(texto: string, marcas: Marca[]): Trozo[] {

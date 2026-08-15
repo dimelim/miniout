@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useThemeColor } from 'heroui-native/hooks';
-import { View } from 'react-native';
+import { useColorScheme, View } from 'react-native';
 
 import { imageUrl, type NoteImage as Imagen } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
@@ -15,6 +15,8 @@ type NoteImageProps = {
 export function NoteImage({ imagen, width, height, radio = 18 }: NoteImageProps) {
   const { session } = useAuth();
   const [surfaceSecondary] = useThemeColor(['surface-secondary']);
+  const contorno =
+    useColorScheme() === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
   return (
     <View
@@ -23,6 +25,8 @@ export function NoteImage({ imagen, width, height, radio = 18 }: NoteImageProps)
         height,
         borderRadius: radio,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: contorno,
         backgroundColor: surfaceSecondary,
       }}
     >

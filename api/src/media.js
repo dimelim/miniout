@@ -4,6 +4,7 @@ import { isAbsolute, join, resolve } from 'node:path';
 import { config } from './config.js';
 
 const NAME = /^[0-9A-Z]{26}\.(jpg|jpeg|png|webp|heic)$/;
+const FOLDER = /^[0-9A-Z]{26}$/;
 
 const MIMES = {
   jpg: 'image/jpeg',
@@ -39,4 +40,10 @@ export async function removeMedia(userId, names) {
 
     await rm(mediaPath(userId, name), { force: true });
   }
+}
+
+export async function removeUserFolder(userId) {
+  if (!FOLDER.test(userId)) return;
+
+  await rm(join(root, userId), { force: true, recursive: true });
 }

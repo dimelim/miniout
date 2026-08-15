@@ -10,6 +10,7 @@ import {
 
 import { api, type Note, type NotePatch } from './api';
 import { useAuth } from './auth-store';
+import { sanearNota } from './bloques';
 import { detectHints } from './hints';
 
 type NotesValue = {
@@ -39,7 +40,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
     try {
       const payload = await api.notes(session.accessToken);
-      setNotes(payload.notes.filter((note) => !note.deletedAt));
+      setNotes(payload.notes.filter((note) => !note.deletedAt).map(sanearNota));
     } finally {
       setIsLoading(false);
     }
@@ -53,10 +54,12 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     async (input: NotePatch & { body: string }) => {
       if (!session) throw new Error('No hay sesión');
 
-      const note = await api.createNote(session.accessToken, {
-        ...input,
-        hints: input.hints ?? detectHints(input.body),
-      });
+      const note = sanearNota(
+        await api.createNote(session.accessToken, {
+          ...input,
+          hints: input.hints ?? detectHints(input.body),
+        })
+      );
 
       setNotes((current) => [note, ...current]);
       return note;
@@ -68,10 +71,12 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     async (id: string, patch: NotePatch) => {
       if (!session) throw new Error('No hay sesión');
 
-      const updated = await api.updateNote(session.accessToken, id, {
-        ...patch,
-        hints: patch.body === undefined ? patch.hints : detectHints(patch.body),
-      });
+      const updated = sanearNota(
+        await api.updateNote(session.accessToken, id, {
+          ...patch,
+          hints: patch.body === undefined ? patch.hints : detectHints(patch.body),
+        })
+      );
 
       setNotes((current) => current.map((note) => (note.id === id ? updated : note)));
       return updated;

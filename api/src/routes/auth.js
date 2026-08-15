@@ -5,6 +5,7 @@ import { decrypt, encrypt } from '../crypto.js';
 import { query, queryOne } from '../db.js';
 import { createHandoff, redeemHandoff } from '../handoff.js';
 import { createId } from '../ids.js';
+import { removeUserFolder } from '../media.js';
 import { authorizeUrl, fetchProfile, isConfigured, signState, verifyState } from '../oauth.js';
 import {
   issueRefreshToken,
@@ -450,6 +451,51 @@ export async function authRoutes(app) {
       await revokeAllRefreshTokens(request.userId);
 
       return session(request.userId);
+    }
+  );
+
+  app.delete(
+    '/me',
+    {
+      preHandler: app.authenticate,
+      config: ESTRICTO,
+      schema: {
+        body: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            password: { type: 'string', maxLength: 200 },
+            email: { type: 'string', maxLength: 320 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const user = await queryOne('SELECT email, password_hash FROM users WHERE id = :id', {
+        id: request.userId,
+      });
+
+      if (!user) {
+        return reply.code(404).send({ error: 'esa cuenta ya no existe' });
+      }
+
+      if (user.password_hash) {
+        const matches = request.body?.password
+          ? await argon2.verify(user.password_hash, request.body.password).catch(() => false)
+          : false;
+
+        if (!matches) {
+          return reply.code(401).send({ error: 'la contrasena no es correcta' });
+        }
+      } else if (normalizeEmail(request.body?.email ?? '') !== user.email) {
+        return reply.code(401).send({ error: 'ese no es el correo de tu cuenta' });
+      }
+
+      await revokeAllRefreshTokens(request.userId);
+      await query('DELETE FROM users WHERE id = :id', { id: request.userId });
+      await removeUserFolder(request.userId);
+
+      return reply.code(204).send();
     }
   );
 

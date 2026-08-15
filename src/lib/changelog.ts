@@ -8,6 +8,18 @@ export type Novedad = {
 export const NOVEDADES: Novedad[] = [
   {
     version: '1.0.2',
+    nombre: 'Firmas y texto alrededor de las imágenes',
+    fecha: '15 de agosto de 2026',
+    cambios: [
+      'Firma o dibuja con el dedo desde la barra del editor: eliges tinta o ámbar, tres grosores, deshaces el último trazo y la firma se guarda dentro de la nota.',
+      'Tocando una firma vuelves a abrirla para seguir dibujando o quitarla.',
+      'Las imágenes y las firmas se meten donde tengas el cursor, así que puedes escribir encima y debajo de cada una.',
+      'Las imágenes salen a lo ancho de la nota, con su proporción y un contorno fino.',
+      'Ya puedes borrar tu cuenta desde Cuenta, con todo lo que tiene dentro.',
+    ],
+  },
+  {
+    version: '1.0.2',
     nombre: 'La mascota es tuya',
     fecha: '13 de agosto de 2026',
     cambios: [

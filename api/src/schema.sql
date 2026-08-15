@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS notes (
   hints TEXT NOT NULL,
   format TEXT NULL,
   media TEXT NULL,
+  drawings MEDIUMTEXT NULL,
   grade DECIMAL(6,2) NULL,
   project_id CHAR(26) NULL,
   done TINYINT(1) NOT NULL DEFAULT 0,

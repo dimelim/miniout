@@ -123,6 +123,15 @@ const PENCIL =
 const CHEVRON_DOWN =
   'M2.97 5.47a.75.75 0 0 1 1.06 0L8 9.44l3.97-3.97a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 0-1.06';
 
+const PENCIL_TO_LINE =
+  'M12.238 3.64a1.854 1.854 0 0 0-1.629-1.628l-.8.8a3.37 3.37 0 0 1 1.63 1.628zM4.74 7.88l3.87-3.868a1.854 1.854 0 0 1 1.628 1.629L6.369 9.51a1.5 1.5 0 0 1-.814.418l-1.48.247.247-1.48a1.5 1.5 0 0 1 .418-.814M9.72.78l-2 2-4.04 4.04a3 3 0 0 0-.838 1.628L2.48 10.62a1 1 0 0 0 1.151 1.15l2.17-.36a3 3 0 0 0 1.629-.839l4.04-4.04 2-2c.18-.18.28-.423.28-.677A3.353 3.353 0 0 0 10.397.5c-.254 0-.498.1-.678.28M2.75 13a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5z';
+
+const UTURN_LEFT =
+  'M2.47 4.72a.75.75 0 0 0 0 1.06l3 3a.75.75 0 0 0 1.06-1.06L4.81 6H9a3.25 3.25 0 0 1 0 6.5H8A.75.75 0 0 0 8 14h1a4.75 4.75 0 1 0 0-9.5H4.81l1.72-1.72a.75.75 0 0 0-1.06-1.06z';
+
+const ERASER =
+  'm9.646 3.268 2.586 2.586a.914.914 0 0 1 0 1.292L8.72 10.66 4.84 6.78l3.513-3.512a.914.914 0 0 1 1.292 0M3.78 7.84 1.768 9.854a.914.914 0 0 0 0 1.292L3.12 12.5h3.76l.78-.78zm9.513.366L9 12.5h6.25a.75.75 0 0 1 0 1.5H2.5L.707 12.207a2.414 2.414 0 0 1 0-3.414l6.586-6.586a2.414 2.414 0 0 1 3.414 0l2.586 2.586a2.414 2.414 0 0 1 0 3.414';
+
 function GravityIcon({ d, color, size }: IconProps & { d: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
@@ -189,6 +198,18 @@ export function EllipsisIcon({ color, size = 16 }: IconProps) {
 
 export function PictureIcon({ color, size = 16 }: IconProps) {
   return <GravityIcon d={PICTURE} color={color} size={size} />;
+}
+
+export function FirmaIcon({ color, size = 16 }: IconProps) {
+  return <GravityIcon d={PENCIL_TO_LINE} color={color} size={size} />;
+}
+
+export function UndoIcon({ color, size = 16 }: IconProps) {
+  return <GravityIcon d={UTURN_LEFT} color={color} size={size} />;
+}
+
+export function EraserIcon({ color, size = 16 }: IconProps) {
+  return <GravityIcon d={ERASER} color={color} size={size} />;
 }
 
 export function CameraIcon({ color, size = 16 }: IconProps) {

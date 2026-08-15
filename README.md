@@ -33,8 +33,11 @@ mentions a day becomes something due.
   them is optional.
 - The editor is full screen with a formatting bar that spans the whole width:
   bold, italic, headings, bullets and checkboxes.
-- Pictures come from the gallery or the camera. Open one and you can drag it,
-  pinch it, spin it and throw it away.
+- Pictures come from the gallery or the camera and land where the cursor was, so
+  text can run above and below each one. Open one and you can drag it, pinch it,
+  spin it and throw it away.
+- Sign or draw with your finger: ink or amber, three nibs and undo. The stroke is
+  kept as vectors inside the note and opens again for more drawing.
 - Dictation writes what you say straight into the note, using the speech
   recognizer that already lives on the phone.
 - Grades use your own scale, 0 to 20 included, with a badge that turns color
@@ -49,7 +52,8 @@ mentions a day becomes something due.
 - MiniLock puts a four digit code in front of your notes.
 - A phrase a day, either ours or the ones you write.
 - Your account travels with you: email, Google or Discord, with the profile
-  photo from whichever you used.
+  photo from whichever you used. If you want out, Account deletes the whole
+  thing.
 
 ## Screenshots
 
