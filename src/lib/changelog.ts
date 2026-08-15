@@ -17,6 +17,8 @@ export const NOVEDADES: Novedad[] = [
       'Las imágenes salen a lo ancho de la nota, con su proporción y un contorno fino.',
       'Las tareas y los apuntes ya no se ven igual: lo que tiene fecha lleva casilla, y lo que solo escribiste lleva su marca de apunte.',
       'Notas se reparte en Por hacer y Apuntes, e Inicio separa lo que entregas hoy de lo que escribiste hoy.',
+      'En las listas cada nota ocupa una línea: su título, o el principio de lo que escribiste si no le pusiste ninguno.',
+      'Mientras dictas ves lo que Miniout va oyendo encima del teclado, no debajo.',
       'Ya puedes borrar tu cuenta desde Cuenta, con todo lo que tiene dentro.',
     ],
   },

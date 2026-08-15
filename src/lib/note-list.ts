@@ -1,4 +1,5 @@
 import type { Note } from './api';
+import { VINETA } from './format';
 import type { NoteOrder } from './preferences';
 
 type Filtro = {
@@ -9,6 +10,22 @@ type Filtro = {
 
 function tiempo(valor: string | null) {
   return valor ? new Date(valor).getTime() : null;
+}
+
+export function tituloDeNota(note: Note) {
+  const propio = note.title?.trim();
+  if (propio) return propio;
+
+  const linea = note.body
+    .split('\n')
+    .map((una) => una.replace(VINETA, '').trim())
+    .find(Boolean);
+
+  if (linea) return linea;
+  if (note.drawings.length > 0) return 'Una firma';
+  if (note.media.length > 0) return 'Una imagen';
+
+  return 'Sin texto';
 }
 
 export function esTarea(note: Note) {

@@ -14,10 +14,9 @@ import Animated, {
 import { EllipsisIcon, CheckIcon, FolderIcon, NoteGlyph } from './icons';
 import { NoteImage } from './note-image';
 import { ProjectIcon } from './project-icons';
-import { RichText } from './rich-text';
 
 import type { Note, Project } from '@/lib/api';
-import { esTarea } from '@/lib/note-list';
+import { esTarea, tituloDeNota } from '@/lib/note-list';
 import { estadoDeEntrega } from '@/lib/schedule';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
@@ -31,7 +30,6 @@ type NoteRowProps = {
   onMenu: () => void;
   onMover?: () => void;
   proyecto?: Project | null;
-  lineas?: number;
 };
 
 export function NoteRow({
@@ -41,7 +39,6 @@ export function NoteRow({
   onMenu,
   onMover,
   proyecto,
-  lineas = 4,
 }: NoteRowProps) {
   const [accent, accentForeground, border, muted, danger, warning] = useThemeColor([
     'accent',
@@ -168,35 +165,22 @@ export function NoteRow({
           <PressableFeedback
             onPress={onOpen}
             accessibilityRole="button"
-            accessibilityLabel={note.title ?? note.body}
+            accessibilityLabel={tituloDeNota(note)}
             style={{ flex: 1, borderRadius: 12 }}
           >
             <PressableFeedback.Highlight />
 
-            <View className="flex-row items-start gap-3">
-              <View className="flex-1">
-                {note.title && (
-                  <Text
-                    numberOfLines={2}
-                    className="mb-1 font-display text-foreground"
-                    style={{ fontSize: 18, lineHeight: 24, letterSpacing: -0.3 }}
-                  >
-                    {note.title}
-                  </Text>
-                )}
-
-                {note.body.trim().length > 0 && (
-                  <RichText
-                    value={note.body}
-                    marcas={note.format}
-                    size={15}
-                    lineas={note.title ? 2 : lineas}
-                  />
-                )}
-              </View>
+            <View className="flex-row items-center gap-3">
+              <Text
+                numberOfLines={1}
+                className="flex-1 font-display text-foreground"
+                style={{ fontSize: 18, lineHeight: 25, letterSpacing: -0.3 }}
+              >
+                {tituloDeNota(note)}
+              </Text>
 
               {note.media.length > 0 && (
-                <NoteImage imagen={note.media[0]} width={54} height={54} radio={14} />
+                <NoteImage imagen={note.media[0]} width={44} height={44} radio={12} />
               )}
             </View>
 
