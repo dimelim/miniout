@@ -6,11 +6,11 @@ import { Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { CloseIcon, EraserIcon, TrashIcon, UndoIcon } from '@/components/icons';
 import { ESPACIO, Lienzo } from '@/components/lienzo';
 import type { TintaTrazo, Trazo } from '@/lib/api';
+import { useAvisar } from '@/lib/avisos';
 import { useNotes } from '@/lib/notes-store';
 import { crearId } from '@/lib/periods';
 
@@ -28,6 +28,7 @@ export default function Firma() {
   }>();
 
   const { find, edit } = useNotes();
+  const avisar = useAvisar();
   const note = find(id);
   const dibujo = note?.drawings.find((uno) => uno.id === trazoId) ?? null;
 
@@ -36,7 +37,6 @@ export default function Firma() {
   const [grosor, setGrosor] = useState(GROSORES[1]);
   const [guardando, setGuardando] = useState(false);
   const [preguntando, setPreguntando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [foreground, muted, surface, separator, link, danger, border] = useThemeColor([
     'foreground',
@@ -65,7 +65,7 @@ export default function Firma() {
   const anadir = (nuevo: Trazo) => {
     setTrazos((actuales) => {
       if (actuales.length >= MAX_TRAZOS) {
-        setProblema('Esta firma ya no admite más trazos. Guárdala y empieza otra.');
+        avisar('Esta firma ya no admite más trazos. Guárdala y empieza otra.');
         return actuales;
       }
 
@@ -75,7 +75,6 @@ export default function Firma() {
 
   const guardar = async () => {
     setGuardando(true);
-    setProblema(null);
 
     try {
       if (trazos.length === 0) {
@@ -105,7 +104,7 @@ export default function Firma() {
 
       router.back();
     } catch {
-      setProblema('No se pudo guardar la firma');
+      avisar('No se pudo guardar la firma');
     } finally {
       setGuardando(false);
     }
@@ -309,8 +308,6 @@ export default function Firma() {
               </View>
             </View>
           </Appear>
-
-          {problema && <Aviso mensaje={problema} className="mt-3" />}
         </View>
       </View>
 

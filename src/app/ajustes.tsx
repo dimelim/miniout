@@ -6,7 +6,6 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { BackButton } from '@/components/back-button';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { CheckIcon, ChevronRightIcon } from '@/components/icons';
@@ -14,6 +13,7 @@ import { KeyboardSpace } from '@/components/keyboard-space';
 import { RuledPaper } from '@/components/ruled-paper';
 import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useAvisar } from '@/lib/avisos';
 import { nameError } from '@/lib/credentials';
 import { useLock } from '@/lib/lock';
 import { useAbrir } from '@/lib/navigate';
@@ -43,12 +43,12 @@ export default function Ajustes() {
   const { account, saveName } = useAuth();
   const { tieneClave, quitar } = useLock();
   const { toast } = useToast();
+  const avisar = useAvisar();
 
   const [nombre, setNombre] = useState(account?.displayName ?? '');
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [prefs, setPrefs] = useState<NotePrefs>(DEFAULT_PREFS);
   const [guardando, setGuardando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
   const [quitandoClave, setQuitandoClave] = useState(false);
 
   const [accent, accentForeground, muted, border] = useThemeColor([
@@ -68,9 +68,11 @@ export default function Ajustes() {
 
   const guardarNombre = async () => {
     const problem = nameError(nombre);
-    setProblema(problem);
 
-    if (problem) return;
+    if (problem) {
+      avisar(problem);
+      return;
+    }
 
     setGuardando(true);
 
@@ -78,7 +80,7 @@ export default function Ajustes() {
       await saveName(nombre.trim());
       toast.show({ variant: 'success', label: 'Listo', description: 'Ahora te llamo así.' });
     } catch (error) {
-      setProblema(error instanceof ApiError ? error.message : 'No se pudo guardar tu nombre');
+      avisar(error instanceof ApiError ? error.message : 'No se pudo guardar tu nombre');
     } finally {
       setGuardando(false);
     }
@@ -156,8 +158,6 @@ export default function Ajustes() {
             <View
               style={{ height: 2, borderRadius: 999, backgroundColor: accent, opacity: 0.9 }}
             />
-
-            {problema && <Aviso mensaje={problema} />}
 
             <Button size="sm" onPress={guardarNombre} isDisabled={guardando}>
               <Button.Label>{guardando ? 'Guardando' : 'Guardar'}</Button.Label>

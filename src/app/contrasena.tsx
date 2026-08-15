@@ -4,22 +4,22 @@ import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Aviso } from '@/components/aviso';
 import { PasswordField } from '@/components/password-field';
 import { StrengthBar } from '@/components/strength-bar';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useAvisar } from '@/lib/avisos';
 import { passwordError } from '@/lib/credentials';
 
 export default function Contrasena() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { account, session, signIn } = useAuth();
+  const avisar = useAvisar();
 
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [problema, setProblema] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
   const tieneContrasena = account?.hasPassword ?? false;
@@ -27,12 +27,11 @@ export default function Contrasena() {
   const guardar = async () => {
     const next = passwordError(nueva);
     setError(next);
-    setProblema(null);
 
     if (next || !session) return;
 
     if (tieneContrasena && !actual) {
-      setProblema('Escribe tu contraseña actual');
+      avisar('Escribe tu contraseña actual');
       return;
     }
 
@@ -47,9 +46,7 @@ export default function Contrasena() {
       await signIn(renovada);
       router.back();
     } catch (problem) {
-      setProblema(
-        problem instanceof ApiError ? problem.message : 'No se pudo cambiar la contraseña'
-      );
+      avisar(problem instanceof ApiError ? problem.message : 'No se pudo cambiar la contraseña');
     } finally {
       setGuardando(false);
     }
@@ -101,8 +98,6 @@ export default function Contrasena() {
             <StrengthBar password={nueva} />
           </View>
         </View>
-
-        {problema && <Aviso mensaje={problema} className="mt-4" />}
 
         <Button size="lg" className="mt-7" onPress={guardar} isDisabled={guardando}>
           <Button.Label>{guardando ? 'Guardando' : 'Guardar'}</Button.Label>

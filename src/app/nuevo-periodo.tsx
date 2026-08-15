@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Aviso } from '@/components/aviso';
 import { CheckIcon } from '@/components/icons';
 import { DEFAULT_ICON, PROJECT_ICONS, ProjectIcon } from '@/components/project-icons';
 import { ApiError } from '@/lib/api';
+import { useAvisar } from '@/lib/avisos';
 import { usePeriods } from '@/lib/periods-store';
 import { readProfile, periodWords, EMPTY_PROFILE, type Profile } from '@/lib/profile';
 import {
@@ -23,6 +23,7 @@ export default function NuevoPeriodo() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { create, edit, find } = usePeriods();
+  const avisar = useAvisar();
 
   const periodo = find(id);
 
@@ -31,7 +32,6 @@ export default function NuevoPeriodo() {
   const [icono, setIcono] = useState(periodo?.icon ?? DEFAULT_ICON);
   const [color, setColor] = useState(periodo?.color ?? DEFAULT_COLOR);
   const [guardando, setGuardando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [foreground, muted, surfaceSecondary, background] = useThemeColor([
     'foreground',
@@ -48,9 +48,11 @@ export default function NuevoPeriodo() {
 
   const guardar = async () => {
     const problem = semesterNameError(nombre);
-    setProblema(problem);
 
-    if (problem) return;
+    if (problem) {
+      avisar(problem);
+      return;
+    }
 
     setGuardando(true);
 
@@ -63,7 +65,7 @@ export default function NuevoPeriodo() {
 
       router.back();
     } catch (error) {
-      setProblema(error instanceof ApiError ? error.message : 'No se pudo guardar');
+      avisar(error instanceof ApiError ? error.message : 'No se pudo guardar');
     } finally {
       setGuardando(false);
     }
@@ -104,10 +106,7 @@ export default function NuevoPeriodo() {
 
         <TextInput
           value={nombre}
-          onChangeText={(valor) => {
-            setNombre(valor);
-            if (problema) setProblema(null);
-          }}
+          onChangeText={setNombre}
           placeholder={palabras.example}
           placeholderTextColor={muted}
           selectionColor={color}
@@ -128,8 +127,6 @@ export default function NuevoPeriodo() {
             paddingHorizontal: 0,
           }}
         />
-
-        {problema && <Aviso mensaje={problema} className="mt-3" />}
 
         <Text className="mt-8 font-medium text-muted" style={{ fontSize: 12 }}>
           Icono

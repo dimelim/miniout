@@ -40,11 +40,11 @@ export default function Acciones() {
 
   if (!note) {
     return (
-      <View className="flex-1 items-center justify-center bg-background px-10">
-        <Text className="text-center font-sans text-muted" style={{ fontSize: 15 }}>
+      <Hoja>
+        <Text className="py-6 text-center font-sans text-muted" style={{ fontSize: 15 }}>
           Esa nota ya no existe.
         </Text>
-      </View>
+      </Hoja>
     );
   }
 
@@ -131,10 +131,10 @@ export default function Acciones() {
         titulo="Borrar esta nota"
         mensaje="Se va de todos tus dispositivos y no se puede deshacer."
         confirmar="Borrar la nota"
-        onConfirm={async () => {
+        onConfirm={() => {
           setBorrando(false);
-          await remove(note.id);
           router.back();
+          remove(note.id).catch(() => {});
         }}
         onCancel={() => setBorrando(false)}
       />

@@ -14,7 +14,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { CheckIcon, MinusIcon, PlusIcon } from '@/components/icons';
 import { Mark } from '@/components/mark';
 import { NameField } from '@/components/name-field';
@@ -24,6 +23,7 @@ import { SlideDots } from '@/components/slide-dots';
 import { TextLink } from '@/components/text-link';
 import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useAvisar } from '@/lib/avisos';
 import { nameError } from '@/lib/credentials';
 import {
   EMPTY_PROFILE,
@@ -58,13 +58,13 @@ export default function Bienvenida() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { account, saveName } = useAuth();
+  const avisar = useAvisar();
 
   const campo = useRef<TextInput>(null);
   const [nombre, setNombre] = useState(() => firstName(account?.displayName));
   const [paso, setPaso] = useState<Paso>('nombre');
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [guardando, setGuardando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, border] = useThemeColor(['accent', 'border']);
 
@@ -84,9 +84,11 @@ export default function Bienvenida() {
 
   const continuarNombre = async () => {
     const problem = nameError(nombre);
-    setProblema(problem);
 
-    if (problem) return;
+    if (problem) {
+      avisar(problem);
+      return;
+    }
 
     const limpio = nombre.trim();
 
@@ -96,7 +98,7 @@ export default function Bienvenida() {
       try {
         await saveName(limpio);
       } catch (error) {
-        setProblema(
+        avisar(
           error instanceof ApiError
             ? error.message
             : 'No se pudo guardar tu nombre. Revisa tu conexión e inténtalo otra vez.'
@@ -173,7 +175,6 @@ export default function Bienvenida() {
             onSubmit={continuarNombre}
             onOmitir={omitirNombre}
             guardando={guardando}
-            problema={problema}
             bottomInset={insets.bottom}
           />
         )}
@@ -246,7 +247,6 @@ type PasoNombreProps = {
   onSubmit: () => void;
   onOmitir: () => void;
   guardando: boolean;
-  problema: string | null;
   bottomInset: number;
 };
 
@@ -257,7 +257,6 @@ function PasoNombre({
   onSubmit,
   onOmitir,
   guardando,
-  problema,
   bottomInset,
 }: PasoNombreProps) {
   const teclado = useAnimatedKeyboard({
@@ -302,8 +301,6 @@ function PasoNombre({
             label={PREGUNTA}
           />
         </Appear>
-
-        {problema && <Aviso mensaje={problema} className="mt-3" />}
       </ScrollView>
 
       <Animated.View style={sobreElTeclado}>

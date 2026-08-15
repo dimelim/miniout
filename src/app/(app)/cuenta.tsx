@@ -6,7 +6,6 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GITHUB_PATH, Glyph } from '@/components/github-card';
 import { CheckIcon, ChevronRightIcon, DiscordIcon, GoogleIcon, MailIcon } from '@/components/icons';
@@ -14,6 +13,7 @@ import { InkDrop } from '@/components/ink-drop';
 import { UserAvatar } from '@/components/user-avatar';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useAvisar } from '@/lib/avisos';
 import { useAbrir } from '@/lib/navigate';
 
 export default function Cuenta() {
@@ -23,9 +23,10 @@ export default function Cuenta() {
   const { account, session, signIn, signOut, saveAvatar, markIntroSeen } = useAuth();
   const { toast } = useToast();
 
+  const avisar = useAvisar();
+
   const [cerrando, setCerrando] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, foreground, muted, danger] = useThemeColor([
     'accent',
@@ -38,13 +39,12 @@ export default function Cuenta() {
     if (!session) return;
 
     setCerrando(true);
-    setProblema(null);
 
     try {
       await signIn(await api.logoutOthers(session.accessToken));
       toast.show({ variant: 'success', label: 'Listo', description: 'Las demás sesiones se cerraron.' });
     } catch (error) {
-      setProblema(error instanceof ApiError ? error.message : 'No se pudo cerrar las sesiones');
+      avisar(error instanceof ApiError ? error.message : 'No se pudo cerrar las sesiones');
     } finally {
       setCerrando(false);
     }
@@ -57,12 +57,10 @@ export default function Cuenta() {
   };
 
   const cambiarFoto = async (url: string | null) => {
-    setProblema(null);
-
     try {
       await saveAvatar(url);
     } catch (error) {
-      setProblema(error instanceof ApiError ? error.message : 'No se pudo cambiar la foto');
+      avisar(error instanceof ApiError ? error.message : 'No se pudo cambiar la foto');
     }
   };
 
@@ -268,8 +266,6 @@ export default function Cuenta() {
               >
                 <Button.Label>{cerrando ? 'Cerrando' : 'Cerrar las demás'}</Button.Label>
               </Button>
-
-              {problema && <Aviso mensaje={problema} />}
             </Card>
           </View>
         </Appear>

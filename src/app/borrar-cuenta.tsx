@@ -6,12 +6,12 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { BackButton } from '@/components/back-button';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { PasswordField } from '@/components/password-field';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useAvisar } from '@/lib/avisos';
 
 const SE_VA = [
   'Tus notas, con sus imágenes y sus firmas.',
@@ -24,12 +24,12 @@ export default function BorrarCuenta() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { account, session, signOut } = useAuth();
+  const avisar = useAvisar();
 
   const [contrasena, setContrasena] = useState('');
   const [correo, setCorreo] = useState('');
   const [preguntando, setPreguntando] = useState(false);
   const [borrando, setBorrando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const separator = useThemeColor('separator');
 
@@ -44,7 +44,6 @@ export default function BorrarCuenta() {
     if (!session) return;
 
     setBorrando(true);
-    setProblema(null);
 
     try {
       await api.removeAccount(session.accessToken, {
@@ -55,9 +54,7 @@ export default function BorrarCuenta() {
       await signOut();
       router.replace('/');
     } catch (error) {
-      setProblema(
-        error instanceof ApiError ? error.message : 'No se pudo borrar la cuenta'
-      );
+      avisar(error instanceof ApiError ? error.message : 'No se pudo borrar la cuenta');
       setBorrando(false);
     }
   };
@@ -136,8 +133,6 @@ export default function BorrarCuenta() {
             </TextField>
           )}
         </Appear>
-
-        {problema && <Aviso mensaje={problema} className="mt-4" />}
 
         <Button
           size="lg"

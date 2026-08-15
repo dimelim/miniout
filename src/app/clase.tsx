@@ -4,8 +4,8 @@ import { useThemeColor } from 'heroui-native/hooks';
 import { useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
-import { Aviso } from '@/components/aviso';
 import { Hoja } from '@/components/hoja';
+import { useAvisar } from '@/lib/avisos';
 import {
   crearId,
   DIAS,
@@ -24,6 +24,7 @@ export default function ClaseNueva() {
     id?: string;
   }>();
   const { find, edit } = usePeriods();
+  const avisar = useAvisar();
 
   const periodo = find(periodoId);
   const subject = periodo?.subjects.find((una) => una.id === materia) ?? null;
@@ -33,7 +34,6 @@ export default function ClaseNueva() {
   const [inicio, setInicio] = useState(clase?.inicio ?? '');
   const [fin, setFin] = useState(clase?.fin ?? '');
   const [lugar, setLugar] = useState(clase?.lugar ?? '');
-  const [problema, setProblema] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
   const [accent, accentForeground, muted, foreground, surfaceSecondary] = useThemeColor([
@@ -56,17 +56,17 @@ export default function ClaseNueva() {
 
   const guardar = async () => {
     if (dias.length === 0) {
-      setProblema('Marca al menos un día');
+      avisar('Marca al menos un día');
       return;
     }
 
     if (!horaValida(inicio) || !horaValida(fin)) {
-      setProblema('Escribe las horas como 08:30');
+      avisar('Escribe las horas como 08:30');
       return;
     }
 
     if (fin <= inicio) {
-      setProblema('La clase tiene que acabar después de empezar');
+      avisar('La clase tiene que acabar después de empezar');
       return;
     }
 
@@ -108,8 +108,6 @@ export default function ClaseNueva() {
   };
 
   const alternarDia = (indice: number) => {
-    if (problema) setProblema(null);
-
     setDias((actuales) =>
       actuales.includes(indice)
         ? actuales.filter((dia) => dia !== indice)
@@ -174,7 +172,6 @@ export default function ClaseNueva() {
             valor={inicio}
             onChange={(valor) => {
               setInicio(normalizarHora(valor));
-              if (problema) setProblema(null);
             }}
             accent={accent}
             muted={muted}
@@ -186,7 +183,6 @@ export default function ClaseNueva() {
             valor={fin}
             onChange={(valor) => {
               setFin(normalizarHora(valor));
-              if (problema) setProblema(null);
             }}
             accent={accent}
             muted={muted}
@@ -216,8 +212,6 @@ export default function ClaseNueva() {
             backgroundColor: surfaceSecondary,
           }}
         />
-
-        {problema && <Aviso mensaje={problema} className="mt-4" />}
 
         <Button size="lg" className="mt-8" onPress={guardar} isDisabled={guardando}>
           <Button.Label>{guardando ? 'Guardando' : 'Guardar'}</Button.Label>

@@ -14,7 +14,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { Firma } from '@/components/firma';
 import { FormatBar, type Seleccion } from '@/components/format-bar';
@@ -32,6 +31,7 @@ import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
 import { ApiError, type Note, type NoteDrawing, type NoteImage as Imagen } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
+import { useAvisar } from '@/lib/avisos';
 import { construir, desplazarAnclas, fusionar } from '@/lib/bloques';
 import { formatDayLabel, formatRelative } from '@/lib/dates';
 import { useDictado } from '@/lib/dictation';
@@ -108,6 +108,7 @@ export default function Nota() {
   const escribiendo = useRef(false);
   const campos = useRef(new Map<string, TextInput | null>());
   const cuerpoActual = useRef(inicial.current.texto);
+  const saliendo = useRef(false);
 
   const [titulo, setTitulo] = useState(note?.title ?? '');
   const [cuerpo, setCuerpo] = useState(inicial.current.texto);
@@ -121,7 +122,6 @@ export default function Nota() {
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [preguntando, setPreguntando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, muted, border, danger, warning, foreground] = useThemeColor([
     'accent',
@@ -152,6 +152,7 @@ export default function Nota() {
   );
 
   const { toast } = useToast();
+  const avisar = useAvisar();
   const dictado = useDictado(dictar);
   const conAdjuntos = useMemo(() => puedeUsarImagenes(), []);
   const conCopia = useMemo(() => puedeCopiar(), []);
@@ -189,6 +190,10 @@ export default function Nota() {
   useEffect(() => {
     cuerpoActual.current = cuerpo;
   }, [cuerpo]);
+
+  useEffect(() => {
+    if (dictado.problema) avisar(dictado.problema);
+  }, [avisar, dictado.problema]);
 
   useEffect(() => {
     if (!note || cargado.current) return;
@@ -297,22 +302,26 @@ export default function Nota() {
   };
 
   const guardar = useCallback(
-    async (extra?: { media?: Imagen[]; drawings?: NoteDrawing[] }) => {
+    async (extra?: { media?: Imagen[]; drawings?: NoteDrawing[]; aunqueVacia?: boolean }) => {
       const limpioCuerpo = cuerpo.trim();
       const limpioTitulo = titulo.trim();
+      const media = extra?.media ?? imagenes;
+      const drawings = extra?.drawings ?? trazos;
 
-      if (!limpioCuerpo && !limpioTitulo) return null;
+      const vacia =
+        !limpioCuerpo && !limpioTitulo && media.length === 0 && drawings.length === 0;
+
+      if (vacia && !extra?.aunqueVacia) return null;
 
       setGuardando(true);
-      setProblema(null);
 
       try {
         const patch = {
           title: limpioTitulo || null,
           body: cuerpo,
           format: marcas,
-          media: extra?.media ?? imagenes,
-          drawings: extra?.drawings ?? trazos,
+          media,
+          drawings,
         };
 
         const guardada = note ? await edit(note.id, patch) : await create(patch);
@@ -327,13 +336,13 @@ export default function Nota() {
 
         return guardada;
       } catch (error) {
-        setProblema(error instanceof ApiError ? error.message : 'No se pudo guardar el cambio');
+        avisar(error instanceof ApiError ? error.message : 'No se pudo guardar el cambio');
         return null;
       } finally {
         setGuardando(false);
       }
     },
-    [create, cuerpo, edit, imagenes, marcas, note, router, titulo, trazos]
+    [avisar, create, cuerpo, edit, imagenes, marcas, note, router, titulo, trazos]
   );
 
   const borrar = async () => {
@@ -344,16 +353,28 @@ export default function Nota() {
       return;
     }
 
+    saliendo.current = true;
+
     try {
       await remove(note.id);
       router.back();
     } catch {
-      setProblema('No se pudo borrar la nota');
+      saliendo.current = false;
+      avisar('No se pudo borrar la nota');
     }
   };
 
   const salir = async () => {
-    await guardar();
+    const sinNada =
+      !cuerpo.trim() && !titulo.trim() && imagenes.length === 0 && trazos.length === 0;
+
+    if (creada && sinNada) {
+      saliendo.current = true;
+      await remove(creada.id).catch(() => {});
+    } else {
+      await guardar();
+    }
+
     Keyboard.dismiss();
     router.back();
   };
@@ -373,35 +394,24 @@ export default function Nota() {
     if (!asset) return;
 
     setSubiendo(true);
-    setProblema(null);
 
     try {
-      const destino = note ?? (await guardar());
-
-      if (!destino) {
-        setProblema('Escribe algo antes de meter una imagen');
-        return;
-      }
-
       const subida = await subirImagen(asset, session.accessToken);
       const siguientes = [...imagenes, { ...subida, at: dondeVaElBloque() }];
 
       setImagenes(siguientes);
-      await guardar({ media: siguientes });
+      await guardar({ media: siguientes, aunqueVacia: true });
     } catch (error) {
-      setProblema(error instanceof Error ? error.message : 'No se pudo subir la imagen');
+      avisar(error instanceof Error ? error.message : 'No se pudo subir la imagen');
     } finally {
       setSubiendo(false);
     }
   };
 
   const firmar = async () => {
-    const destino = note ?? (await guardar());
+    const destino = note ?? (await guardar({ aunqueVacia: true }));
 
-    if (!destino) {
-      setProblema('Escribe algo antes de firmar');
-      return;
-    }
+    if (!destino) return;
 
     Keyboard.dismiss();
     abrir(`/firma?id=${destino.id}&at=${dondeVaElBloque()}`);
@@ -413,7 +423,7 @@ export default function Nota() {
     abrir(href);
   };
 
-  if (!note && id) {
+  if (!note && id && !saliendo.current) {
     return (
       <View className="flex-1 bg-background">
         <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 22 }}>
@@ -699,9 +709,6 @@ export default function Nota() {
             Toca el micrófono otra vez para parar.
           </Text>
         )}
-
-        {dictado.problema && <Aviso mensaje={dictado.problema} className="mt-4" />}
-        {problema && <Aviso mensaje={problema} className="mt-4" />}
 
         <KeyboardSpace bottomInset={insets.bottom} extra={56} />
       </ScrollView>

@@ -6,10 +6,10 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { CheckIcon, CloseIcon } from '@/components/icons';
 import { KeyboardSpace } from '@/components/keyboard-space';
 import { SendButton } from '@/components/send-button';
+import { useAvisar } from '@/lib/avisos';
 import {
   DEFAULT_QUOTES,
   FUENTES,
@@ -25,10 +25,10 @@ import {
 
 export default function Frases() {
   const insets = useSafeAreaInsets();
+  const avisar = useAvisar();
 
   const [settings, setSettings] = useState<QuoteSettings>(DEFAULT_QUOTES);
   const [nueva, setNueva] = useState('');
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [accent, accentForeground, muted, foreground, surfaceTertiary, background] =
     useThemeColor([
@@ -55,9 +55,11 @@ export default function Frases() {
 
   const agregar = () => {
     const problem = quoteError(nueva);
-    setProblema(problem);
 
-    if (problem) return;
+    if (problem) {
+      avisar(problem);
+      return;
+    }
 
     cambiar({ own: [...settings.own, nueva.trim()] });
     setNueva('');
@@ -182,10 +184,7 @@ export default function Frases() {
           >
             <TextInput
               value={nueva}
-              onChangeText={(valor) => {
-                setNueva(valor);
-                if (problema) setProblema(null);
-              }}
+              onChangeText={setNueva}
               placeholder="Escribe una tuya"
               placeholderTextColor={muted}
               selectionColor={accent}
@@ -208,8 +207,6 @@ export default function Frases() {
               onPress={agregar}
             />
           </View>
-
-          {problema && <Aviso mensaje={problema} className="mt-2 px-1" />}
         </Appear>
 
         <Appear delay={230} className="mt-7">

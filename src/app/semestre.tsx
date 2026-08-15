@@ -7,7 +7,6 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/appear';
-import { Aviso } from '@/components/aviso';
 import { BackButton } from '@/components/back-button';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { ChevronRightIcon, ClockIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/icons';
@@ -15,6 +14,7 @@ import { ProjectIcon } from '@/components/project-icons';
 import { KeyboardSpace } from '@/components/keyboard-space';
 import { RuledPaper } from '@/components/ruled-paper';
 import { SendButton } from '@/components/send-button';
+import { useAvisar } from '@/lib/avisos';
 import { useAbrir } from '@/lib/navigate';
 import {
   clasesDelDia,
@@ -35,10 +35,10 @@ export default function Semestre() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { find, edit, remove } = usePeriods();
+  const avisar = useAvisar();
 
   const [perfil, setPerfil] = useState<Profile>(EMPTY_PROFILE);
   const [materia, setMateria] = useState('');
-  const [problema, setProblema] = useState<string | null>(null);
   const [borrando, setBorrando] = useState(false);
 
   const [muted, danger, background, border, surfaceSecondary] = useThemeColor([
@@ -87,9 +87,11 @@ export default function Semestre() {
 
   const agregar = async () => {
     const problem = subjectNameError(materia);
-    setProblema(problem);
 
-    if (problem) return;
+    if (problem) {
+      avisar(problem);
+      return;
+    }
 
     await edit(periodo.id, {
       subjects: [
@@ -319,14 +321,11 @@ export default function Semestre() {
           <View className="mt-3">
             <View
               className="flex-row items-center gap-3 rounded-[18px] px-4 py-2"
-              style={{ borderWidth: 1.5, borderColor: problema ? danger : border }}
+              style={{ borderWidth: 1.5, borderColor: border }}
             >
               <TextInput
                 value={materia}
-                onChangeText={(valor) => {
-                  setMateria(valor);
-                  if (problema) setProblema(null);
-                }}
+                onChangeText={setMateria}
                 placeholder="Añade una materia"
                 placeholderTextColor={muted}
                 selectionColor={periodo.color}
@@ -350,8 +349,6 @@ export default function Semestre() {
                 size={38}
               />
             </View>
-
-            {problema && <Aviso mensaje={problema} className="mt-2 px-1" />}
           </View>
         </Appear>
 

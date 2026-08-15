@@ -5,10 +5,10 @@ import { useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Aviso } from '@/components/aviso';
 import { CheckIcon } from '@/components/icons';
 import { DEFAULT_ICON, PROJECT_ICONS, ProjectIcon } from '@/components/project-icons';
 import { ApiError } from '@/lib/api';
+import { useAvisar } from '@/lib/avisos';
 import { MAX_PROJECT_NAME, projectNameError, useProjects } from '@/lib/projects-store';
 import { DEFAULT_COLOR, PROJECT_COLORS } from '@/lib/semesters';
 
@@ -17,6 +17,7 @@ export default function ProyectoNuevo() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { create, edit, find } = useProjects();
+  const avisar = useAvisar();
 
   const proyecto = find(id);
 
@@ -24,7 +25,6 @@ export default function ProyectoNuevo() {
   const [icono, setIcono] = useState(proyecto?.icon ?? DEFAULT_ICON);
   const [color, setColor] = useState(proyecto?.color ?? DEFAULT_COLOR);
   const [guardando, setGuardando] = useState(false);
-  const [problema, setProblema] = useState<string | null>(null);
 
   const [foreground, muted, surfaceSecondary, background] = useThemeColor([
     'foreground',
@@ -35,9 +35,11 @@ export default function ProyectoNuevo() {
 
   const guardar = async () => {
     const problem = projectNameError(nombre);
-    setProblema(problem);
 
-    if (problem) return;
+    if (problem) {
+      avisar(problem);
+      return;
+    }
 
     setGuardando(true);
 
@@ -50,9 +52,7 @@ export default function ProyectoNuevo() {
 
       router.back();
     } catch (error) {
-      setProblema(
-        error instanceof ApiError ? error.message : 'No se pudo guardar el proyecto'
-      );
+      avisar(error instanceof ApiError ? error.message : 'No se pudo guardar el proyecto');
     } finally {
       setGuardando(false);
     }
@@ -93,10 +93,7 @@ export default function ProyectoNuevo() {
 
         <TextInput
           value={nombre}
-          onChangeText={(valor) => {
-            setNombre(valor);
-            if (problema) setProblema(null);
-          }}
+          onChangeText={setNombre}
           placeholder="Universidad, Compras, Personal"
           placeholderTextColor={muted}
           selectionColor={color}
@@ -117,8 +114,6 @@ export default function ProyectoNuevo() {
             paddingHorizontal: 0,
           }}
         />
-
-        {problema && <Aviso mensaje={problema} className="mt-3" />}
 
         <Text className="mt-8 font-medium text-muted" style={{ fontSize: 12 }}>
           Icono
