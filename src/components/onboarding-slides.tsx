@@ -1,12 +1,11 @@
 import { useThemeColor } from 'heroui-native/hooks';
 import { useEffect, useState } from 'react';
-import { Text, View, useWindowDimensions } from 'react-native';
+import { Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -19,20 +18,22 @@ import { Mark } from './mark';
 import { SignatureMark } from './signature-mark';
 import { TypingDemo } from './typing-demo';
 
+import { MASCOTA_COLORES } from '@/lib/mascota';
+
 export type SlideProps = { isActive: boolean };
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
 
 const PASOS: {
   accesorio: 'ninguno' | 'casco' | 'gafas' | 'antena';
-  color: string | null;
+  color: number;
   candado?: boolean;
 }[] = [
-  { accesorio: 'ninguno', color: null },
-  { accesorio: 'ninguno', color: null, candado: true },
-  { accesorio: 'gafas', color: '#6b6fc4' },
-  { accesorio: 'casco', color: '#4f9068' },
-  { accesorio: 'antena', color: '#c2553c' },
+  { accesorio: 'ninguno', color: 0 },
+  { accesorio: 'ninguno', color: 3, candado: true },
+  { accesorio: 'gafas', color: 5 },
+  { accesorio: 'casco', color: 2 },
+  { accesorio: 'antena', color: 1 },
 ];
 
 const PROMESAS = [
@@ -43,27 +44,19 @@ const PROMESAS = [
 ];
 
 export function MascotaSlide({ isActive }: SlideProps) {
-  const { width } = useWindowDimensions();
   const [paso, setPaso] = useState(0);
   const [promesa, setPromesa] = useState(0);
 
-  const [link, separator] = useThemeColor(['link', 'separator']);
+  const [link, separator, foreground] = useThemeColor(['link', 'separator', 'foreground']);
 
-  const paseo = useSharedValue(0);
-  const recorrido = Math.max(60, width - 56 - 96);
+  const flote = useSharedValue(0);
   const actual = PASOS[paso % PASOS.length];
 
   useEffect(() => {
     if (!isActive) return;
 
-    paseo.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 2600, easing: EASE }),
-        withTiming(0, { duration: 2600, easing: EASE })
-      ),
-      -1
-    );
-  }, [isActive, paseo]);
+    flote.value = withRepeat(withTiming(1, { duration: 2200, easing: EASE }), -1, true);
+  }, [isActive, flote]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -81,25 +74,52 @@ export function MascotaSlide({ isActive }: SlideProps) {
     return () => clearInterval(timer);
   }, [isActive]);
 
-  const camina = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: paseo.value * recorrido },
-      { rotate: `${Math.sin(paseo.value * Math.PI * 4) * 7}deg` },
-    ],
+  const flota = useAnimatedStyle(() => ({
+    transform: [{ translateY: flote.value * -10 }],
   }));
 
   return (
-    <View className="flex-1 justify-center gap-8">
-      <View style={{ height: 110, justifyContent: 'center' }}>
-        <Animated.View style={camina}>
+    <View className="flex-1 justify-center gap-7">
+      <View className="items-center gap-6 rounded-[24px] bg-surface py-7 shadow-surface">
+        <Animated.View style={flota}>
           <InkDrop
-            size={96}
+            size={104}
             mood="happy"
-            color={actual.color ?? undefined}
+            color={MASCOTA_COLORES[actual.color]}
             accesorio={actual.accesorio}
             candado={actual.candado}
           />
         </Animated.View>
+
+        <View className="flex-row items-center gap-2.5">
+          {MASCOTA_COLORES.map((color, indice) => {
+            const activo = indice === actual.color;
+
+            return (
+              <View
+                key={color}
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 999,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: activo ? foreground : 'transparent',
+                }}
+              >
+                <View
+                  style={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 999,
+                    backgroundColor: color,
+                  }}
+                />
+              </View>
+            );
+          })}
+        </View>
       </View>
 
       <View className="gap-2">
@@ -111,11 +131,11 @@ export function MascotaSlide({ isActive }: SlideProps) {
         </Text>
         <Text className="font-sans text-muted" style={{ fontSize: 16, lineHeight: 25 }}>
           Vive en tu inicio, te dice qué te falta y te cuida las notas con un código si
-          quieres. Le pones nombre, color y hasta gafas.
+          quieres. Le pones nombre, color y qué lleva puesto.
         </Text>
 
         <View
-          className="mt-3 flex-row items-center gap-2.5 rounded-[16px] px-3.5"
+          className="mt-2 flex-row items-center gap-2.5 rounded-[16px] px-3.5"
           style={{ borderWidth: 1, borderColor: separator, height: 52 }}
         >
           <LockIcon color={link} size={15} />
