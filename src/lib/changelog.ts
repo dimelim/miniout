@@ -8,13 +8,15 @@ export type Novedad = {
 export const NOVEDADES: Novedad[] = [
   {
     version: '1.0.2',
-    nombre: 'Firmas y texto alrededor de las imágenes',
+    nombre: 'Firmas a mano',
     fecha: '15 de agosto de 2026',
     cambios: [
       'Firma o dibuja con el dedo desde la barra del editor: eliges tinta o ámbar, tres grosores, deshaces el último trazo y la firma se guarda dentro de la nota.',
       'Tocando una firma vuelves a abrirla para seguir dibujando o quitarla.',
       'Las imágenes y las firmas se meten donde tengas el cursor, así que puedes escribir encima y debajo de cada una.',
       'Las imágenes salen a lo ancho de la nota, con su proporción y un contorno fino.',
+      'Las tareas y los apuntes ya no se ven igual: lo que tiene fecha lleva casilla, y lo que solo escribiste lleva su marca de apunte.',
+      'Notas se reparte en Por hacer y Apuntes, e Inicio separa lo que entregas hoy de lo que escribiste hoy.',
       'Ya puedes borrar tu cuenta desde Cuenta, con todo lo que tiene dentro.',
     ],
   },

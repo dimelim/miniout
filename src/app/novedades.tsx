@@ -17,6 +17,7 @@ export default function Novedades() {
   ]);
 
   const instalada = Constants.expoConfig?.version ?? '';
+  const tuya = NOVEDADES.findIndex((novedad) => novedad.version === instalada);
 
   return (
     <View className="flex-1 bg-background">
@@ -52,23 +53,24 @@ export default function Novedades() {
               <View className="flex-row items-center gap-2">
                 <Text
                   className="font-display text-foreground"
-                  style={{ fontSize: 21, letterSpacing: -0.3 }}
+                  style={{ fontSize: 21, letterSpacing: -0.3, flexShrink: 1 }}
                 >
                   {novedad.nombre}
                 </Text>
 
-                {novedad.version === instalada && (
+                {indice === tuya && (
                   <View
                     style={{
+                      flexShrink: 0,
                       borderRadius: 999,
                       paddingHorizontal: 8,
-                      paddingVertical: 2,
+                      paddingVertical: 3,
                       backgroundColor: accent,
                     }}
                   >
                     <Text
                       className="font-semibold"
-                      style={{ fontSize: 10, color: accentForeground }}
+                      style={{ fontSize: 10, lineHeight: 14, color: accentForeground }}
                     >
                       La tuya
                     </Text>

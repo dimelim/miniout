@@ -11,12 +11,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { EllipsisIcon, CheckIcon, FolderIcon } from './icons';
+import { EllipsisIcon, CheckIcon, FolderIcon, NoteGlyph } from './icons';
 import { NoteImage } from './note-image';
 import { ProjectIcon } from './project-icons';
 import { RichText } from './rich-text';
 
 import type { Note, Project } from '@/lib/api';
+import { esTarea } from '@/lib/note-list';
 import { estadoDeEntrega } from '@/lib/schedule';
 
 const EASE = Easing.bezier(0.32, 0.72, 0, 1);
@@ -51,6 +52,7 @@ export function NoteRow({
     'warning',
   ]);
 
+  const tarea = esTarea(note);
   const entrega = estadoDeEntrega(note.dueAt);
   const colorEntrega =
     entrega?.tono === 'vencido' ? danger : entrega?.tono === 'hoy' ? warning : muted;
@@ -121,32 +123,47 @@ export function NoteRow({
 
       <GestureDetector gesture={deslizar}>
         <Animated.View className="flex-row items-start gap-3" style={cuerpo}>
-          <PressableFeedback
-            onPress={onToggle}
-            hitSlop={10}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: note.done }}
-            accessibilityLabel={note.done ? 'Marcar como pendiente' : 'Marcar como hecha'}
-            style={{ borderRadius: 999, marginTop: 2 }}
-          >
-            <Animated.View
-              style={[
-                {
-                  width: 22,
-                  height: 22,
-                  borderRadius: 8,
-                  borderWidth: 1.5,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
-                box,
-              ]}
+          {tarea ? (
+            <PressableFeedback
+              onPress={onToggle}
+              hitSlop={10}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: note.done }}
+              accessibilityLabel={note.done ? 'Marcar como pendiente' : 'Marcar como hecha'}
+              style={{ borderRadius: 999, marginTop: 2 }}
             >
-              <Animated.View style={mark}>
-                <CheckIcon color={accentForeground} size={13} />
+              <Animated.View
+                style={[
+                  {
+                    width: 22,
+                    height: 22,
+                    borderRadius: 8,
+                    borderWidth: 1.5,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  },
+                  box,
+                ]}
+              >
+                <Animated.View style={mark}>
+                  <CheckIcon color={accentForeground} size={13} />
+                </Animated.View>
               </Animated.View>
-            </Animated.View>
-          </PressableFeedback>
+            </PressableFeedback>
+          ) : (
+            <View
+              accessible={false}
+              style={{
+                width: 22,
+                height: 22,
+                marginTop: 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <NoteGlyph color={muted} size={17} />
+            </View>
+          )}
 
           <PressableFeedback
             onPress={onOpen}

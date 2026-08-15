@@ -12,7 +12,7 @@ import { FiltersIcon, PlusIcon, SearchIcon } from '@/components/icons';
 import { NoteRow } from '@/components/note-row';
 import { RuledPaper } from '@/components/ruled-paper';
 import { useAbrir } from '@/lib/navigate';
-import { filtrarNotas, ordenarNotas } from '@/lib/note-list';
+import { filtrarNotas, ordenarNotas, separarNotas } from '@/lib/note-list';
 import { useNotes } from '@/lib/notes-store';
 import {
   DEFAULT_PREFS,
@@ -68,6 +68,22 @@ export default function Notas() {
 
     return ordenarNotas(filtradas, prefs.order);
   }, [notes, busqueda, prefs]);
+
+  const grupos = useMemo(() => {
+    if (busqueda.trim()) return [{ titulo: null, meta: null, notas: visibles }];
+
+    const { tareas, apuntes } = separarNotas(visibles);
+    const sinHacer = tareas.filter((note) => !note.done).length;
+
+    return [
+      {
+        titulo: 'Por hacer',
+        meta: sinHacer > 0 ? `${sinHacer} sin hacer` : 'todo hecho',
+        notas: tareas,
+      },
+      { titulo: 'Apuntes', meta: `${apuntes.length}`, notas: apuntes },
+    ].filter((grupo) => grupo.notas.length > 0);
+  }, [busqueda, visibles]);
 
   const activos = filtrosActivos(prefs);
   const proyectoFiltrado = buscarProyecto(prefs.projectId);
@@ -224,23 +240,41 @@ export default function Notas() {
             </Text>
           </Appear>
         ) : (
-          <Animated.View layout={LinearTransition.duration(220)} className="mt-4">
-            {visibles.map((note, posicion) => (
-              <View
-                key={note.id}
-                style={{
-                  borderTopWidth: posicion === 0 ? 0 : 1,
-                  borderTopColor: muted + '22',
-                }}
-              >
-                <NoteRow
-                  note={note}
-                  proyecto={buscarProyecto(note.projectId)}
-                  onToggle={() => toggle(note)}
-                  onOpen={() => abrir(`/nota?id=${note.id}`)}
-                  onMenu={() => abrir(`/acciones?id=${note.id}`)}
-                  onMover={() => abrir(`/mover?id=${note.id}`)}
-                />
+          <Animated.View layout={LinearTransition.duration(220)}>
+            {grupos.map((grupo) => (
+              <View key={grupo.titulo ?? 'todas'} className="mt-6">
+                {grupo.titulo && (
+                  <View className="mb-1 flex-row items-baseline justify-between gap-3">
+                    <Text
+                      className="font-display text-foreground"
+                      style={{ fontSize: 20, letterSpacing: -0.3 }}
+                    >
+                      {grupo.titulo}
+                    </Text>
+                    <Text className="font-medium text-muted" style={{ fontSize: 12 }}>
+                      {grupo.meta}
+                    </Text>
+                  </View>
+                )}
+
+                {grupo.notas.map((note, posicion) => (
+                  <View
+                    key={note.id}
+                    style={{
+                      borderTopWidth: posicion === 0 ? 0 : 1,
+                      borderTopColor: muted + '22',
+                    }}
+                  >
+                    <NoteRow
+                      note={note}
+                      proyecto={buscarProyecto(note.projectId)}
+                      onToggle={() => toggle(note)}
+                      onOpen={() => abrir(`/nota?id=${note.id}`)}
+                      onMenu={() => abrir(`/acciones?id=${note.id}`)}
+                      onMover={() => abrir(`/mover?id=${note.id}`)}
+                    />
+                  </View>
+                ))}
               </View>
             ))}
           </Animated.View>

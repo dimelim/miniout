@@ -118,9 +118,26 @@ export function InkDrop({ size = 44, mood = 'idle', hat, color, accesorio }: Ink
     backgroundColor: background,
   };
 
+  const holgura = adorno === 'antena' ? size * 0.34 : adorno === 'casco' ? size * 0.3 : 0;
+
   return (
-    <Pressable onPress={saludar} accessible={false} hitSlop={10}>
-      <Animated.View style={[{ width: size, height: size, alignItems: 'center' }, body]}>
+    <Pressable
+      onPress={saludar}
+      accessible={false}
+      hitSlop={10}
+      style={{ marginTop: -holgura }}
+    >
+      <Animated.View
+        style={[
+          {
+            width: size,
+            height: size + holgura,
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+          },
+          body,
+        ]}
+      >
         <View
           style={{
             width: size,
@@ -146,21 +163,23 @@ export function InkDrop({ size = 44, mood = 'idle', hat, color, accesorio }: Ink
           </Animated.View>
         </View>
 
-        {adorno === 'casco' && <Casco size={size} tinta={foreground} />}
-        {adorno === 'gafas' && <Gafas size={size} tinta={foreground} />}
-        {adorno === 'antena' && <Antena size={size} tinta={foreground} bola={cuerpoColor} />}
+        {adorno === 'casco' && <Casco size={size} tinta={foreground} arriba={holgura} />}
+        {adorno === 'gafas' && <Gafas size={size} tinta={foreground} arriba={holgura} />}
+        {adorno === 'antena' && (
+          <Antena size={size} tinta={foreground} bola={cuerpoColor} arriba={holgura} />
+        )}
       </Animated.View>
     </Pressable>
   );
 }
 
-function Casco({ size, tinta }: { size: number; tinta: string }) {
+function Casco({ size, tinta, arriba }: { size: number; tinta: string; arriba: number }) {
   return (
     <Svg
       width={size * 1.04}
       height={size * 0.46}
       viewBox="0 0 104 46"
-      style={{ position: 'absolute', top: -size * 0.26, left: -size * 0.02 }}
+      style={{ position: 'absolute', top: arriba - size * 0.26, left: -size * 0.02 }}
     >
       <Path d="M21 37a31 36 0 0 1 62 0z" fill={tinta} />
       <Rect x="0" y="36" width="104" height="10" rx="5" fill={tinta} />
@@ -168,13 +187,13 @@ function Casco({ size, tinta }: { size: number; tinta: string }) {
   );
 }
 
-function Gafas({ size, tinta }: { size: number; tinta: string }) {
+function Gafas({ size, tinta, arriba }: { size: number; tinta: string; arriba: number }) {
   return (
     <Svg
       width={size}
       height={size}
       viewBox="0 0 100 100"
-      style={{ position: 'absolute', top: 0, left: 0 }}
+      style={{ position: 'absolute', top: arriba, left: 0 }}
       pointerEvents="none"
     >
       <Rect
@@ -203,16 +222,26 @@ function Gafas({ size, tinta }: { size: number; tinta: string }) {
   );
 }
 
-function Antena({ size, tinta, bola }: { size: number; tinta: string; bola: string }) {
+function Antena({
+  size,
+  tinta,
+  bola,
+  arriba,
+}: {
+  size: number;
+  tinta: string;
+  bola: string;
+  arriba: number;
+}) {
   return (
     <Svg
       width={size * 0.3}
       height={size * 0.4}
       viewBox="0 0 30 40"
-      style={{ position: 'absolute', top: -size * 0.3, left: size * 0.35 }}
+      style={{ position: 'absolute', top: arriba - size * 0.3, left: size * 0.35 }}
     >
-      <Rect x="12.5" y="10" width="5" height="30" rx="2.5" fill={tinta} />
-      <Circle cx="15" cy="8" r="8" fill={bola} stroke={tinta} strokeWidth="4" />
+      <Rect x="12.5" y="13" width="5" height="27" rx="2.5" fill={tinta} />
+      <Circle cx="15" cy="11" r="8" fill={bola} stroke={tinta} strokeWidth="4" />
     </Svg>
   );
 }

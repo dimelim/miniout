@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, type Href } from 'expo-router';
 import { Button, Card, Chip, PressableFeedback, Spinner } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
 import { useCallback, useMemo, useState } from 'react';
@@ -15,6 +15,7 @@ import { NuevaVersion } from '@/components/nueva-version';
 import { ProjectIcon } from '@/components/project-icons';
 import { RuledPaper } from '@/components/ruled-paper';
 import { Semana } from '@/components/semana';
+import type { Note, Project } from '@/lib/api';
 import { useAuth } from '@/lib/auth-store';
 import { useAbrir } from '@/lib/navigate';
 import { useNotes } from '@/lib/notes-store';
@@ -88,18 +89,25 @@ export default function Inicio() {
     }, [cargar])
   );
 
-  const deHoy = useMemo(() => {
-    const ahora = new Date();
+  const paraHoy = useMemo(() => {
+    const hoy = new Date();
 
     return notes.filter((note) => {
-      if (note.dueAt) {
-        return new Date(note.dueAt).getTime() <= ahora.getTime() || isSameDay(new Date(note.dueAt), ahora);
-      }
+      if (!note.dueAt) return false;
 
-      return isSameDay(new Date(note.createdAt), ahora);
+      const entrega = new Date(note.dueAt);
+
+      return entrega.getTime() <= hoy.getTime() || isSameDay(entrega, hoy);
     });
   }, [notes]);
-  const pendientes = deHoy.filter((note) => !note.done).length;
+
+  const escritoHoy = useMemo(() => {
+    const hoy = new Date();
+
+    return notes.filter((note) => !note.dueAt && isSameDay(new Date(note.createdAt), hoy));
+  }, [notes]);
+
+  const pendientes = paraHoy.filter((note) => !note.done).length;
 
   return (
     <View className="flex-1 bg-background">
@@ -165,41 +173,49 @@ export default function Inicio() {
           </PressableFeedback>
         </Animated.View>
 
-        <Seccion
-          titulo="Hoy"
-          meta={pendientes > 0 ? `${pendientes} sin hacer` : undefined}
-        >
-          {isLoading ? (
+        {isLoading ? (
+          <Seccion titulo="Para hoy">
             <View className="items-center py-6">
               <Spinner size="sm" />
             </View>
-          ) : deHoy.length === 0 ? (
+          </Seccion>
+        ) : paraHoy.length === 0 && escritoHoy.length === 0 ? (
+          <Seccion titulo="Para hoy">
             <Text className="font-sans text-muted" style={{ fontSize: 15, lineHeight: 23 }}>
-              Lo que escribas hoy aparece aquí. Si mencionas un día, se va al que toca.
+              Lo que escribas hoy aparece aquí. Si mencionas un día, se convierte en algo por
+              entregar.
             </Text>
-          ) : (
-            <Animated.View layout={LinearTransition.duration(220)}>
-              {deHoy.map((note, position) => (
-                <View
-                  key={note.id}
-                  style={{
-                    borderTopWidth: position === 0 ? 0 : 1,
-                    borderTopColor: muted + '22',
-                  }}
-                >
-                  <NoteRow
-                    note={note}
-                    proyecto={buscarProyecto(note.projectId)}
-                    onToggle={() => toggle(note)}
-                    onOpen={() => abrir(`/nota?id=${note.id}`)}
-                    onMenu={() => abrir(`/acciones?id=${note.id}`)}
-                    onMover={() => abrir(`/mover?id=${note.id}`)}
-                  />
-                </View>
-              ))}
-            </Animated.View>
-          )}
-        </Seccion>
+          </Seccion>
+        ) : (
+          <>
+            {paraHoy.length > 0 && (
+              <Seccion
+                titulo="Para hoy"
+                meta={pendientes > 0 ? `${pendientes} sin hacer` : 'todo hecho'}
+              >
+                <Lista
+                  notas={paraHoy}
+                  muted={muted}
+                  buscarProyecto={buscarProyecto}
+                  toggle={toggle}
+                  abrir={abrir}
+                />
+              </Seccion>
+            )}
+
+            {escritoHoy.length > 0 && (
+              <Seccion titulo="Escrito hoy" meta="sin fecha">
+                <Lista
+                  notas={escritoHoy}
+                  muted={muted}
+                  buscarProyecto={buscarProyecto}
+                  toggle={toggle}
+                  abrir={abrir}
+                />
+              </Seccion>
+            )}
+          </>
+        )}
 
         <Seccion titulo={palabras.plural}>
           <View className="gap-2.5">
@@ -325,6 +341,43 @@ export default function Inicio() {
 
       </ScrollView>
     </View>
+  );
+}
+
+function Lista({
+  notas,
+  muted,
+  buscarProyecto,
+  toggle,
+  abrir,
+}: {
+  notas: Note[];
+  muted: string;
+  buscarProyecto: (id: string | null | undefined) => Project | null;
+  toggle: (note: Note) => void;
+  abrir: (href: Href) => void;
+}) {
+  return (
+    <Animated.View layout={LinearTransition.duration(220)}>
+      {notas.map((note, posicion) => (
+        <View
+          key={note.id}
+          style={{
+            borderTopWidth: posicion === 0 ? 0 : 1,
+            borderTopColor: muted + '22',
+          }}
+        >
+          <NoteRow
+            note={note}
+            proyecto={buscarProyecto(note.projectId)}
+            onToggle={() => toggle(note)}
+            onOpen={() => abrir(`/nota?id=${note.id}`)}
+            onMenu={() => abrir(`/acciones?id=${note.id}`)}
+            onMover={() => abrir(`/mover?id=${note.id}`)}
+          />
+        </View>
+      ))}
+    </Animated.View>
   );
 }
 

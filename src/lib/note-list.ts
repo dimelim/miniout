@@ -11,6 +11,17 @@ function tiempo(valor: string | null) {
   return valor ? new Date(valor).getTime() : null;
 }
 
+export function esTarea(note: Note) {
+  return Boolean(note.dueAt) || note.done;
+}
+
+export function separarNotas(notes: Note[]) {
+  return {
+    tareas: notes.filter(esTarea),
+    apuntes: notes.filter((note) => !esTarea(note)),
+  };
+}
+
 export function ordenarNotas(notes: Note[], order: NoteOrder) {
   const copia = [...notes];
 
