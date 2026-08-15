@@ -673,26 +673,6 @@ export default function Nota() {
             </View>
           )}
 
-          {dictado.escuchando && (
-            <View className="mt-1 flex-row items-start gap-2">
-              <View
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 999,
-                  marginTop: CUERPO * 0.62,
-                  backgroundColor: danger,
-                }}
-              />
-              <Text
-                className="flex-1 font-sans"
-                style={{ fontSize: CUERPO, lineHeight: CUERPO * 1.6, color: muted }}
-              >
-                {dictado.parcial || 'Te escucho'}
-              </Text>
-            </View>
-          )}
-
           {pistas.length > 0 && (
             <View className="mt-4 flex-row flex-wrap gap-1.5 border-t border-border pt-3">
               {pistas.map((pista) => (
@@ -704,12 +684,6 @@ export default function Nota() {
           )}
         </Pressable>
 
-        {dictado.escuchando && (
-          <Text className="mt-4 text-center font-medium text-muted" style={{ fontSize: 12 }}>
-            Toca el micrófono otra vez para parar.
-          </Text>
-        )}
-
         <KeyboardSpace bottomInset={insets.bottom} extra={56} />
       </ScrollView>
 
@@ -719,6 +693,7 @@ export default function Nota() {
         conAdjuntos={conAdjuntos}
         conDictado={dictado.disponible}
         dictando={dictado.escuchando}
+        parcial={dictado.parcial}
         onMarca={aplicarMarca}
         onVineta={ponerVineta}
         onImagen={() => adjuntar('galeria')}

@@ -1,6 +1,6 @@
 import { PressableFeedback } from 'heroui-native';
 import { useThemeColor } from 'heroui-native/hooks';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import Animated, {
   useAnimatedKeyboard,
   useAnimatedStyle,
@@ -32,6 +32,7 @@ type FormatBarProps = {
   conAdjuntos: boolean;
   conDictado: boolean;
   dictando: boolean;
+  parcial: string;
   onMarca: (tipo: MarcaTipo) => void;
   onVineta: () => void;
   onImagen: () => void;
@@ -46,6 +47,7 @@ export function FormatBar({
   conAdjuntos,
   conDictado,
   dictando,
+  parcial,
   onMarca,
   onVineta,
   onImagen,
@@ -53,12 +55,13 @@ export function FormatBar({
   onFirma,
   onDictar,
 }: FormatBarProps) {
-  const [foreground, surface, separator, danger, link] = useThemeColor([
+  const [foreground, surface, separator, danger, link, muted] = useThemeColor([
     'foreground',
     'surface',
     'separator',
     'danger',
     'link',
+    'muted',
   ]);
 
   const teclado = useAnimatedKeyboard({
@@ -71,7 +74,7 @@ export function FormatBar({
 
     return {
       transform: [{ translateY: -alto }],
-      opacity: withTiming(alto > 0 ? 1 : 0, { duration: 160, easing: EASE }),
+      opacity: withTiming(alto > 0 || dictando ? 1 : 0, { duration: 160, easing: EASE }),
     };
   });
 
@@ -82,6 +85,35 @@ export function FormatBar({
       pointerEvents="box-none"
       style={[{ position: 'absolute', left: 0, right: 0, bottom: bottomInset }, barra]}
     >
+      {dictando && (
+        <View
+          className="flex-row items-center gap-2.5"
+          style={{
+            backgroundColor: surface,
+            borderTopWidth: 1,
+            borderTopColor: separator,
+            paddingHorizontal: 16,
+            paddingVertical: 11,
+          }}
+        >
+          <Text
+            className="font-semibold"
+            style={{ fontSize: 11, lineHeight: 15, color: danger }}
+          >
+            Escuchando
+          </Text>
+
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="head"
+            className="flex-1 font-sans"
+            style={{ fontSize: 14, lineHeight: 19, color: parcial ? foreground : muted }}
+          >
+            {parcial || 'Habla y lo escribo aquí'}
+          </Text>
+        </View>
+      )}
+
       <View
         className="flex-row items-stretch"
         style={{
