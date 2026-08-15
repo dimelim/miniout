@@ -232,6 +232,7 @@ export default function Cuenta() {
               descripcion="Tu nombre, dónde estudias, tus notas y MiniLock."
               onPress={() => abrir('/ajustes')}
               muted={muted}
+              color={foreground}
             />
 
             <Fila
@@ -243,6 +244,7 @@ export default function Cuenta() {
               }
               onPress={() => abrir('/contrasena')}
               muted={muted}
+              color={foreground}
             />
 
             <Card className="gap-3">
@@ -283,6 +285,7 @@ export default function Cuenta() {
               descripcion="Lo que cambió en cada versión de Miniout."
               onPress={() => abrir('/novedades')}
               muted={muted}
+              color={foreground}
             />
 
             <PressableFeedback
@@ -389,7 +392,7 @@ function Fila({
   descripcion: string;
   onPress: () => void;
   muted: string;
-  color?: string;
+  color: string;
 }) {
   return (
     <PressableFeedback
@@ -401,7 +404,7 @@ function Fila({
       <PressableFeedback.Highlight />
       <View className="flex-row items-center gap-3">
         <View className="flex-1">
-          <Text className="font-medium text-foreground" style={{ fontSize: 16, color }}>
+          <Text className="font-medium" style={{ fontSize: 16, color }}>
             {titulo}
           </Text>
           <Text className="mt-0.5 font-sans text-muted" style={{ fontSize: 13, lineHeight: 19 }}>
