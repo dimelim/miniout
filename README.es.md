@@ -13,6 +13,22 @@
 
 Apuntes y tareas de universidad. La abres y el campo ya esta esperando.
 
+La interfaz esta solo en espanol. Etiquetas, onboarding y textos estan en
+espanol; la UI en ingles no se esta enviando todavia.
+
+Prueba el APK mas reciente en
+[v1.0.2-alpha.4](https://github.com/dimelim/miniout/releases/tag/v1.0.2-alpha.4).
+Se instala por sideload. Android avisa una vez. La app necesita red para
+cuentas, sincronizacion e imagenes.
+
+## Capturas
+
+<p align="center">
+  <img src="assets/screenshots/inicio.png" width="30%" alt="Pantalla de inicio">
+  <img src="assets/screenshots/dia.png" width="30%" alt="Vista del dia">
+  <img src="assets/screenshots/mascota.png" width="30%" alt="Pantalla de la mascota">
+</p>
+
 ## Por que
 
 Toda app de notas te hace decidir algo antes de dejarte escribir. Que cuaderno,
@@ -56,23 +72,18 @@ mencione un dia pasa a tener fecha.
 - Tu cuenta te sigue: correo, Google o Discord, con la foto del metodo que
   usaste. Y si te quieres ir, se borra entera desde Cuenta.
 
-## Capturas
-
-<p align="center">
-  <img src="assets/screenshots/inicio.png" width="30%" alt="Pantalla de inicio">
-  <img src="assets/screenshots/dia.png" width="30%" alt="Vista del dia">
-  <img src="assets/screenshots/mascota.png" width="30%" alt="Pantalla de la mascota">
-</p>
-
 ## Estado
 
 En alpha. Las etiquetas desde
 [v1.0.0-alpha.1](https://github.com/dimelim/miniout/releases) llevan builds de
-Android instalables. Lo que la app hace hoy es real y habla con la API en vivo,
+Android instalables. El APK mas reciente es
+[v1.0.2-alpha.4](https://github.com/dimelim/miniout/releases/tag/v1.0.2-alpha.4).
+Lo que la app hace hoy es real y habla con la API en vivo,
 pero las pantallas siguen moviendose.
 
 Las builds llevan actualizaciones por aire, asi que la version nueva llega sola
-la proxima vez que abras la app.
+la proxima vez que abras la app. Un cambio de modulo nativo sigue pidiendo un
+APK nuevo.
 
 ## Stack
 
@@ -126,7 +137,8 @@ texto pequeno usan `--color-accent-deep`, que mide 4.79:1.
 
 ## Contribuir
 
-Los issues y pull requests son bienvenidos. Dos reglas propias de este repo.
+Los issues y pull requests son bienvenidos. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+Dos reglas propias de este repo.
 
 - Sin comentarios en el codigo. Si una linea necesita explicacion, el arreglo es
   un mejor nombre.

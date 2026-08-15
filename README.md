@@ -13,6 +13,22 @@
 
 Notes and tasks for university. You open it and the field is already waiting.
 
+The interface is Spanish only right now. Labels, onboarding and copy are in
+Spanish; English UI is not shipping yet.
+
+Try the latest APK at
+[v1.0.2-alpha.4](https://github.com/dimelim/miniout/releases/tag/v1.0.2-alpha.4).
+Sideload it. Android warns once. The app needs a network for accounts, sync and
+images.
+
+## Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/inicio.png" width="30%" alt="Home screen">
+  <img src="assets/screenshots/dia.png" width="30%" alt="Day view">
+  <img src="assets/screenshots/mascota.png" width="30%" alt="Mascot screen">
+</p>
+
 ## Why
 
 Every notes app makes you decide something before it lets you write. Which
@@ -55,22 +71,16 @@ mentions a day becomes something due.
   photo from whichever you used. If you want out, Account deletes the whole
   thing.
 
-## Screenshots
-
-<p align="center">
-  <img src="assets/screenshots/inicio.png" width="30%" alt="Home screen">
-  <img src="assets/screenshots/dia.png" width="30%" alt="Day view">
-  <img src="assets/screenshots/mascota.png" width="30%" alt="Mascot screen">
-</p>
-
 ## Status
 
 Alpha. The tags [v1.0.0-alpha.1](https://github.com/dimelim/miniout/releases)
-onwards carry installable Android builds. Anything the app can do today is real
+onwards carry installable Android builds. The latest APK is
+[v1.0.2-alpha.4](https://github.com/dimelim/miniout/releases/tag/v1.0.2-alpha.4).
+Anything the app can do today is real
 and talks to the live API, but screens keep moving.
 
 Builds ship with over the air updates, so a new JS version arrives on its own
-the next time you open the app.
+the next time you open the app. A native module change still needs a new APK.
 
 ## Stack
 
@@ -124,7 +134,8 @@ small text use `--color-accent-deep` instead, which measures 4.79:1.
 
 ## Contributing
 
-Issues and pull requests are welcome. Two rules specific to this repo.
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Two rules specific to this repo.
 
 - No comments in the code. If a line needs an explanation, the fix is a better
   name.
